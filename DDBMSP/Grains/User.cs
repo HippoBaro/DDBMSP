@@ -1,14 +1,14 @@
 ﻿using System.Threading.Tasks;
-using DDBMSP.Grains.Contracts;
+using DDBMSP.GrainsContract;
 using Orleans;
 
 namespace DDBMSP.Grains
 {
-    public class User : Orleans.Grain, IUserGrain
+    public class User : Grain, IUserGrain
     {
         public Task<string> Walk()
         {
-            return Task.FromResult(this.GetPrimaryKeyString() + " : I'm walking !!!");
+            return Task.FromResult(" : I'm walking !!!");
         }
     }
 }

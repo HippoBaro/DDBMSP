@@ -1,6 +1,7 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
-using DDBMSP.Grains.Contracts;
+using DDBMSP.GrainsContract;
 using Orleans;
 using Orleans.Runtime.Configuration;
 using Orleans.Runtime.Host;
@@ -17,8 +18,8 @@ namespace DDBMSP
             
             await client.Connect();
             
-            var user = client.GetGrain<IUserGrain>(42);
-            System.Console.WriteLine(await user.Walk());
+            var user = client.GetGrain<IUserGrain>("toto");
+            Console.WriteLine(await user.Walk());
         }
         
         static void Main(string[] args)
@@ -26,7 +27,8 @@ namespace DDBMSP
             var siloConfig = ClusterConfiguration.LocalhostPrimarySilo(); 
             var silo = new SiloHost("Test Silo", siloConfig);
             silo.InitializeOrleansSilo(); 
-            silo.StartOrleansSilo();
+            if (!silo.StartOrleansSilo(false))
+                Debugger.Break();
             
             RunTest().Wait();
             

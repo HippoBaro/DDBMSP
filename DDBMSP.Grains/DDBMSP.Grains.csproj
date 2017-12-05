@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DDBMSP.Interfaces\DDBMSP.Interfaces.csproj">
+      <Project>{04683BAF-B9CB-46DA-B072-FF6BF9DADF4A}</Project>
+      <Name>DDBMSP.Interfaces</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Orleans.Core" Version="2.0.0-preview4-20171025" />
+    <PackageReference Include="Microsoft.Orleans.OrleansCodeGenerator.Build" Version="2.0.0-preview4-20171025" />
+  </ItemGroup>
+</Project>

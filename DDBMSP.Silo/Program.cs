@@ -4,11 +4,11 @@ using Orleans.Runtime.Host;
 
 namespace DDBMSP.Silo
 {
-    public class Program
+    public static class Program
     {
         public static int Main(string[] args)
         {
-            int exitCode = StartSilo(args);
+            var exitCode = StartSilo(args);
 
             Console.WriteLine("Press Enter to terminate...");
             Console.ReadLine();
@@ -23,7 +23,7 @@ namespace DDBMSP.Silo
             // define the cluster configuration
             var siloConfig = ClusterConfiguration.LocalhostPrimarySilo(); 
             siloConfig.AddMemoryStorageProvider();
-            var silo = new SiloHost("Test Silo", siloConfig); 
+            var silo = new SiloHost("DDDMSPSilo", siloConfig); 
             silo.InitializeOrleansSilo(); 
             silo.StartOrleansSilo();
 

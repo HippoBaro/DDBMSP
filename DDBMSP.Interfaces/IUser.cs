@@ -5,6 +5,6 @@ namespace DDBMSP.Interfaces
 {
     public interface IUser : Orleans.IGrainWithIntegerKey
     {
-        Task Test();
+        Task<string> Test();
     }
 }

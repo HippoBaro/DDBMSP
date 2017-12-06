@@ -6,4 +6,7 @@
     <PackageReference Include="Microsoft.Orleans.Core.Abstractions" Version="2.0.0-preview4-20171025" />
     <PackageReference Include="Microsoft.Orleans.OrleansCodeGenerator.Build" Version="2.0.0-preview4-20171025" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DDBMSP.Common\DDBMSP.Common.csproj" />
+  </ItemGroup>
 </Project>

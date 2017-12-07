@@ -1,22 +1,16 @@
 ﻿using System.Threading.Tasks;
-using DDBMSP.Common.Enums;
-using DDBMSP.Interfaces;
+using DDBMSP.Common.PODs;
+using DDBMSP.Interfaces.Grains;
+using DDBMSP.Interfaces.Grains.Core;
 using Orleans;
 
 namespace DDBMSP.Grains
 {
-    public class User : Grain, IUser
-    {
-        public string Name { get; set; }
-        public string Email { get; set; }
-        public Gender Gender { get; set; }
-        public string Phone { get; set; }
-        public Region Region { get; set; }
-        public Language PreferedLanguage { get; set; }
-        
+    public class User : StatefulGrain<UserIdentity>, IUser
+    {        
         public Task<string> Test()
         {
-            return Task.FromResult($"Hello from {this.GetPrimaryKeyLong()}, or {RuntimeIdentity}");
+            return Task.FromResult($"Hello from {this.GetPrimaryKey()}, or {RuntimeIdentity}");
         }
     }
 }

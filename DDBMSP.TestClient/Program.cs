@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using DDBMSP.Interfaces;
+using DDBMSP.Interfaces.Grains;
 using Orleans;
 using Orleans.Runtime;
 using Orleans.Runtime.Configuration;
@@ -58,7 +58,7 @@ namespace DDBMSP.TestClient
         private static async Task DoClientWork()
         {
             // example of calling grains from the initialized client
-            var friend = GrainClient.GrainFactory.GetGrain<IUser>(0);
+            var friend = GrainClient.GrainFactory.GetGrain<IUser>(Guid.NewGuid());
             await friend.Test();
             Console.WriteLine("\n\nDone.\n\n");
         }

@@ -2,7 +2,7 @@
 using DDBMSP.Common;
 using Orleans;
 
-namespace DDBMSP.Interfaces.Grains.Core
+namespace DDBMSP.Grains.Core
 {
     public class StatefulGrain<TPod> : Grain<TPod>, IStateContainer<TPod> where TPod : class, new()
     {

@@ -1,12 +1,14 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using DDBMSP.Common;
-using DDBMSP.Common.PODs;
+using DDBMSP.Common.PODs.Article.Components;
+using DDBMSP.Common.PODs.User;
 using Orleans;
 
 namespace DDBMSP.Interfaces.Grains
 {
-    public interface IUser : IGrainWithGuidKey, IStateContainer<UserIdentity>
+    public interface IUser : IGrainWithGuidKey, IStateContainer<UserState>
     {
-        Task<string> Test();
+        Task<Guid> AuthorNewArticle(IArticleData articleData);
     }
 }

@@ -57,10 +57,10 @@ namespace DDBMSP.TestClient
 
         private static async Task DoClientWork()
         {
-            // example of calling grains from the initialized client
+/*            // example of calling grains from the initialized client
             var friend = GrainClient.GrainFactory.GetGrain<IUser>(Guid.NewGuid());
             await friend.Test();
-            Console.WriteLine("\n\nDone.\n\n");
+            Console.WriteLine("\n\nDone.\n\n");*/
         }
 
     }

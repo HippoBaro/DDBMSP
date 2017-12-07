@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<OrleansConfiguration xmlns="urn:orleans">
+    <Globals>
+        <SeedNode Address="localhost" Port="22222" />
+        <StorageProviders>
+            <Provider Type="Orleans.Storage.MemoryStorage" Name="Default" />
+            <Provider Type="Orleans.Storage.MemoryStorage" Name="PubSubStore" />
+        </StorageProviders>
+        <StreamProviders>
+            <Provider Type="Orleans.Providers.Streams.SimpleMessageStream.SimpleMessageStreamProvider" Name="Default"/>
+        </StreamProviders>
+    </Globals>
+    <Defaults>
+        <Networking Address="localhost" Port="22222" />
+        <ProxyingGateway Address="localhost" Port="40000" />
+    </Defaults>
+</OrleansConfiguration>

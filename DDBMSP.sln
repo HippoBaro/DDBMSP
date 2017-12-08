@@ -13,8 +13,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DDBMSP.TestClient", "DDBMSP
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DDBMSP.Frontend.Web", "DDBMSP.Frontend.Web\DDBMSP.Frontend.Web.csproj", "{0B790B73-DCF7-475D-BF28-B133C487D5FE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DDBMSP.Common", "DDBMSP.Common\DDBMSP.Common.csproj", "{8F5892EA-25F9-41F1-BE32-B628CCD8BD70}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -41,10 +39,6 @@ Global
 		{0B790B73-DCF7-475D-BF28-B133C487D5FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0B790B73-DCF7-475D-BF28-B133C487D5FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0B790B73-DCF7-475D-BF28-B133C487D5FE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8F5892EA-25F9-41F1-BE32-B628CCD8BD70}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8F5892EA-25F9-41F1-BE32-B628CCD8BD70}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8F5892EA-25F9-41F1-BE32-B628CCD8BD70}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8F5892EA-25F9-41F1-BE32-B628CCD8BD70}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

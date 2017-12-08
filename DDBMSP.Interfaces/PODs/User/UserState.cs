@@ -1,7 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using DDBMSP.Common.Enums;
+using DDBMSP.Interfaces.Enums;
 using DDBMSP.Interfaces.Grains;
 using DDBMSP.Interfaces.Grains.Core;
 using DDBMSP.Interfaces.PODs.Core;
@@ -12,7 +13,8 @@ namespace DDBMSP.Interfaces.PODs.User
     public class UserState : IExist, IUserData, ISummarizableTo<IUserData>
     {
         public bool Exists { get; set; }
-        
+        public Guid Id { get; set; }
+
         public string Name { get; set; }
         public string Email { get; set; }
         public Gender Gender { get; set; }

@@ -13,14 +13,13 @@ namespace DDBMSP.Grains
     {
         private IArticleAggregatorHubGrain ArticleAggregatorHub => GrainFactory.GetGrain<IArticleAggregatorHubGrain>(0);
         
-        public Task PopulateFromAuthorAndData(IUser author, IArticleData data)
+        public Task CreateFromAuthorAndData(IUser author, IArticleData data)
         {
             data.Author = author;
             data.CreationDate = DateTime.UtcNow;
-            State.Exists = true;
             State.Populate(data);
             ArticleAggregatorHub.Aggregate(State).Ignore();
-            return Task.CompletedTask;
+            return Create();
         }
     }
 }

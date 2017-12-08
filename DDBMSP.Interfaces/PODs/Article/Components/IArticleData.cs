@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using DDBMSP.Common.Enums;
+using DDBMSP.Interfaces.Enums;
 using DDBMSP.Interfaces.Grains;
 using DDBMSP.Interfaces.PODs.Core;
 

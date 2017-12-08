@@ -9,7 +9,7 @@ using Orleans;
 namespace DDBMSP.Grains.Aggregators.Articles
 {
     public class LatestArticleAggregatorGrain : Grain<Stack<IArticleData>>, ILatestArticleAggregatorGrain
-    {   
+    {
         public Task Aggregate(IArticleData article)
         {
             State.Push(article);
@@ -18,8 +18,7 @@ namespace DDBMSP.Grains.Aggregators.Articles
 
         public Task<List<IArticleData>> GetLatestArticles(int max = 10)
         {
-            //TODO : Find a way to get rid of .ToList() — useless copies
-            return Task.FromResult(State.Skip(Math.Max(0, State.Count - max)).ToList());
+            return Task.FromResult(State.Any() ? State.Take(max).ToList() : null);
         }
     }
 }

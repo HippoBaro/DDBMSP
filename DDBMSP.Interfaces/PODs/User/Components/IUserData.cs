@@ -1,4 +1,4 @@
-﻿using DDBMSP.Common.Enums;
+﻿using DDBMSP.Interfaces.Enums;
 using DDBMSP.Interfaces.PODs.Core;
 
 namespace DDBMSP.Interfaces.PODs.User.Components

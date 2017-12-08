@@ -24,7 +24,7 @@ namespace DDBMSP.TestClient
                 return 1;
             }
 
-            DoClientWork().Wait();
+            //DoClientWork().Wait();
             Console.WriteLine("Press Enter to terminate...");
             Console.ReadLine();
             return 0;
@@ -52,14 +52,6 @@ namespace DDBMSP.TestClient
                     Thread.Sleep(TimeSpan.FromSeconds(2));
                 }
             }
-        }
-
-        private static async Task DoClientWork()
-        {
-/*            // example of calling grains from the initialized client
-            var friend = GrainClient.GrainFactory.GetGrain<IUser>(Guid.NewGuid());
-            await friend.Test();
-            Console.WriteLine("\n\nDone.\n\n");*/
         }
 
     }

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using DDBMSP.Common.Enums;
+using DDBMSP.Interfaces.Enums;
 using DDBMSP.Interfaces.Grains;
 using DDBMSP.Interfaces.Grains.Core;
 using DDBMSP.Interfaces.PODs.Article.Components;
@@ -12,6 +12,7 @@ namespace DDBMSP.Interfaces.PODs.Article
     public class ArticleState : IExist, IArticleData, ISummarizableTo<IArticleData>
     {
         public bool Exists { get; set; }
+        public Guid Id { get; set; }
         
         public DateTime CreationDate { get; set; }
         public string Title { get; set; }
@@ -39,5 +40,6 @@ namespace DDBMSP.Interfaces.PODs.Article
         }
 
         public Task<IArticleData> Summarize() => Task.FromResult((IArticleData)this);
+        
     }
 }

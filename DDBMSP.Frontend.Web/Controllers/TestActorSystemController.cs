@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using DDBMSP.Common.Enums;
+using DDBMSP.Interfaces.Enums;
 using DDBMSP.Interfaces.Grains;
 using DDBMSP.Interfaces.Grains.Aggregators.Articles;
 using DDBMSP.Interfaces.PODs.Article;
@@ -90,17 +90,17 @@ namespace DDBMSP.Frontend.Web.Controllers
         }
         
         [HttpGet("/test/latest")]
-        public Task<List<IArticleData>> GetLastestArticle()
+        public async Task<IActionResult> GetLastestArticle()
         {
             var friend = GrainClient.GrainFactory.GetGrain<ILatestArticleAggregatorGrain>(0);
-            return friend.GetLatestArticles();
+            return Ok(await friend.GetLatestArticles());
         }
         
         [HttpGet("/test/latest/{tag}")]
-        public Task<List<IArticleData>> GetLastestArticle(string tag)
+        public async Task<IActionResult> GetLastestArticle(string tag)
         {
             var friend = GrainClient.GrainFactory.GetGrain<ILatestArticleByTagAggregatorGrain>(0);
-            return friend.GetLatestArticlesForTag(tag);
+            return Ok(await friend.GetLatestArticlesForTag(tag));
         }
     }
 }

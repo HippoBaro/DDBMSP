@@ -25,8 +25,7 @@ namespace DDBMSP.Grains.Aggregators.Articles
 
         public Task<List<IArticleData>> GetLatestArticlesForTag(string tag, int max = 10)
         {
-            //TODO : Find a way to get rid of .ToList() — useless copies
-            return State.ContainsKey(tag) ? Task.FromResult(State[tag].Skip(Math.Max(0, State[tag].Count - max)).ToList()) : Task.FromResult((List<IArticleData>)null);
+            return Task.FromResult(State.ContainsKey(tag) ? State[tag].Take(max).ToList() : null);
         }
     }
 }

@@ -1,6 +1,8 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using DDBMSP.Interfaces.Grains.Core;
 using DDBMSP.Interfaces.PODs.Core;
+using Orleans;
 
 namespace DDBMSP.Grains.Core
 {
@@ -9,6 +11,7 @@ namespace DDBMSP.Grains.Core
         public Task Create()
         {
             State.Exists = true;
+            State.Id = this.GetPrimaryKey();
             return Task.CompletedTask;
         }
 
@@ -20,6 +23,7 @@ namespace DDBMSP.Grains.Core
         public Task Create()
         {
             State.Exists = true;
+            State.Id = this.GetPrimaryKey();
             return Task.CompletedTask;
         }
 

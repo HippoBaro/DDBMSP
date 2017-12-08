@@ -10,12 +10,12 @@ using Orleans.MultiCluster;
 namespace DDBMSP.Grains.Aggregators.Articles
 {
     [OneInstancePerCluster]
-    public class LatestArticleAggregatorGrain : Grain<CircularFifoQueue<IArticleData>>, ILatestArticleAggregatorGrain
+    public class LatestArticleAggregatorGrain : Grain<CircularFifoStack<IArticleData>>, ILatestArticleAggregatorGrain
     {
         public Task Aggregate(IArticleData article)
         {
-            State.Enqueue(article);
-            return Task.CompletedTask;
+            State.Push(article);
+            return WriteStateAsync();
         }
 
         public Task<List<IArticleData>> GetLatestArticles(int max = 10)

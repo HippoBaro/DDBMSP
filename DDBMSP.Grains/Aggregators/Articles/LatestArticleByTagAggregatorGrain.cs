@@ -10,7 +10,7 @@ using Orleans.MultiCluster;
 namespace DDBMSP.Grains.Aggregators.Articles
 {
     [OneInstancePerCluster]
-    public class LatestArticleByTagAggregatorGrain : Grain<Dictionary<string, CircularFifoQueue<IArticleData>>>,
+    public class LatestArticleByTagAggregatorGrain : Grain<Dictionary<string, CircularFifoStack<IArticleData>>>,
         ILatestArticleByTagAggregatorGrain
     {
         public Task Aggregate(IArticleData article)
@@ -19,10 +19,10 @@ namespace DDBMSP.Grains.Aggregators.Articles
             foreach (var tag in data.Tags)
             {
                 if (!State.ContainsKey(tag))
-                    State.Add(tag, new CircularFifoQueue<IArticleData>());
-                State[tag].Enqueue(data);
+                    State.Add(tag, new CircularFifoStack<IArticleData>());
+                State[tag].Push(data);
             }
-            return Task.CompletedTask;
+            return WriteStateAsync();
         }
 
         public Task<List<IArticleData>> GetLatestArticlesForTag(string tag, int max = 10)

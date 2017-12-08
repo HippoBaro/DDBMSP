@@ -1,8 +1,9 @@
 ﻿using DDBMSP.Common.Enums;
+using DDBMSP.Interfaces.PODs.Core;
 
 namespace DDBMSP.Interfaces.PODs.User.Components
 {
-    public interface IIdendityData
+    public interface IUserData : IAuthorArticleReferencesData, IComponentOf<IUserData, UserState>
     {
         string Name { get; set; }
         string Email { get; set; }

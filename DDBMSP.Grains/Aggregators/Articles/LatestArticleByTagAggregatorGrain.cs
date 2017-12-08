@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using DDBMSP.Interfaces.Grains;
-using DDBMSP.Interfaces.Grains.Aggregators;
 using DDBMSP.Interfaces.Grains.Aggregators.Articles;
 using DDBMSP.Interfaces.PODs.Article.Components;
 using Orleans;
@@ -13,15 +11,16 @@ namespace DDBMSP.Grains.Aggregators.Articles
     public class LatestArticleByTagAggregatorGrain : Grain<Dictionary<string, Stack<IArticleData>>>,
         ILatestArticleByTagAggregatorGrain
     {
-        public async Task Aggregate(IArticle article)
+        public Task Aggregate(IArticleData article)
         {
-            var data = await article.GetState();
+            var data = article;
             foreach (var tag in data.Tags)
             {
-                if (State[tag] == null)
-                    State[tag] = new Stack<IArticleData>();
+                if (!State.ContainsKey(tag))
+                    State.Add(tag, new Stack<IArticleData>());
                 State[tag].Push(data);
             }
+            return Task.CompletedTask;
         }
 
         public Task<List<IArticleData>> GetLatestArticlesForTag(string tag, int max = 10)

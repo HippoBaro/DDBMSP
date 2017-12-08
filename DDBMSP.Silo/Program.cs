@@ -1,7 +1,6 @@
 ﻿using System;
 using Orleans.Runtime.Configuration;
 using Orleans.Runtime.Host;
-using Orleans.Streams;
 
 namespace DDBMSP.Silo
 {

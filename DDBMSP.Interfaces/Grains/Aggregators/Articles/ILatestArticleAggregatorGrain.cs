@@ -5,7 +5,7 @@ using Orleans;
 
 namespace DDBMSP.Interfaces.Grains.Aggregators.Articles
 {
-    public interface ILatestArticleAggregatorGrain : IGrainWithIntegerKey, IArticleListAggregator<IArticle>
+    public interface ILatestArticleAggregatorGrain : IGrainWithIntegerKey, IAggregator<IArticleData>
     {
         Task<List<IArticleData>> GetLatestArticles(int max = 10);
     }

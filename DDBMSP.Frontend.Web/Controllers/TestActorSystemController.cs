@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using DDBMSP.Common.Enums;
 using DDBMSP.Interfaces.Grains;
-using DDBMSP.Interfaces.Grains.Aggregators;
 using DDBMSP.Interfaces.Grains.Aggregators.Articles;
 using DDBMSP.Interfaces.PODs.Article;
 using DDBMSP.Interfaces.PODs.Article.Components;
-using DDBMSP.Interfaces.PODs.User;
 using DDBMSP.Interfaces.PODs.User.Components;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Rest;
+using Microsoft.Rest.TransientFaultHandling;
 using Orleans;
 
 namespace DDBMSP.Frontend.Web.Controllers
@@ -17,37 +17,76 @@ namespace DDBMSP.Frontend.Web.Controllers
     public class TestActorSystemController : Controller
     {
         [HttpGet("/test/article/{id}")]
-        public Task<ArticleState> GetArticle(Guid id)
+        public async Task<IActionResult> GetArticle(Guid id)
         {
             var friend = GrainClient.GrainFactory.GetGrain<IArticle>(id);
-            return friend.GetState();
+            if (!await friend.Exits())
+                return NotFound();
+            
+            return Ok(await friend.Summarize());
+        }
+        
+        [HttpPut("/test/user/{id}")]
+        public async Task<IActionResult> CreateUser(Guid id)
+        {
+            var friend = GrainClient.GrainFactory.GetGrain<IUser>(id);
+            await friend.Create();
+            return Created($"/test/user/{id}", id);
         }
         
         [HttpGet("/test/user/{id}")]
-        public Task<UserState> GetUser(Guid id)
+        public async Task<IActionResult> GetUser(Guid id)
         {
             var friend = GrainClient.GrainFactory.GetGrain<IUser>(id);
-            return friend.GetState();
+            if (!await friend.Exits())
+                return NotFound();
+            
+            return Ok(await friend.Summarize());
         }
         
         [HttpGet("/test/urser/{id}/articles")]
-        public async Task<IAuthorArticleReferencesData> GetUserArticles(Guid id)
+        public async Task<IActionResult> GetUserArticles(Guid id)
         {
             var friend = GrainClient.GrainFactory.GetGrain<IUser>(id);
-            return await friend.GetState();
+            if (!await friend.Exits())
+                return NotFound();
+            
+            return Ok(await friend.Summarize().ContinueWith(task => (IAuthorArticleReferencesData)task.Result));
         }
         
-        [HttpGet("/test/user/{id}/createarticle")]
-        public Task<Guid> NewArticle(Guid id)
+        [HttpPut("/test/user/{id}/article")]
+        public async Task<IActionResult> CreateArticle(Guid id)
         {
             var friend = GrainClient.GrainFactory.GetGrain<IUser>(id);
+            if (!await friend.Exits())
+                return NotFound();
+            
             var article = new ArticleState
             {
                 Abstract = "Abstract!!",
                 Language = Language.English,
                 Title = "Super duper title"
             };
-            return friend.AuthorNewArticle(article);
+            var newId = await friend.AuthorNewArticle(article);
+            return Created($"/article/{newId}", newId);
+        }
+        
+        [HttpPut("/test/user/{id}/article/{tag}")]
+        public async Task<IActionResult> CreateArticle(Guid id, string tag)
+        {
+            var friend = GrainClient.GrainFactory.GetGrain<IUser>(id);
+            if (!await friend.Exits())
+                return NotFound();
+            
+            var article = new ArticleState
+            {
+                Abstract = "Abstract!!",
+                Language = Language.English,
+                Title = "Super duper title",
+                Tags = new List<string> { tag }
+            };
+            var newId = await friend.AuthorNewArticle(article);
+            return Created($"/article/{newId}", newId);
         }
         
         [HttpGet("/test/latest")]

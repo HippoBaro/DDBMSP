@@ -1,18 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DDBMSP.Grains.DataStructures;
 using DDBMSP.Interfaces.Grains.Aggregators.Articles;
 using DDBMSP.Interfaces.PODs.Article.Components;
 using Orleans;
+using Orleans.MultiCluster;
 
 namespace DDBMSP.Grains.Aggregators.Articles
 {
-    public class LatestArticleAggregatorGrain : Grain<Stack<IArticleData>>, ILatestArticleAggregatorGrain
+    [OneInstancePerCluster]
+    public class LatestArticleAggregatorGrain : Grain<CircularFifoQueue<IArticleData>>, ILatestArticleAggregatorGrain
     {
         public Task Aggregate(IArticleData article)
         {
-            State.Push(article);
+            State.Enqueue(article);
             return Task.CompletedTask;
         }
 

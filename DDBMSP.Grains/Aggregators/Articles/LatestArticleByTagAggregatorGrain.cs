@@ -1,14 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DDBMSP.Grains.DataStructures;
 using DDBMSP.Interfaces.Grains.Aggregators.Articles;
 using DDBMSP.Interfaces.PODs.Article.Components;
 using Orleans;
+using Orleans.MultiCluster;
 
 namespace DDBMSP.Grains.Aggregators.Articles
 {
-    public class LatestArticleByTagAggregatorGrain : Grain<Dictionary<string, Stack<IArticleData>>>,
+    [OneInstancePerCluster]
+    public class LatestArticleByTagAggregatorGrain : Grain<Dictionary<string, CircularFifoQueue<IArticleData>>>,
         ILatestArticleByTagAggregatorGrain
     {
         public Task Aggregate(IArticleData article)
@@ -17,8 +19,8 @@ namespace DDBMSP.Grains.Aggregators.Articles
             foreach (var tag in data.Tags)
             {
                 if (!State.ContainsKey(tag))
-                    State.Add(tag, new Stack<IArticleData>());
-                State[tag].Push(data);
+                    State.Add(tag, new CircularFifoQueue<IArticleData>());
+                State[tag].Enqueue(data);
             }
             return Task.CompletedTask;
         }

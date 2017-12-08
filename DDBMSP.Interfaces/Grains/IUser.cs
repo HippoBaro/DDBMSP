@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using DDBMSP.Interfaces.Converters;
 using DDBMSP.Interfaces.Grains.Core;
 using DDBMSP.Interfaces.PODs.Article.Components;
-using DDBMSP.Interfaces.PODs.Core;
 using DDBMSP.Interfaces.PODs.User;
 using DDBMSP.Interfaces.PODs.User.Components;
 using Newtonsoft.Json;

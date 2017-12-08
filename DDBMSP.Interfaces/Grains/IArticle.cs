@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 using DDBMSP.Common;
-using DDBMSP.Common.PODs.Article;
+using DDBMSP.Interfaces.PODs.Article;
 using Orleans;
 
 namespace DDBMSP.Interfaces.Grains

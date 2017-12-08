@@ -1,4 +1,4 @@
-﻿namespace DDBMSP.Common.PODs.Core
+﻿namespace DDBMSP.Interfaces.PODs.Core
 {
     public class Exist
     {

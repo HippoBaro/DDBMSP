@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
 using DDBMSP.Common;
-using DDBMSP.Common.PODs.Article.Components;
-using DDBMSP.Common.PODs.User;
+using DDBMSP.Interfaces.PODs.Article.Components;
+using DDBMSP.Interfaces.PODs.User;
 using Orleans;
 
 namespace DDBMSP.Interfaces.Grains

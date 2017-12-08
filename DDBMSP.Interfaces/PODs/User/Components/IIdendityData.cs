@@ -1,6 +1,6 @@
 ﻿using DDBMSP.Common.Enums;
 
-namespace DDBMSP.Common.PODs.User.Components
+namespace DDBMSP.Interfaces.PODs.User.Components
 {
     public interface IIdendityData
     {

@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using DDBMSP.Common;
+using DDBMSP.Interfaces;
 using Orleans;
 
 namespace DDBMSP.Grains.Core

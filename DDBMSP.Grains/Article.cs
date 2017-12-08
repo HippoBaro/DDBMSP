@@ -1,8 +1,7 @@
 ﻿using System.Threading.Tasks;
-using DDBMSP.Common.PODs.Article;
-using DDBMSP.Common.PODs.User;
 using DDBMSP.Grains.Core;
 using DDBMSP.Interfaces.Grains;
+using DDBMSP.Interfaces.PODs.Article;
 
 namespace DDBMSP.Grains
 {

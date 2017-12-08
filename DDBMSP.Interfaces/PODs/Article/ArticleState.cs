@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using DDBMSP.Common.Enums;
-using DDBMSP.Common.PODs.Article.Components;
-using DDBMSP.Common.PODs.Core;
+using DDBMSP.Interfaces.PODs.Article.Components;
+using DDBMSP.Interfaces.PODs.Core;
 
-namespace DDBMSP.Common.PODs.Article
+namespace DDBMSP.Interfaces.PODs.Article
 {
     public class ArticleState : Exist, IArticleData
     {

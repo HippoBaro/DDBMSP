@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using DDBMSP.Common.Enums;
-using DDBMSP.Common.PODs.Core;
-using DDBMSP.Common.PODs.User.Components;
+using DDBMSP.Interfaces.Grains;
+using DDBMSP.Interfaces.PODs.Core;
+using DDBMSP.Interfaces.PODs.User.Components;
 
-namespace DDBMSP.Common.PODs.User
+namespace DDBMSP.Interfaces.PODs.User
 {
     public class UserState : Exist, IIdendityData, IAuthorArticleReferencesData
     {
@@ -15,6 +16,6 @@ namespace DDBMSP.Common.PODs.User
         public Region Region { get; set; }
         public Language PreferedLanguage { get; set; }
         
-        public List<Guid> Articles { get; set; } = new List<Guid>();
+        public List<IArticle> Articles { get; set; } = new List<IArticle>();
     }
 }

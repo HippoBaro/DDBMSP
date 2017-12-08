@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace DDBMSP.Common
+namespace DDBMSP.Interfaces
 {
     public interface IStateContainer<TPod>
     {

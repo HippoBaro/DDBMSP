@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using DDBMSP.Common.Enums;
 
-namespace DDBMSP.Common.PODs.Article.Components
+namespace DDBMSP.Interfaces.PODs.Article.Components
 {
     public interface IArticleData
     {

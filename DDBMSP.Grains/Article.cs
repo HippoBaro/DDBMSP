@@ -18,8 +18,9 @@ namespace DDBMSP.Grains
             data.Author = author;
             data.CreationDate = DateTime.UtcNow;
             State.Populate(data);
-            ArticleAggregatorHub.Aggregate(State).Ignore();
-            return Create();
+            Create().ContinueWith(task => ArticleAggregatorHub.Aggregate(State).Ignore());
+            WriteStateAsync().Ignore();
+            return Task.CompletedTask;
         }
     }
 }

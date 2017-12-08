@@ -5,11 +5,7 @@ using DDBMSP.Interfaces.Enums;
 using DDBMSP.Interfaces.Grains;
 using DDBMSP.Interfaces.Grains.Aggregators.Articles;
 using DDBMSP.Interfaces.PODs.Article;
-using DDBMSP.Interfaces.PODs.Article.Components;
-using DDBMSP.Interfaces.PODs.User.Components;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Rest;
-using Microsoft.Rest.TransientFaultHandling;
 using Orleans;
 
 namespace DDBMSP.Frontend.Web.Controllers
@@ -20,16 +16,23 @@ namespace DDBMSP.Frontend.Web.Controllers
         public async Task<IActionResult> GetArticle(Guid id)
         {
             var friend = GrainClient.GrainFactory.GetGrain<IArticle>(id);
-            if (!await friend.Exits())
+            var exist = friend.Exits();
+            var sum = friend.Summarize();
+            
+            if (!await exist)
                 return NotFound();
             
-            return Ok(await friend.Summarize());
+            return Ok(await sum);
         }
         
         [HttpPut("/test/user/{id}")]
         public async Task<IActionResult> CreateUser(Guid id)
         {
             var friend = GrainClient.GrainFactory.GetGrain<IUser>(id);
+            
+            if (await friend.Exits())
+                return BadRequest();
+            
             await friend.Create();
             return Created($"/test/user/{id}", id);
         }
@@ -38,20 +41,26 @@ namespace DDBMSP.Frontend.Web.Controllers
         public async Task<IActionResult> GetUser(Guid id)
         {
             var friend = GrainClient.GrainFactory.GetGrain<IUser>(id);
-            if (!await friend.Exits())
+            var exist = friend.Exits();
+            var sum = friend.Summarize();
+            
+            if (!await exist)
                 return NotFound();
             
-            return Ok(await friend.Summarize());
+            return Ok(await sum);
         }
         
-        [HttpGet("/test/urser/{id}/articles")]
+        [HttpGet("/test/user/{id}/articles")]
         public async Task<IActionResult> GetUserArticles(Guid id)
         {
             var friend = GrainClient.GrainFactory.GetGrain<IUser>(id);
-            if (!await friend.Exits())
+            var exist = friend.Exits();
+            var sum = friend.Summarize();
+            
+            if (!await exist)
                 return NotFound();
             
-            return Ok(await friend.Summarize().ContinueWith(task => (IAuthorArticleReferencesData)task.Result));
+            return Ok(await sum);
         }
         
         [HttpPut("/test/user/{id}/article")]

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using DDBMSP.Interfaces.Enums;
 using DDBMSP.Interfaces.Grains;
-using DDBMSP.Interfaces.Grains.Core;
 using DDBMSP.Interfaces.PODs.Article.Components;
 using DDBMSP.Interfaces.PODs.Core;
 

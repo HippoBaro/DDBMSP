@@ -16,6 +16,7 @@ namespace DDBMSP.Grains
             var article = GrainFactory.GetGrain<IArticle>(Guid.NewGuid());
             article.CreateFromAuthorAndData(this, articleData).Ignore();
             State.Articles.Add(article);
+            WriteStateAsync().Ignore();
             return Task.FromResult(article.GetPrimaryKey());
         }
     }

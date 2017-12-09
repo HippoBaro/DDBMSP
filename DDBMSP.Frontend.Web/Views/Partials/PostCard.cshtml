@@ -2,7 +2,7 @@
 
 @model DDBMSP.Frontend.Web.Controllers.Post
 
-<article class="post-card post">
+<article class="post-card post @(Model.Image == null ? "no-image" : null)">
     @if (Model.Image != null)
     {
         <a class="post-card-image-link" href="@Model.Url">

@@ -25,9 +25,28 @@ namespace DDBMSP.Frontend.Web.Controllers
                     Url = "http://localhost:5000",
                     Title = "Test Article title",
                     Tags = new List<string> { "TAG" },
+                    AuthorName = "Hippo",
+                    Image = "https://casper.ghost.org/v1.0.0/images/welcome.jpg"
+                },
+                new Post {
+                    Url = "http://localhost:5000",
+                    Title = "Another Test Article title",
+                    Tags = new List<string>(),
                     AuthorName = "Hippo"
                 },
                 new Post {
+                    Url = "http://localhost:5000",
+                    Title = "Another Test Article title",
+                    Tags = new List<string>(),
+                    AuthorName = "Hippo"
+                },
+                new Post {
+                    Url = "http://localhost:5000",
+                    Title = "Another Test Article title",
+                    Tags = new List<string>(),
+                    AuthorName = "Hippo"
+                }
+                ,new Post {
                     Url = "http://localhost:5000",
                     Title = "Another Test Article title",
                     Tags = new List<string>(),

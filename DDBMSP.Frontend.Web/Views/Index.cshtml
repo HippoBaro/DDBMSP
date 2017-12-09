@@ -5,6 +5,7 @@
 @model List<Post>
 
 @{
+    ViewData["BodyStyleClass"] = "home-template";
     Constants.CurrentPage = "Index";
 }
 
@@ -12,7 +13,14 @@
     <div class="inner">
         <div class="site-header-content">
             <h1 class="site-title">
-                @Constants.BlogTitle
+                @if (Constants.BlogLogo != null)
+                {
+                    <img class="site-logo" src="@Constants.BlogLogo" alt="@Constants.BlogTitle"/>
+                }
+                else
+                {
+                    @Constants.BlogTitle
+                }
             </h1>
             <h2 class="site-description">@Constants.BlogDescription</h2>
         </div>

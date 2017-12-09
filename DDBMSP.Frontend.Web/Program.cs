@@ -8,8 +8,8 @@ namespace DDBMSP.Frontend.Web
         public const string BlogUrl = "http://localhost:5000";
         public const string BlogTitle = "DDBMSP — Project";
         public const string BlogDescription = "description";
-        public const string BlogCoverImage = null;
-        public const string BlogLogo = null;
+        public const string BlogCoverImage = "https://demo.ghost.io/content/images/2017/07/blog-cover.jpg";
+        public const string BlogLogo = "https://demo.ghost.io/content/images/2014/09/Ghost-Transparent-for-DARK-BG.png";
 
         public static string CurrentPage { get; set; }
     }

@@ -1,0 +1,33 @@
+@using System.Collections.Generic
+@using DDBMSP.Frontend.Web
+@using DDBMSP.Frontend.Web.Controllers
+@using Microsoft.AspNetCore.Mvc.Rendering
+@model List<Post>
+
+@{
+    Constants.CurrentPage = "Index";
+}
+
+<header class="site-header outer" style="background-image: url(@Constants.BlogCoverImage)">
+    <div class="inner">
+        <div class="site-header-content">
+            <h1 class="site-title">
+                @Constants.BlogTitle
+            </h1>
+            <h2 class="site-description">@Constants.BlogDescription</h2>
+        </div>
+        
+        @Html.Partial("/Views/Partials/SiteNav.cshtml")
+    </div>
+</header>
+
+<main id="site-main" class="site-main outer" role="main">
+    <div class="inner">
+        <div class="post-feed">
+            @foreach (var post in Model)
+            {
+                @Html.Partial("/Views/Partials/PostCard.cshtml", post) //insert post
+            }
+        </div>
+    </div>
+</main>

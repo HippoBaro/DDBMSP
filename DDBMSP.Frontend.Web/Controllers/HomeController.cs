@@ -1,19 +1,49 @@
-using System.Diagnostics;
+﻿using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DDBMSP.Frontend.Web.Controllers
 {
+    public struct Post
+    {
+        public string Url { get; set; }
+        public string Title { get; set; }
+        public List<string> Tags { get; set; }
+        public string Author { get; set; }
+        public string AuthorName { get; set; }
+        public string Image { get; set; }
+    }
+    
+    [Route("")]
     public class HomeController : Controller
     {
+        [HttpGet("")]
         public IActionResult Index()
         {
-            return View();
+            var model = new List<Post>
+            {
+                new Post {
+                    Url = "http://localhost:5000",
+                    Title = "Test Article title",
+                    Tags = new List<string> { "TAG" },
+                    AuthorName = "Hippo"
+                },
+                new Post {
+                    Url = "http://localhost:5000",
+                    Title = "Another Test Article title",
+                    Tags = new List<string>(),
+                    AuthorName = "Hippo"
+                }
+            };
+            
+            return View("/Views/Index.cshtml", model);
         }
-
-        public IActionResult Error()
+        
+        [Route("Error")]
+        public IActionResult Error(int? statusCode)
         {
-            ViewData["RequestId"] = Activity.Current?.Id ?? HttpContext.TraceIdentifier;
-            return View();
+            if (!statusCode.HasValue) return View("/Views/Error.cshtml");
+            var viewName = statusCode.ToString();
+            return View("/Views/Error.cshtml", viewName);
         }
     }
 }

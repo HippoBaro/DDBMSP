@@ -1,0 +1,35 @@
+﻿@using System.Linq
+
+@model DDBMSP.Frontend.Web.Controllers.Post
+
+<article class="post-card post">
+    @if (Model.Image != null)
+    {
+        <a class="post-card-image-link" href="@Model.Url">
+            <div class="post-card-image" style="background-image: url(@Model.Image)"></div>
+        </a>
+    }
+    
+    <div class="post-card-content">
+        <a class="post-card-content-link" href="@Model.Url">
+            <header class="post-card-header">
+                @if (Model.Tags.Any())
+                {
+                    <span class="post-card-tags">@Model.Tags.First()</span>
+                }
+                <h2 class="post-card-title">@Model.Title</h2>
+            </header>
+            <section class="post-card-excerpt">
+                <p>Lot of things to say, very few words to do it. 33, that is.</p>
+            </section>
+        </a>
+        <footer class="post-card-meta">
+            @*
+            {{#if author.profile_image}}
+            <img class="author-profile-image" src="{{author.profile_image}}" alt="{{author.name}}"/>
+            {{/if}}
+            *@
+            <span class="post-card-author"><a href="/author/@Model.Author/">@Model.AuthorName</a></span>
+        </footer>
+    </div>
+</article>

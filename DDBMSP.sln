@@ -11,7 +11,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DDBMSP.Silo", "DDBMSP.Silo\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DDBMSP.TestClient", "DDBMSP.TestClient\DDBMSP.TestClient.csproj", "{B54A55C7-FBB3-4D81-8BEA-333292AB748C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DDBMSP.Frontend.Web", "DDBMSP.Frontend.Web\DDBMSP.Frontend.Web.csproj", "{0B790B73-DCF7-475D-BF28-B133C487D5FE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DDBMSP.Frontend.Web", "DDBMSP.Frontend.Web\DDBMSP.Frontend.Web.csproj", "{6573A74F-F5FD-428E-AD1B-B13D77AA6B5B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,10 +35,10 @@ Global
 		{B54A55C7-FBB3-4D81-8BEA-333292AB748C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B54A55C7-FBB3-4D81-8BEA-333292AB748C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B54A55C7-FBB3-4D81-8BEA-333292AB748C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0B790B73-DCF7-475D-BF28-B133C487D5FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0B790B73-DCF7-475D-BF28-B133C487D5FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0B790B73-DCF7-475D-BF28-B133C487D5FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0B790B73-DCF7-475D-BF28-B133C487D5FE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6573A74F-F5FD-428E-AD1B-B13D77AA6B5B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6573A74F-F5FD-428E-AD1B-B13D77AA6B5B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6573A74F-F5FD-428E-AD1B-B13D77AA6B5B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6573A74F-F5FD-428E-AD1B-B13D77AA6B5B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

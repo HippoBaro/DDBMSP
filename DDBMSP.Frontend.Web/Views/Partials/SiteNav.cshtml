@@ -1,0 +1,40 @@
+﻿@using DDBMSP.Frontend.Web
+
+@{
+    ViewData["BlogNavigation"] = new[]
+    {
+        new {
+            Url = "http://localhost:5000",
+            Name = "Test"
+        },
+        new {
+            Url = "http://localhost:5000",
+            Name = "Test"
+        }
+    };
+}
+
+<nav class="site-nav">
+    <div class="site-nav-left">
+        @if (Constants.CurrentPage != "Index")
+        {
+            if (Constants.BlogLogo != null)
+             {
+                 <a class="site-nav-logo" href="@Constants.BlogUrl"><img src="@Constants.BlogLogo" alt="@Constants.BlogTitle"/></a>
+             }
+             else
+             {
+                 <a class="site-nav-logo" href="@Constants.BlogUrl">@Constants.BlogTitle</a>
+             }
+        }
+        @if (ViewData["BlogNavigation"] != null)
+        {
+            <ul class="nav">
+                @foreach (var nav in (dynamic[]) ViewData["BlogNavigation"])
+                {
+                    <li class="nav-home nav-current" role="menuitem"><a href="@nav.Url">@nav.Name</a></li>
+                }
+            </ul>
+        }
+    </div>
+</nav>

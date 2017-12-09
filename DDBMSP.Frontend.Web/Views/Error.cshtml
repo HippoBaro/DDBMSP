@@ -1,0 +1,48 @@
+﻿@using DDBMSP.Frontend.Web
+@{
+    ViewData["Title"] = "Error";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>@ViewData["Title"]</title>
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="built/screen.css" />
+</head>
+
+<body class="error-template">
+<div class="site-wrapper">
+    
+    <header class="site-header outer" style="background-image: url(@Constants.BlogCoverImage)">
+        <div class="inner">
+            <nav class="site-nav-center">
+                @if (Constants.BlogCoverImage != null)
+                {
+                    <a class="site-nav-logo" href="@Constants.BlogUrl"><img src="@Constants.BlogLogo" alt="@Constants.BlogTitle"/></a>
+                }
+                else
+                {
+                    <a class="site-nav-logo" href="@Constants.BlogUrl">@Constants.BlogTitle</a>
+                }
+            </nav>
+        </div>
+    </header>
+
+    <main id="site-main" class="site-main outer" role="main">
+        <div class="inner">
+
+            <section class="error-message">
+                <h1 class="error-code">@Model</h1>
+                <p class="error-description">Oupss. Something's wrong!</p>
+                <a class="error-link" href="@Constants.BlogUrl">Go to the front page →</a>
+            </section>
+        </div>
+    </main>
+
+</div>
+</body>
+</html>

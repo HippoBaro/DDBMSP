@@ -12,9 +12,12 @@
     <meta name="HandheldFriendly" content="True" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <link rel="stylesheet" type="text/css" href="~/built/screen.css" />
+	<link rel="stylesheet" type="text/css" href="~/built/screen.css" />
+	<link rel="stylesheet" type="text/css" href="~/built/search.css" />
 	<script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
-	<script type="text/javascript" src="/js/jquery.fitvids.js"></script>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.13/components/api.min.js"></script>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.13/components/search.min.js"></script>
     
 </head>
 
@@ -35,29 +38,68 @@
     </div>
 
 <script>
-	$(document).ready(function(){
+	$(document).ready(function() {
 		// Search popup
 
-		$('.search-mod').click(function(){
+		$('.search-mod').click(function() {
 			$('.search-page').fadeIn();
 			$('.search-page .search-form-field').focus();
 		});
-		$('.search-page .close').click(function(){
+		$('.search-page .close').click(function() {
 			$('.search-page').fadeOut();
 		});
 		count = 2;
-		$('.show-more').click(function(){
+		$('.show-more').click(function() {
 			var total = 6;
-			if (count > total){
+			if (count > total) {
 				return false;
-			}else{
+			} else {
 				loadArticle(count);
-				if(count == total){
+				if (count == total) {
 					$('.show-more').hide();
 				}
 				count++;
 			}
-		}); 
+		});
+
+		$('.ui.search')
+			.search({
+				type: 'category',
+				minCharacters: 3,
+				apiSettings: {
+					onResponse: function(githubResponse) {
+						var
+							response = {
+								results: {}
+							};
+						// translate GitHub API response to work with search
+						$.each(githubResponse.items,
+							function(index, item) {
+								var
+									language = item.language || 'Unknown',
+									maxResults = 8;
+								if (index >= maxResults) {
+									return false;
+								}
+								// create new language category
+								if (response.results[language] === undefined) {
+									response.results[language] = {
+										name: language,
+										results: []
+									};
+								}
+								// add result to category
+								response.results[language].results.push({
+									title: item.name,
+									description: item.description,
+									url: item.html_url
+								});
+							});
+						return response;
+					},
+					url: 'https://api.github.com/search/repositories?q={query}'
+				}
+			});
 	});
 </script>
 

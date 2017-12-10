@@ -27,7 +27,6 @@ namespace DDBMSP.Silo
             //silo.Config.Globals.RegisterDashboard();
             silo.StartOrleansSilo();
             
-
             return 0;
         }
     }

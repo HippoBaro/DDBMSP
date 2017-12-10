@@ -31,12 +31,9 @@ namespace DDBMSP.Grains
 
             var summary = articleState.SummarizeLocal();
             State.Articles.Add(summary);
-            
-            ArticleAggregatorHub.Aggregate(summary).Ignore();
-            WriteStateAsync().Ignore();
-            article.SetState(articleState).Ignore();
-            
-            return Task.FromResult(article.GetPrimaryKey());
+
+            return Task.WhenAll(ArticleAggregatorHub.Aggregate(summary), WriteStateAsync(), article.SetState(articleState))
+                .ContinueWith(task => article.GetPrimaryKey());
         }
     }
 }

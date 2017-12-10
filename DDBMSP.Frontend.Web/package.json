@@ -50,5 +50,8 @@
     },
     "config": {
         "posts_per_page": 25
+    },
+    "dependencies": {
+        "semantic-ui-search": "^2.2.12"
     }
 }

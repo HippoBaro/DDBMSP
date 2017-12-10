@@ -4,33 +4,24 @@ using System.Threading.Tasks;
 using DDBMSP.Interfaces.Grains;
 using DDBMSP.Interfaces.Grains.Aggregators.Articles;
 using DDBMSP.Interfaces.PODs.Article.Components;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Orleans;
 
 namespace DDBMSP.Frontend.Web.Controllers
-{
-    public struct Post
-    {
-        public string Url { get; set; } //
-        public string Title { get; set; } //
-        public List<string> Tags { get; set; } //
-        public string AuthorId { get; set; } //
-        public string AuthorImage { get; set; }
-        public string AuthorName { get; set; }
-        public string Image { get; set; } //
-        public string Excerpt { get; set; } //
-        public DateTime CreationDate { get; set; } //
-        public string Content { get; set; } //
-    }
-    
+{   
     [Route("")]
+    [EnableCors("AllowSpecificOrigin")]
     public class HomeController : Controller
     {
         [HttpGet("")]
+        [EnableCors("AllowSpecificOrigin")]
         public async Task<IActionResult> Index()
         {
             var friend = GrainClient.GrainFactory.GetGrain<ILatestArticleAggregatorGrain>(0);
             var res = await friend.GetLatestArticles();
+            Response.Headers.Add("Access-Control-Allow-Origin", "https://api.github.com"); 
             return View("/Views/Index.cshtml", res ?? new List<ArticleSummary>());
         }
         

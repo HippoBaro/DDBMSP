@@ -1913,3 +1913,137 @@ Usage (In Ghost editor):
         margin-left: 0;
     }
 }
+
+.men-search-blog-exit a, .search-form-field {
+    color: #888;
+    font-weight: 400
+}
+
+.men-search-blog-exit, .men-search-blog-exit a, .menhome-nav-links .menhome-nav-link a,
+.search-form-field {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+}
+
+.search-form, .search-form-field {
+    border: none;
+    font-size: 1.125rem
+}
+
+.search-form {
+    display: block;
+    height: auto;
+    width: 100%;
+    -webkit-animation: fade-in .5s ease-out 1;
+    animation: fade-in .5s ease-out 1
+}
+
+.search-form-field {
+    width: 80%;
+    float: left;
+    display: inline-block
+}
+
+.search-form--is-visible {
+    display: inline-block !important;
+    -webkit-animation: fade-in .5s ease-out 1;
+    animation: fade-in .5s ease-out 1
+}
+
+.men-topbar-vpandcta .nav-menu li.menu-item-home, .men-topbar-vpandcta .nav-menu,
+.search-page {
+    display: none
+}
+
+.men-topbar-vpandcta .nav-menu li:hover .sub-menu li
+a {
+    color: #5a7281
+}
+
+.men-topbar-vpandcta .nav-menu li:hover .sub-menu li a:hover {
+    color: #1799dd
+}
+
+.men-topbar-vpandcta .men-btn-ghost--cta {
+    padding: 9px
+    20px 10px;
+    font-size: 14px;
+    font-weight: 500;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+}
+
+.search-page {
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    top: 0;
+    z-index: 9999;
+    left: 0;
+    background: rgba(255, 255, 255, .97);
+    padding: 100px
+}
+
+.search-page.active {
+    top: 0
+}
+
+.search-page
+.todo {
+    text-align: left;
+    margin-bottom: 50px
+}
+
+.search-page .todo
+span {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    font-size: 15px;
+    line-height: 1.4;
+    letter-spacing: .4px;
+    color: #5a7281;
+    display: block;
+    font-weight: 600
+}
+
+.search-page
+input {
+    height: 66px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    font-size: 50px;
+    text-align: justify;
+    color: #1799DD;
+    width: 100%;
+    background: 0 0;
+    border: none;
+    border-bottom: 1px solid #e0e4ea;
+    font-weight: 300
+}
+
+.search-page ::-webkit-input-placeholder {
+    color: #cdd1d7
+}
+
+.search-page :-moz-placeholder {
+    color: #CDD1D7
+}
+
+.search-page ::-moz-placeholder {
+    color: #CDD1D7
+}
+
+.search-page :-ms-input-placeholder {
+    color: #CDD1D7
+}
+
+.search-page
+.close {
+    background: url(https://mention.com/blog/wp-content/themes/mention/img/icons/stroke.svg) center no-repeat;
+    background-size: contain;
+    height: 19px;
+    width: 19px;
+    margin-bottom: 50px;
+    cursor: pointer
+}
+
+.men-topbar-vpandcta .nav-menu li.menu-item-home, .men-topbar-vpandcta .nav-menu,
+.search-page {
+    display: none
+}

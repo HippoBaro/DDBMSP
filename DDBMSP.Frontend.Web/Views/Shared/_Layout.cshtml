@@ -13,14 +13,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <link rel="stylesheet" type="text/css" href="~/built/screen.css" />
-    
-    <script type="text/javascript" src="https://demo.ghost.io//public/ghost-sdk.min.js"></script>
-    <script type="text/javascript">
-        ghost.init({
-            clientId: "ghost-frontend",
-            clientSecret: "f84a07a72b17"
-        });
-    </script>
+	<script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+	<script type="text/javascript" src="/js/jquery.fitvids.js"></script>
     
 </head>
 
@@ -40,12 +34,32 @@
         </footer>
     </div>
 
-    <script
-        src="https://code.jquery.com/jquery-3.2.1.min.js"
-        integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
-        crossorigin="anonymous">
-    </script>
-    <script type="text/javascript" src="/js/jquery.fitvids.js"></script>
+<script>
+	$(document).ready(function(){
+		// Search popup
+
+		$('.search-mod').click(function(){
+			$('.search-page').fadeIn();
+			$('.search-page .search-form-field').focus();
+		});
+		$('.search-page .close').click(function(){
+			$('.search-page').fadeOut();
+		});
+		count = 2;
+		$('.show-more').click(function(){
+			var total = 6;
+			if (count > total){
+				return false;
+			}else{
+				loadArticle(count);
+				if(count == total){
+					$('.show-more').hide();
+				}
+				count++;
+			}
+		}); 
+	});
+</script>
 
 </body>
 </html>

@@ -19,13 +19,13 @@
         @if (Constants.CurrentPage != "Index")
         {
             if (Constants.BlogLogo != null)
-             {
-                 <a class="site-nav-logo" href="@Constants.BlogUrl"><img src="@Constants.BlogLogo" alt="@Constants.BlogTitle"/></a>
-             }
-             else
-             {
-                 <a class="site-nav-logo" href="@Constants.BlogUrl">@Constants.BlogTitle</a>
-             }
+            {
+                <a class="site-nav-logo" href="@Constants.BlogUrl"><img src="@Constants.BlogLogo" alt="@Constants.BlogTitle"/></a>
+            }
+            else
+            {
+                <a class="site-nav-logo" href="@Constants.BlogUrl">@Constants.BlogTitle</a>
+            }
         }
         @if (ViewData["BlogNavigation"] != null)
         {
@@ -37,4 +37,17 @@
             </ul>
         }
     </div>
+    <div class="site-nav-left">
+        <a class="site-nav-logo search-mod" href="#">Search</a>
+    </div>
 </nav>
+<div class="search-page">
+    <div class="close"></div>
+    <div class="todo">
+        <span>LIVE SEARCH ON ARTICLES, TAGS AND AUTHORS</span>
+    </div>
+    <form role="search" method="get" class="search-form" action="https://mention.com/blog/">
+        <input class="search-form-field" placeholder="Type to search anything..." value="" name="s" title="Search for:"/>
+        <span class="men-search-blog-exit"><a href="" class="men-search-blog-exit-link"><i class="icon icon-clear"></i></a></span>
+    </form>
+</div>

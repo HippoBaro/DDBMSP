@@ -15,7 +15,6 @@ namespace DDBMSP.Grains.Core
 
         public Task<TSummary> Summarize() => State.Summarize();
         public Task<TData> Data() => State.Data();
-        
     }
     
     public class StatefulGrain<TPod, TData> : Grain<TPod>, IStateful<TPod, TData> where TPod : class, IDataOf<TData>, new()

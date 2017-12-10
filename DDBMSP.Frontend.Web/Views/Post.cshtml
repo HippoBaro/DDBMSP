@@ -53,18 +53,18 @@
 
             <footer class="post-full-footer">
                 <section class="author-card">
-                    @if (Model.AuthorImage != null)
+                    @if (Model.Author.Image != null)
                     {
-                        <img class="author-profile-image" src="@Model.AuthorImage" alt="@Model.AuthorName"/>
+                        <img class="author-profile-image" src="@Model.Author.Image" alt="@Model.Author.Name"/>
                     }
                     <section class="author-card-content">
-                        <h4 class="author-card-name"><a href="/author/@Model.Author.GetPrimaryKey()">@Model.AuthorName</a></h4>
-                        <p>Read <a href="/author/@Model.Author.GetPrimaryKey()">more posts</a> by this author.
+                        <h4 class="author-card-name"><a href="/author/@Model.Author.Id">@Model.Author.Name</a></h4>
+                        <p>Read <a href="/author/@Model.Author.Id">more posts</a> by this author.
                         </p>
                     </section>
                 </section>
                 <div class="post-full-footer-right">
-                    <a class="author-card-button" href="@Model.Author.GetPrimaryKey()">Read More</a>
+                    <a class="author-card-button" href="@Model.Author.Id">Read More</a>
                 </div>
             </footer>
             

@@ -2,7 +2,7 @@
 @using DDBMSP.Interfaces.PODs.Article.Components
 @using Orleans
 
-@model IArticleData
+@model ArticleSummary
 
 <article class="post-card post @(Model.Image == null ? "no-image" : null)">
     @if (Model.Image != null)
@@ -27,11 +27,11 @@
         </a>
         <footer class="post-card-meta">
             
-            @if (Model.Image != null)
+            @if (Model.Author.Image != null)
             {
-                <img class="author-profile-image" src="@Model.Image" alt="@Model.AuthorName"/>
+                <img class="author-profile-image" src="@Model.Author.Image" alt="@Model.Author.Name"/>
             }
-            <span class="post-card-author"><a href="/author/@Model.Author.GetPrimaryKey()/">@Model.AuthorName</a></span>
+            <span class="post-card-author"><a href="/author/@Model.Author.Id/">@Model.Author.Name</a></span>
         </footer>
     </div>
 </article>

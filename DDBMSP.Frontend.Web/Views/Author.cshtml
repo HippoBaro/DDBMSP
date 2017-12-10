@@ -1,0 +1,64 @@
+@using System.Collections.Generic
+@using System.Linq
+@using System.Threading.Tasks
+@using DDBMSP.Frontend.Web
+@using DDBMSP.Interfaces.PODs.Article.Components
+@using DDBMSP.Interfaces.PODs.User.Components
+@using Microsoft.AspNetCore.Mvc.Rendering
+
+@model IUserData
+
+ @{
+    ViewData["Title"] = Model.Name;
+    ViewData["BodyStyleClass"] = "tag-template";
+    Constants.CurrentPage = "Author";
+  }
+
+
+<header class="site-header outer @(Constants.BlogCoverImage != null ? "style=\"background-image: url(@Constants.BlogCoverImage)\"" : "no-cover")">
+    <div class="inner">
+        @Html.Partial("/Views/Partials/SiteNav.cshtml")
+        <div class="site-header-content">
+            @if (Model.Image != null)
+            {
+                <img class="author-profile-image" src="@Model.Image" alt="@Model.Name"/>
+            }
+            <h1 class="site-title">@Model.Name</h1>
+            <div class="author-meta">
+                
+                @if (Model.University != null)
+                {
+                    <div class="author-location">@Model.University <span class="bull">&bull;</span>
+                    </div>
+                }
+                
+                @if (Model.Department != null)
+                {
+                    <div class="author-bio"> <span class="bull">&bull;</span>
+                    </div>
+                }
+                @if (Model.Articles.Any())
+                {
+                    <div class="author-stats">@Model.Articles.Count posts<span class="bull">&bull;</span>
+                    </div>
+                }
+                else
+                {
+                    <div class="author-stats">Nothing published yet<span class="bull">&bull;</span>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</header>
+
+<main id="site-main" class="site-main outer" role="main">
+    <div class="inner">
+        <div class="post-feed">
+            @foreach (var post in Model.Articles)
+            {
+                @await Html.PartialAsync("/Views/Partials/PostCard.cshtml", post)
+            }
+        </div>
+    </div>
+</main>

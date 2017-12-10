@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using DDBMSP.Interfaces.Enums;
 using DDBMSP.Interfaces.Grains;
+using DDBMSP.Interfaces.PODs.Article.Components;
 using DDBMSP.Interfaces.PODs.Core;
 
 namespace DDBMSP.Interfaces.PODs.User.Components
 {
-    public interface IUserData : IExist, IComponentOf<IUserData, UserState>
+    public interface IUserData : IExist
     {
         string Name { get; set; }
         string Email { get; set; }
@@ -19,6 +20,6 @@ namespace DDBMSP.Interfaces.PODs.User.Components
         string University { get; set; }
         List<string> PreferedTags { get; set; }
         int ObtainedCredits { get; set; }
-        List<IArticle> Articles { get; set; }
+        List<ArticleSummary> Articles { get; set; }
     }
 }

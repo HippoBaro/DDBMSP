@@ -5,8 +5,8 @@ using Orleans;
 
 namespace DDBMSP.Interfaces.Grains.Aggregators.Articles
 {
-    public interface ILatestArticleByTagAggregatorGrain: IGrainWithIntegerKey, IAggregator<IArticleData>
+    public interface ILatestArticleByTagAggregatorGrain: IGrainWithIntegerKey, IAggregator<ArticleSummary>
     {
-        Task<List<IArticleData>> GetLatestArticlesForTag(string tag, int max = 10);
+        Task<List<ArticleSummary>> GetLatestArticlesForTag(string tag, int max = 10);
     }
 }

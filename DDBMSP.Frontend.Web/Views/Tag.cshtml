@@ -2,8 +2,9 @@
 @using System.Collections.Generic
 @using DDBMSP.Frontend.Web
 @using DDBMSP.Frontend.Web.Controllers
+@using DDBMSP.Interfaces.PODs.Article.Components
 @using Microsoft.AspNetCore.Mvc.Rendering
-@model Tuple<string, List<Post>>
+@model Tuple<string, List<IArticleData>>
 
 @{
     ViewData["Title"] = Model.Item1;

@@ -8,7 +8,7 @@ using DDBMSP.Interfaces.PODs.User.Components;
 
 namespace DDBMSP.Interfaces.PODs.User
 {
-    public class UserState : IExist, IUserData, ISummarizableTo<IUserData>
+    public class UserState : IUserData, ISummarizableTo<IUserData>
     {
         public bool Exists { get; set; }
         public Guid Id { get; set; }

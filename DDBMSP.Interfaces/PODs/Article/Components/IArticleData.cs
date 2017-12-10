@@ -6,7 +6,7 @@ using DDBMSP.Interfaces.PODs.Core;
 
 namespace DDBMSP.Interfaces.PODs.Article.Components
 {
-    public interface IArticleData : IComponentOf<IArticleData, ArticleState>
+    public interface IArticleData : IExist, IComponentOf<IArticleData, ArticleState>
     {
         DateTime CreationDate { get; set; }
         string Title { get; set; }
@@ -14,9 +14,12 @@ namespace DDBMSP.Interfaces.PODs.Article.Components
         string Abstract { get; set; }
         List<string> Tags { get; set; }
         IUser Author { get; set; }
+        string AuthorImage { get; set; }
+        string AuthorName { get; set; }
         Language Language { get; set; }
-        Uri ContentTextUri { get; set; }
-        Uri ContentImageUri { get; set; }
-        Uri ContentVideoUri { get; set; }
+        string Content { get; set; }
+        Uri Image { get; set; }
+        Uri Video { get; set; }
+        
     }
 }

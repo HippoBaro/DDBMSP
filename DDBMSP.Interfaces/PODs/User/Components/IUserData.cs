@@ -3,7 +3,7 @@ using DDBMSP.Interfaces.PODs.Core;
 
 namespace DDBMSP.Interfaces.PODs.User.Components
 {
-    public interface IUserData : IAuthorArticleReferencesData, IComponentOf<IUserData, UserState>
+    public interface IUserData : IExist, IAuthorArticleReferencesData, IComponentOf<IUserData, UserState>
     {
         string Name { get; set; }
         string Email { get; set; }

@@ -1,5 +1,10 @@
-﻿using Microsoft.AspNetCore;
+﻿using System;
+using System.Threading;
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
+using Orleans;
+using Orleans.Runtime;
+using Orleans.Runtime.Configuration;
 
 namespace DDBMSP.Frontend.Web
 {
@@ -18,6 +23,7 @@ namespace DDBMSP.Frontend.Web
     {
         public static void Main(string[] args)
         {
+            InitializeWithRetries(ClientConfiguration.LocalhostSilo(), 10);
             BuildWebHost(args).Run();
         }
 
@@ -25,5 +31,31 @@ namespace DDBMSP.Frontend.Web
             WebHost.CreateDefaultBuilder(args)
                 .UseStartup<Startup>()
                 .Build();
+        
+        private static void InitializeWithRetries(ClientConfiguration config, int initializeAttemptsBeforeFailing)
+        {
+            var attempt = 0;
+            while (true)
+            {
+                try
+                {
+                    GrainClient.Initialize(config);
+                    Console.WriteLine("Client successfully connect to silo host");
+                    break;
+                }
+                catch (SiloUnavailableException)
+                {
+                    attempt++;
+                    Console.WriteLine($"Attempt {attempt} of {initializeAttemptsBeforeFailing} failed to initialize the Orleans client.");
+                    if (attempt > initializeAttemptsBeforeFailing)
+                    {
+                        throw;
+                    }
+                    Thread.Sleep(TimeSpan.FromSeconds(2));
+                }
+            }
+        }
     }
+    
+    
 }

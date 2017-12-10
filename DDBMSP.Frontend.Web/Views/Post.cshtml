@@ -1,9 +1,11 @@
 @using System.Linq
 @using CommonMark
 @using DDBMSP.Frontend.Web
-@using DDBMSP.Frontend.Web.Controllers
+@using DDBMSP.Interfaces.PODs.Article.Components
 @using Microsoft.AspNetCore.Mvc.Rendering
-@model Post
+@using Orleans
+
+@model IArticleData
 
 @{
     ViewData["Title"] = @Model.Title;
@@ -25,7 +27,7 @@
             <header class="post-full-header">
                 <section class="post-full-meta">
                     <time class="post-full-meta-date" datetime="@Model.CreationDate.ToString("dd MMMM yyyy")">@Model.CreationDate.ToString("dd MMMM yyyy")</time>
-                        @if (Model.Tags.Any())
+                        @if (Model.Tags != null && Model.Tags.Any())
                         {
                             <span class="date-divider">/</span>
                             foreach (var tag in Model.Tags)
@@ -56,13 +58,13 @@
                         <img class="author-profile-image" src="@Model.AuthorImage" alt="@Model.AuthorName"/>
                     }
                     <section class="author-card-content">
-                        <h4 class="author-card-name"><a href="@Model.AuthorId">@Model.AuthorName</a></h4>
-                        <p>Read <a href="@Model.AuthorId">more posts</a> by this author.
+                        <h4 class="author-card-name"><a href="/author/@Model.Author.GetPrimaryKey()">@Model.AuthorName</a></h4>
+                        <p>Read <a href="/author/@Model.Author.GetPrimaryKey()">more posts</a> by this author.
                         </p>
                     </section>
                 </section>
                 <div class="post-full-footer-right">
-                    <a class="author-card-button" href="@Model.AuthorId">Read More</a>
+                    <a class="author-card-button" href="@Model.Author.GetPrimaryKey()">Read More</a>
                 </div>
             </footer>
             

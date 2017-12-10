@@ -8,7 +8,7 @@ using DDBMSP.Interfaces.PODs.Core;
 
 namespace DDBMSP.Interfaces.PODs.Article
 {
-    public class ArticleState : IExist, IArticleData, ISummarizableTo<IArticleData>
+    public class ArticleState : IArticleData, ISummarizableTo<IArticleData>
     {
         public bool Exists { get; set; }
         public Guid Id { get; set; }
@@ -19,10 +19,12 @@ namespace DDBMSP.Interfaces.PODs.Article
         public string Abstract { get; set; }
         public List<string> Tags { get; set; }
         public IUser Author { get; set; }
+        public string AuthorImage { get; set; }
+        public string AuthorName { get; set; }
         public Language Language { get; set; }
-        public Uri ContentTextUri { get; set; }
-        public Uri ContentImageUri { get; set; }
-        public Uri ContentVideoUri { get; set; }
+        public string Content { get; set; }
+        public Uri Image { get; set; }
+        public Uri Video { get; set; }
         
         public void Populate(IArticleData component)
         {
@@ -32,10 +34,12 @@ namespace DDBMSP.Interfaces.PODs.Article
             Abstract = component.Abstract;
             Tags = component.Tags;
             Author = component.Author;
+            AuthorImage = component.AuthorImage;
+            AuthorName = component.AuthorName;
             Language = component.Language;
-            ContentTextUri = component.ContentTextUri;
-            ContentImageUri = component.ContentImageUri;
-            ContentVideoUri = component.ContentVideoUri;
+            Content = component.Content;
+            Image = component.Image;
+            Video = component.Video;
         }
 
         public Task<IArticleData> Summarize() => Task.FromResult((IArticleData)this);

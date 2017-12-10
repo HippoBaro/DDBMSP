@@ -11,7 +11,7 @@ using Orleans;
 namespace DDBMSP.Interfaces.Grains
 {
     [JsonConverter(typeof(GrainToGuidConverter))]
-    public interface IUser : IGrainWithGuidKey, IResource<UserState, IUserData>
+    public interface IUser : IGrainWithGuidKey, IResource<UserState, IUserData, UserSummary>
     {
         Task<Guid> AuthorNewArticle(IArticleData articleData);
     }

@@ -6,4 +6,9 @@ namespace DDBMSP.Interfaces.PODs.Core
     {
         Task<TSummary> Summarize();
     }
+    
+    public interface IDataOf<TData>
+    {
+        Task<TData> Data();
+    }
 }

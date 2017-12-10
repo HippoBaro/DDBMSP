@@ -39,12 +39,25 @@ namespace DDBMSP.Frontend.Web.Controllers
         {
             var friend = GrainClient.GrainFactory.GetGrain<IArticle>(articleId);
             var exist = friend.Exits();
-            var sum = friend.Summarize();
+            var sum = friend.Data();
             
             if (!await exist)
                 return NotFound();
             
             return View("/Views/Post.cshtml", await sum);
+        }
+        
+        [Route("author/{authorId}")]
+        public async Task<IActionResult> Tag(Guid authorId)
+        {
+            var friend = GrainClient.GrainFactory.GetGrain<IUser>(authorId);
+            var exist = friend.Exits();
+            var sum = friend.Data();
+            
+            if (!await exist)
+                return NotFound();
+            
+            return View("/Views/Author.cshtml", await sum);
         }
 
         [Route("tag/{tag}")]

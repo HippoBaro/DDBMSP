@@ -9,7 +9,7 @@ using Orleans;
 
 namespace DDBMSP.Grains
 {
-    public class Article : ResourceGrain<ArticleState, IArticleData>, IArticle
+    public class Article : ResourceGrain<ArticleState, IArticleData, ArticleSummary>, IArticle
     {
         private IArticleAggregatorHubGrain ArticleAggregatorHub => GrainFactory.GetGrain<IArticleAggregatorHubGrain>(0);
         

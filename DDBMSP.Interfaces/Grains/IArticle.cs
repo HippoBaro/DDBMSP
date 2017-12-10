@@ -9,7 +9,7 @@ using Orleans;
 namespace DDBMSP.Interfaces.Grains
 {
     [JsonConverter(typeof(GrainToGuidConverter))]
-    public interface IArticle : IGrainWithGuidKey, IResource<ArticleState, IArticleData>
+    public interface IArticle : IGrainWithGuidKey, IResource<ArticleState, IArticleData, ArticleSummary>
     {
         Task CreateFromAuthorAndData(IUser user, IArticleData data);
     }

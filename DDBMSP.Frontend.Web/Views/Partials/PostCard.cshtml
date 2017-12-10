@@ -26,11 +26,11 @@
             </section>
         </a>
         <footer class="post-card-meta">
-            @*
-            {{#if author.profile_image}}
-            <img class="author-profile-image" src="{{author.profile_image}}" alt="{{author.name}}"/>
-            {{/if}}
-            *@
+            
+            @if (Model.Image != null)
+            {
+                <img class="author-profile-image" src="@Model.Image" alt="@Model.AuthorName"/>
+            }
             <span class="post-card-author"><a href="/author/@Model.Author.GetPrimaryKey()/">@Model.AuthorName</a></span>
         </footer>
     </div>

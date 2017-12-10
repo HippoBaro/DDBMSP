@@ -8,7 +8,7 @@ using DDBMSP.Interfaces.PODs.Core;
 
 namespace DDBMSP.Interfaces.PODs.Article
 {
-    public class ArticleState : IArticleData, ISummarizableTo<IArticleData>
+    public class ArticleState : IArticleData, IDataOf<IArticleData>, IArticleSummary, ISummarizableTo<ArticleSummary>
     {
         public bool Exists { get; set; }
         public Guid Id { get; set; }
@@ -41,8 +41,28 @@ namespace DDBMSP.Interfaces.PODs.Article
             Image = component.Image;
             Video = component.Video;
         }
-
-        public Task<IArticleData> Summarize() => Task.FromResult((IArticleData)this);
         
+        public Task<IArticleData> Data() => Task.FromResult((IArticleData)this);
+
+        public void Populate(IArticleSummary component)
+        {
+            Exists = component.Exists;
+            Id = component.Id;
+            CreationDate = component.CreationDate;
+            Title = component.Title;
+            Abstract = component.Abstract;
+            Tags.AddRange(component.Tags);
+            Author = component.Author;
+            AuthorImage = component.AuthorImage;
+            AuthorName = component.AuthorName;
+            Image = component.Image;
+        }
+
+        Task<ArticleSummary> ISummarizableTo<ArticleSummary>.Summarize()
+        {
+            var res = new ArticleSummary();
+            res.Populate(this);
+            return Task.FromResult(res);
+        }
     }
 }

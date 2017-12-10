@@ -9,7 +9,7 @@ using Orleans;
 
 namespace DDBMSP.Grains
 {
-    public class User : ResourceGrain<UserState, IUserData>, IUser
+    public class User : ResourceGrain<UserState, IUserData, UserSummary>, IUser
     {
         public Task<Guid> AuthorNewArticle(IArticleData articleData)
         {

@@ -1,0 +1,35 @@
+@using System
+@using System.Collections.Generic
+@using DDBMSP.Frontend.Web
+@using DDBMSP.Frontend.Web.Controllers
+@using Microsoft.AspNetCore.Mvc.Rendering
+@model Tuple<string, List<Post>>
+
+@{
+    ViewData["Title"] = Model.Item1;
+    ViewData["BodyStyleClass"] = "tag-template";
+    Constants.CurrentPage = "Tag";
+}
+
+<header class="site-header outer @(Constants.BlogCoverImage != null ? "style=\"background-image: url(@Constants.BlogCoverImage)\"" : "no-cover")">
+    <div class="inner">
+        @Html.Partial("/Views/Partials/SiteNav.cshtml")
+        <div class="site-header-content">
+            <h1 class="site-title">@Model.Item1</h1>
+            <h2 class="site-description">
+                A collection of @Model.Item2.Count posts
+            </h2>
+        </div>
+    </div>
+</header>
+
+<main id="site-main" class="site-main outer" role="main">
+    <div class="inner">
+        <div class="post-feed">
+            @foreach (var post in Model.Item2)
+            {
+                @Html.Partial("/Views/Partials/PostCard.cshtml", post)
+            }
+        </div>
+    </div>
+</main>

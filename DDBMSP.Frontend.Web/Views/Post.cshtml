@@ -6,7 +6,8 @@
 @model Post
 
 @{
-    ViewData["BodyStyleClass"] = "post-template";
+    ViewData["Title"] = @Model.Title;
+    ViewData["BodyStyleClass"] = "tag-template";
     Constants.CurrentPage = "Post";
 }
 
@@ -29,7 +30,7 @@
                             <span class="date-divider">/</span>
                             foreach (var tag in Model.Tags)
                              {
-                                 <a href="http://localhost:5000">@tag</a>
+                                 <a href="http://localhost:5000/tag/@tag">@tag</a>
                              }
                         }
                 </section>

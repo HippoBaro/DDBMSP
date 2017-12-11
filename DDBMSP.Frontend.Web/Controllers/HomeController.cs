@@ -29,17 +29,29 @@ namespace DDBMSP.Frontend.Web.Controllers
         [Route("post/{articleId}")]
         public async Task<IActionResult> Article(Guid articleId)
         {
-            var friend = GrainClient.GrainFactory.GetGrain<IDistributedHashTable<Guid, ArticleState>>(0).Get(articleId);
-            
-            return View("/Views/Post.cshtml", (await friend).Value);
+            try
+            {
+                var article = await GrainClient.GrainFactory.GetGrain<IDistributedHashTable<Guid, ArticleState>>(0).Get(articleId);
+                return View("/Views/Post.cshtml", article.Value);
+            }
+            catch (Exception e)
+            {
+                return NotFound();
+            }
         }
         
         [Route("author/{authorId}")]
         public async Task<IActionResult> Tag(Guid authorId)
         {
-            var friend = GrainClient.GrainFactory.GetGrain<IDistributedHashTable<Guid, UserState>>(0).Get(authorId);
-            
-            return View("/Views/Author.cshtml", (await friend).Value);
+            try
+            {
+                var user = await GrainClient.GrainFactory.GetGrain<IDistributedHashTable<Guid, UserState>>(0).Get(authorId);
+                return View("/Views/Author.cshtml", user.Value);
+            }
+            catch (Exception e)
+            {
+                return NotFound();
+            }
         }
 
         [Route("tag/{tag}")]

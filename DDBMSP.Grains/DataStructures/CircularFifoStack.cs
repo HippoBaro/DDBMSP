@@ -2,16 +2,16 @@
 
 namespace DDBMSP.Grains.DataStructures
 {
-    public class CircularFifoStack<T> : LinkedList<T>
+    public class CircularFifoStack<T> : Queue<T>
     {
         private const int Size = 100;
 
         public void Push(T obj)
         {
-            AddFirst(obj);
+            Enqueue(obj);
             while (Count > Size)
             {
-                RemoveLast();
+                Dequeue();
             }
         }
     }

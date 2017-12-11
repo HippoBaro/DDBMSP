@@ -1,15 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using DDBMSP.Interfaces.Enums;
 using DDBMSP.Interfaces.Grains;
+using DDBMSP.Interfaces.Grains.Core.DistributedHashTable;
+using DDBMSP.Interfaces.Grains.Workers;
 using DDBMSP.Interfaces.PODs.Article;
+using DDBMSP.Interfaces.PODs.Article.Components;
 using DDBMSP.Interfaces.PODs.User;
 using Orleans;
 using Orleans.Runtime;
 using Orleans.Runtime.Configuration;
+using Orleans.Serialization;
 
 namespace DDBMSP.TestClient
 {
@@ -18,6 +24,7 @@ namespace DDBMSP.TestClient
         static int Main(string[] args)
         {
             var config = ClientConfiguration.LocalhostSilo();
+            config.FallbackSerializationProvider = typeof(ILBasedSerializer).GetTypeInfo();
             try
             {
                 InitializeWithRetries(config, initializeAttemptsBeforeFailing: 5);
@@ -30,7 +37,7 @@ namespace DDBMSP.TestClient
                 return 1;
             }
 
-            DoClientWork(10, 200).Wait();
+            DoClientWork(10000, 20).Wait();
             Console.WriteLine("Press Enter to terminate...");
             Console.ReadLine();
             return 0;
@@ -60,37 +67,65 @@ namespace DDBMSP.TestClient
             }
         }
 
+        private static double Percentile(List<int> sequence, double excelPercentile)
+        {
+            sequence.Sort();
+            int N = sequence.Count;
+            double n = (N - 1) * excelPercentile + 1;
+            // Another method: double n = (N + 1) * excelPercentile;
+            if (n == 1d) return sequence[0];
+            if (n == N) return sequence[N - 1];
+            
+            int k = (int)n;
+            double d = n - k;
+            return sequence[k - 1] + d * (sequence[k] - sequence[k - 1]);
+        }
+
         private static async Task DoClientWork(int userToCreate, int articlePerUser)
         {
             Console.WriteLine("Ready to populate cluster, press Enter to start.");
             Console.ReadLine();
 
+            var latencies = new List<int>();
+
             var sw = Stopwatch.StartNew();
-            
-            for (int i = 0; i < userToCreate; i++)
+
+            var user = new Func<Task>(async () =>
             {
-                var tasks = new List<Task>(articlePerUser);
-                try
+                var articles = new ArticleState[articlePerUser];
+                var userId = await NewUser();
+                for (var j = 0; j < articlePerUser; j++)
                 {
-                    var userId = await NewUser();
-                    for (var j = 0; j < articlePerUser; j++)
-                    {
-                        tasks.Add(NewArticle(userId));
-                    }
-                    await Task.WhenAll(tasks);
-                    Console.WriteLine($"{i}/{userToCreate} — {(float)i/(float)userToCreate*(float)100}% — {sw.Elapsed:c}");
+                    articles[j] = CreateArticle();
                 }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                }
+
+                await GrainClient.GrainFactory.GetGrain<IArticleDispatcher>(0).DispatchNewArticlesFromAuthor(userId, articles);
+            });
+            
+            for (int i = 0; i < userToCreate / 8; i++)
+            {
+                var t = Stopwatch.StartNew();
+                await Task.WhenAll(user(), user(), user(), user(), user(), user(), user(), user());
+                t.Stop();
+                latencies.Add((int)t.ElapsedMilliseconds);
+                Console.WriteLine($"{i*8}/{userToCreate} — {(float)i*8/(float)userToCreate*(float)100}% — {sw.Elapsed:c}");
+            }
+            for (int i = 0; i < userToCreate % 8; i++)
+            {
+                await user();
             }
             sw.Stop();
             Console.WriteLine($"Done!\nTotal time {sw.Elapsed:c}");
+            var usageArticle = await GrainClient.GrainFactory.GetGrain<IDistributedHashTable<Guid, ArticleState>>(0).GetBucketUsage();
+            var totalArticle = await GrainClient.GrainFactory.GetGrain<IDistributedHashTable<Guid, ArticleState>>(0).Count();
+            Console.WriteLine($"Articles: Total = {totalArticle} Avr = {usageArticle.Average(item => item)}, Min = {usageArticle.Min(item => item)}, Max = {usageArticle.Max(item => item)} (delta = {usageArticle.Max(item => item) - usageArticle.Min(item => item)})");
+            var usageUser = await GrainClient.GrainFactory.GetGrain<IDistributedHashTable<Guid, UserState>>(0).GetBucketUsage();
+            var totalUser = await GrainClient.GrainFactory.GetGrain<IDistributedHashTable<Guid, UserState>>(0).Count();
+            Console.WriteLine($"Users: Total = {totalUser} Avr = {usageUser.Average(item => item)}, Min = {usageUser.Min(item => item)}, Max = {usageUser.Max(item => item)} (delta = {usageUser.Max(item => item) - usageUser.Min(item => item)})");
+            Console.WriteLine($"Latency: Min = {latencies.Min()} ms, Max = {latencies.Max()} ms, Average = {latencies.Average()} ms, 95 percentile = {Percentile(latencies, .95)} ms, 99 percentile = {Percentile(latencies, .99)} ms");
         }
 
-
-        static Task<Guid> NewUser()
+        static async Task<UserState> NewUser()
         {
             string GenerateRandomName() =>
                 $"{LasttNameList[random.Next(LasttNameList.Count)]} {SurNameList[random.Next(SurNameList.Count)]}";
@@ -105,53 +140,46 @@ namespace DDBMSP.TestClient
                     Name = GenerateRandomName(),
                     PreferedLanguage = random.Next(2) > 0 ? Language.English : Language.Mandarin,
                     Region = random.Next(2) > 0 ? Region.HongKong : Region.MainlandChina,
-                    University = UniversityList[random.Next(UniversityList.Count)]
+                    University = UniversityList[random.Next(UniversityList.Count)],
+                    Articles = new List<ArticleSummary>()
                 };
             }
 
             var id = Guid.NewGuid();
-            var friend = GrainClient.GrainFactory.GetGrain<IUser>(id);
+            var dict = GrainClient.GrainFactory.GetGrain<IDistributedHashTable<Guid, UserState>>(0);
             var state = CreateUser();
             state.Exists = true;
             state.Id = id;
-            return friend.SetState(state).ContinueWith(task => id);
+            await dict.Set(state.Id, state);
+            return state;
         }
 
-        static async Task NewArticle(Guid userId)
+        static ArticleState CreateArticle()
         {
-            ArticleState CreateArticle()
+            List<string> GetTagList()
             {
-                List<string> getTagList()
+                var ret = new List<string>();
+                if (random.Next(10) > 1)
                 {
-                    var ret = new List<string>();
-                    if (random.Next(10) > 1)
-                    {
-                        ret.Add(TagsList[random.Next(TagsList.Count)]);
-                        ret.Add(TagsList[random.Next(TagsList.Count)]);
-                        return ret;
-                    }
+                    ret.Add(TagsList[random.Next(TagsList.Count)]);
                     ret.Add(TagsList[random.Next(TagsList.Count)]);
                     return ret;
                 }
-                
-                return new ArticleState
-                {
-                    Abstract = ExcerptsList[random.Next(ExcerptsList.Count)],
-                    Content = Contents[random.Next(Contents.Count)],
-                    Image = new Uri(ImagesList[random.Next(ImagesList.Count)]),
-                    Language = random.Next(2) > 0 ? Language.English : Language.Mandarin,
-                    Tags = getTagList(),
-                    Title = TitleList[random.Next(TitleList.Count)],
-                    Catergory = random.Next(2) > 0 ? ArticleCategory.Science : ArticleCategory.Technology,
-                };
+                ret.Add(TagsList[random.Next(TagsList.Count)]);
+                return ret;
             }
-            
-            var friend = GrainClient.GrainFactory.GetGrain<IUser>(userId);
-            if (!await friend.Exits())
-                throw new Exception("User does not exist");
-            await friend.AuthorNewArticle(CreateArticle());
+                
+            return new ArticleState
+            {
+                Abstract = ExcerptsList[random.Next(ExcerptsList.Count)],
+                Content = Contents[random.Next(Contents.Count)],
+                Image = new Uri(ImagesList[random.Next(ImagesList.Count)]),
+                Language = random.Next(2) > 0 ? Language.English : Language.Mandarin,
+                Tags = GetTagList(),
+                Title = TitleList[random.Next(TitleList.Count)],
+                Catergory = random.Next(2) > 0 ? ArticleCategory.Science : ArticleCategory.Technology,
+            };
         }
-        
         
         static Random random = new Random();
 

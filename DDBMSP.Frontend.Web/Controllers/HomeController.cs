@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using DDBMSP.Interfaces.Grains;
 using DDBMSP.Interfaces.Grains.Aggregators.Articles;
+using DDBMSP.Interfaces.Grains.Core.DistributedHashTable;
+using DDBMSP.Interfaces.PODs.Article;
 using DDBMSP.Interfaces.PODs.Article.Components;
+using DDBMSP.Interfaces.PODs.User;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -28,27 +31,17 @@ namespace DDBMSP.Frontend.Web.Controllers
         [Route("post/{articleId}")]
         public async Task<IActionResult> Article(Guid articleId)
         {
-            var friend = GrainClient.GrainFactory.GetGrain<IArticle>(articleId);
-            var exist = friend.Exits();
-            var sum = friend.Data();
+            var friend = GrainClient.GrainFactory.GetGrain<IDistributedHashTable<Guid, ArticleState>>(0).Get(articleId);
             
-            if (!await exist)
-                return NotFound();
-            
-            return View("/Views/Post.cshtml", await sum);
+            return View("/Views/Post.cshtml", (await friend).Value);
         }
         
         [Route("author/{authorId}")]
         public async Task<IActionResult> Tag(Guid authorId)
         {
-            var friend = GrainClient.GrainFactory.GetGrain<IUser>(authorId);
-            var exist = friend.Exits();
-            var sum = friend.Data();
+            var friend = GrainClient.GrainFactory.GetGrain<IDistributedHashTable<Guid, UserState>>(0).Get(authorId);
             
-            if (!await exist)
-                return NotFound();
-            
-            return View("/Views/Author.cshtml", await sum);
+            return View("/Views/Author.cshtml", (await friend).Value);
         }
 
         [Route("tag/{tag}")]

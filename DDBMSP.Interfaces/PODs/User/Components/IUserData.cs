@@ -7,7 +7,7 @@ using DDBMSP.Interfaces.PODs.Core;
 
 namespace DDBMSP.Interfaces.PODs.User.Components
 {
-    public interface IUserData : IExist
+    public interface IUserData : IExist, ISummarizableTo<UserSummary>
     {
         string Name { get; set; }
         string Email { get; set; }
@@ -21,5 +21,7 @@ namespace DDBMSP.Interfaces.PODs.User.Components
         List<string> PreferedTags { get; set; }
         int ObtainedCredits { get; set; }
         List<ArticleSummary> Articles { get; set; }
+
+        UserSummary SummarizeLocal();
     }
 }

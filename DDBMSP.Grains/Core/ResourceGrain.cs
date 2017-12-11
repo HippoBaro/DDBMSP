@@ -5,7 +5,7 @@ using Orleans;
 
 namespace DDBMSP.Grains.Core
 {
-    public class ResourceGrain<TState, TData, TSummary> : StatefulGrain<TState, TData, TSummary>, IResource<TState, TData, TSummary> where TState : class, IDataOf<TData>, ISummarizableTo<TSummary>, IExist, new()
+    public class ResourceGrain<TState, TData, TSummary> : StatefulGrain<TState, TData, TSummary>, IResource<TState, TData, TSummary> where TState : IDataOf<TData>, ISummarizableTo<TSummary>, IExist, IComposedBy<TState, TData>, new()
     {
         public Task Create()
         {
@@ -17,7 +17,7 @@ namespace DDBMSP.Grains.Core
         public Task<bool> Exits() => Task.FromResult(State.Exists);
     }
     
-    public class ResourceGrain<TState, TData> : StatefulGrain<TState, TData>, IResource<TState, TData> where TState : class, IDataOf<TData>, IExist, new()
+    public class ResourceGrain<TState, TData> : StatefulGrain<TState, TData>, IResource<TState, TData> where TState : class, TData, IDataOf<TData>, IExist, IComposedBy<TState, TData>, new()
     {
         public Task Create()
         {

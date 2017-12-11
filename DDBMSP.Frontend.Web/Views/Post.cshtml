@@ -29,9 +29,9 @@
                     <time class="post-full-meta-date" datetime="@Model.CreationDate.ToString("dd MMMM yyyy")">@Model.CreationDate.ToString("dd MMMM yyyy")</time>
                         @if (Model.Tags != null && Model.Tags.Any())
                         {
-                            <span class="date-divider">/</span>
                             foreach (var tag in Model.Tags)
                              {
+                                 <span class="date-divider">/</span>
                                  <a href="http://localhost:5000/tag/@tag">@tag</a>
                              }
                         }
@@ -67,7 +67,7 @@
                     <a class="author-card-button" href="@Model.Author.Id">Read More</a>
                 </div>
             </footer>
-            
+
         </article>
     </div>
 </main>

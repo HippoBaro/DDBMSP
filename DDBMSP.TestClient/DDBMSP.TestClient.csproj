@@ -8,5 +8,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Orleans.Client" Version="2.0.0-preview4-20171025" />
+    <PackageReference Include="Microsoft.Orleans.OrleansGoogleUtils" Version="2.0.0-beta1" />
+    <PackageReference Include="Microsoft.Orleans.Serialization.Bond" Version="2.0.0-beta1" />
   </ItemGroup>
 </Project>

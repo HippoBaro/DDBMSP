@@ -9,7 +9,7 @@ using DDBMSP.Interfaces.PODs.User;
 using Microsoft.AspNetCore.Mvc;
 using Orleans;
 
-namespace DDBMSP.Frontend.Web.Controllers.APIs
+namespace DDBMSP.Frontend.Web.Controllers
 {
     
     [Route("api/test")]

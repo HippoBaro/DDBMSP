@@ -19,7 +19,7 @@ namespace DDBMSP.Grains
             _articleAggregatorHubGrain ??
             (_articleAggregatorHubGrain = GrainFactory.GetGrain<IArticleAggregatorHubGrain>(0));
 
-        public Task<Guid> AuthorNewArticle(IArticleData articleData)
+        public async Task<Guid> AuthorNewArticle(IArticleData articleData)
         {
             var article = GrainFactory.GetGrain<IArticle>(Guid.NewGuid());
 
@@ -32,8 +32,11 @@ namespace DDBMSP.Grains
             var summary = articleState.SummarizeLocal();
             State.Articles.Add(summary);
 
-            return Task.WhenAll(ArticleAggregatorHub.Aggregate(summary), WriteStateAsync(), article.SetState(articleState))
-                .ContinueWith(task => article.GetPrimaryKey());
+            //await WriteStateAsync();
+            await article.SetState(articleState, false);
+            //await ArticleAggregatorHub.Aggregate(summary);
+            var id = article.GetPrimaryKey();
+            return id;
         }
     }
 }

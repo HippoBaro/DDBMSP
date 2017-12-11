@@ -25,6 +25,22 @@ namespace DDBMSP.Interfaces.PODs.Article
         public Uri Video { get; set; }
 
         public Task<IArticleData> Data() => Task.FromResult(DataLocal());
+
+        Task IDataOf<IArticleData>.Populate(IArticleData component, bool persist)
+        {
+            CreationDate = component.CreationDate;
+            Title = component.Title;
+            Catergory = component.Catergory;
+            Abstract = component.Abstract;
+            Tags = component.Tags;
+            Author = component.Author;
+            Language = component.Language;
+            Content = component.Content;
+            Image = component.Image;
+            Video = component.Video;
+            return Task.CompletedTask;
+        }
+
         public IArticleData DataLocal() => this;
 
         public Task<ArticleSummary> Summarize() => Task.FromResult(SummarizeLocal());

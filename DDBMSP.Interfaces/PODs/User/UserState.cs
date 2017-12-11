@@ -28,6 +28,23 @@ namespace DDBMSP.Interfaces.PODs.User
         public List<ArticleSummary> Articles { get; set; } = new List<ArticleSummary>();
 
         public Task<IUserData> Data() => Task.FromResult(DataLocal());
+        public Task Populate(IUserData component, bool persist)
+        {
+            Name = component.Name;
+            Email = component.Email;
+            Gender = component.Gender;
+            Phone = component.Phone;
+            Region = component.Region;
+            PreferedLanguage = component.PreferedLanguage;
+            Image = component.Image;
+            Department = component.Department;
+            University = component.University;
+            PreferedTags = component.PreferedTags;
+            ObtainedCredits = component.ObtainedCredits;
+            Articles = component.Articles;
+            return Task.CompletedTask;
+        }
+
         public IUserData DataLocal() => this;
 
         public Task<UserSummary> Summarize() => Task.FromResult(SummarizeLocal());
@@ -48,6 +65,11 @@ namespace DDBMSP.Interfaces.PODs.User
             ObtainedCredits = component.ObtainedCredits;
             Articles = component.Articles;
             return this;
+        }
+
+        UserState IComposedBy<UserState, IUserData>.Populate(IUserData component)
+        {
+            return Populate(component);
         }
     }
 }

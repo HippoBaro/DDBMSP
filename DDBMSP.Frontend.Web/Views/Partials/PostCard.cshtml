@@ -7,7 +7,7 @@
 <article class="post-card post @(Model.Image == null ? "no-image" : null)">
     @if (Model.Image != null)
     {
-        <a class="post-card-image-link" href="@Model.Id">
+        <a class="post-card-image-link" href="/post/@Model.Id">
             <div class="post-card-image" style="background-image: url(@Model.Image)"></div>
         </a>
     }

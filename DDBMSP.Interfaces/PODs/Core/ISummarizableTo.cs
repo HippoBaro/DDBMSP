@@ -10,5 +10,6 @@ namespace DDBMSP.Interfaces.PODs.Core
     public interface IDataOf<TData>
     {
         Task<TData> Data();
+        Task Populate(TData component, bool persist = true);
     }
 }

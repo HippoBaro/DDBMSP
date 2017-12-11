@@ -46,7 +46,7 @@
 
             <section class="post-full-content">
                 <div class="kg-card-markdown">
-                    @Html.Raw(CommonMarkConverter.Convert(@Model.Content))
+                    @Html.Raw(CommonMarkConverter.Convert(Model.Content))
                 </div>
             </section>
 
@@ -63,7 +63,7 @@
                     </section>
                 </section>
                 <div class="post-full-footer-right">
-                    <a class="author-card-button" href="@Model.Author.Id">Read More</a>
+                    <a class="author-card-button" href="/author/@Model.Author.Id">Read More</a>
                 </div>
             </footer>
 

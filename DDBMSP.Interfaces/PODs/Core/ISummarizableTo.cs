@@ -1,15 +1,7 @@
-﻿using System.Threading.Tasks;
-
-namespace DDBMSP.Interfaces.PODs.Core
+﻿namespace DDBMSP.Interfaces.PODs.Core
 {
-    public interface ISummarizableTo<TSummary>
+    public interface ISummarizableTo<out TSummary>
     {
-        Task<TSummary> Summarize();
-    }
-    
-    public interface IDataOf<TData>
-    {
-        Task<TData> Data();
-        Task Populate(TData component, bool persist = true);
+        TSummary Summarize();
     }
 }

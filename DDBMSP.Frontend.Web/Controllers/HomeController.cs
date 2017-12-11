@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using DDBMSP.Interfaces.Grains;
 using DDBMSP.Interfaces.Grains.Aggregators.Articles;
 using DDBMSP.Interfaces.Grains.Core.DistributedHashTable;
 using DDBMSP.Interfaces.PODs.Article;
@@ -9,7 +8,6 @@ using DDBMSP.Interfaces.PODs.Article.Components;
 using DDBMSP.Interfaces.PODs.User;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
 using Orleans;
 
 namespace DDBMSP.Frontend.Web.Controllers

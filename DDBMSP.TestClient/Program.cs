@@ -6,7 +6,6 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using DDBMSP.Interfaces.Enums;
-using DDBMSP.Interfaces.Grains;
 using DDBMSP.Interfaces.Grains.Core.DistributedHashTable;
 using DDBMSP.Interfaces.Grains.Workers;
 using DDBMSP.Interfaces.PODs.Article;
@@ -24,7 +23,7 @@ namespace DDBMSP.TestClient
         static int Main(string[] args)
         {
             var config = ClientConfiguration.LocalhostSilo();
-            config.FallbackSerializationProvider = typeof(ILBasedSerializer).GetTypeInfo();
+            config.SerializationProviders.Add(typeof(ProtobufSerializer).GetTypeInfo());
             try
             {
                 InitializeWithRetries(config, initializeAttemptsBeforeFailing: 5);
@@ -37,7 +36,7 @@ namespace DDBMSP.TestClient
                 return 1;
             }
 
-            DoClientWork(10000, 20).Wait();
+            DoClientWork(10, 20).Wait();
             Console.WriteLine("Press Enter to terminate...");
             Console.ReadLine();
             return 0;
@@ -148,7 +147,6 @@ namespace DDBMSP.TestClient
             var id = Guid.NewGuid();
             var dict = GrainClient.GrainFactory.GetGrain<IDistributedHashTable<Guid, UserState>>(0);
             var state = CreateUser();
-            state.Exists = true;
             state.Id = id;
             await dict.Set(state.Id, state);
             return state;

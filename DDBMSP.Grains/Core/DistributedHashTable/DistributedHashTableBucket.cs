@@ -8,7 +8,7 @@ namespace DDBMSP.Grains.Core.DistributedHashTable
 {
     public class DistributedHashTableBucket<TKey, TValue> : Grain, IDistributedHashTableBucket<TKey, TValue>
     {
-        private Dictionary<TKey, TValue> Elements { get; set; } = new Dictionary<TKey, TValue>();
+        private Dictionary<TKey, TValue> Elements { get; set; } = new Dictionary<TKey, TValue>(30000);
         
         public Task<Immutable<TValue>> Get(Immutable<TKey> key)
         {

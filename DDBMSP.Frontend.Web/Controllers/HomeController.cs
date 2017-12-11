@@ -9,6 +9,7 @@ using DDBMSP.Interfaces.PODs.User;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Orleans;
+using Orleans.Concurrency;
 
 namespace DDBMSP.Frontend.Web.Controllers
 {   
@@ -23,7 +24,7 @@ namespace DDBMSP.Frontend.Web.Controllers
             var friend = GrainClient.GrainFactory.GetGrain<ILatestArticleAggregatorGrain>(0);
             var res = await friend.GetLatestArticles();
             Response.Headers.Add("Access-Control-Allow-Origin", "https://api.github.com"); 
-            return View("/Views/Index.cshtml", res ?? new List<ArticleSummary>());
+            return View("/Views/Index.cshtml", res.Value ?? new List<ArticleSummary>());
         }
         
         [Route("post/{articleId}")]
@@ -34,7 +35,7 @@ namespace DDBMSP.Frontend.Web.Controllers
                 var article = await GrainClient.GrainFactory.GetGrain<IDistributedHashTable<Guid, ArticleState>>(0).Get(articleId);
                 return View("/Views/Post.cshtml", article.Value);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return NotFound();
             }
@@ -48,7 +49,7 @@ namespace DDBMSP.Frontend.Web.Controllers
                 var user = await GrainClient.GrainFactory.GetGrain<IDistributedHashTable<Guid, UserState>>(0).Get(authorId);
                 return View("/Views/Author.cshtml", user.Value);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return NotFound();
             }
@@ -58,8 +59,8 @@ namespace DDBMSP.Frontend.Web.Controllers
         public async Task<IActionResult> Tag(string tag)
         {
             var friend = GrainClient.GrainFactory.GetGrain<ILatestArticleByTagAggregatorGrain>(0);
-            var res = await friend.GetLatestArticlesForTag(tag);
-            return View("/Views/Tag.cshtml", new Tuple<string, List<ArticleSummary>>(tag, res ?? new List<ArticleSummary>()));
+            var res = await friend.GetLatestArticlesForTag(tag.AsImmutable());
+            return View("/Views/Tag.cshtml", new Tuple<string, List<ArticleSummary>>(tag, res.Value ?? new List<ArticleSummary>()));
         }
         
         [Route("Error")]

@@ -5,22 +5,25 @@ using DDBMSP.Grains.DataStructures;
 using DDBMSP.Interfaces.Grains.Aggregators.Articles;
 using DDBMSP.Interfaces.PODs.Article.Components;
 using Orleans;
+using Orleans.Concurrency;
 using Orleans.MultiCluster;
 
 namespace DDBMSP.Grains.Aggregators.Articles
 {
-    [OneInstancePerCluster]
-    public class LatestArticleAggregatorGrain : Grain<CircularFifoStack<ArticleSummary>>, ILatestArticleAggregatorGrain
+    [StatelessWorker]
+    public class LatestArticleAggregatorGrain : Grain, ILatestArticleAggregatorGrain
     {
-        public Task Aggregate(ArticleSummary article)
+        public CircularFifoStack<ArticleSummary> State { get; set; } = new CircularFifoStack<ArticleSummary>();
+        
+        public Task Aggregate(Immutable<ArticleSummary> article)
         {
-            State.Push(article);
-            return WriteStateAsync();
+            //State.Push(article);
+            return Task.CompletedTask;
         }
 
-        public Task<List<ArticleSummary>> GetLatestArticles(int max = 10)
+        public Task<Immutable<List<ArticleSummary>>> GetLatestArticles(int max = 10)
         {
-            return Task.FromResult(State.Any() ? State.Take(max).ToList() : null);
+            return Task.FromResult(State.Any() ? State.Take(max).ToList().AsImmutable() : new Immutable<List<ArticleSummary>>());
         }
     }
 }

@@ -10,13 +10,13 @@ namespace DDBMSP.Grains.Aggregators.Articles
     [StatelessWorker]
     public class ArticleAggregatorHubGrain : Grain, IArticleAggregatorHubGrain
     {
-        private Task Broadcast<TTargetGrain>(ArticleSummary article)
+        private Task Broadcast<TTargetGrain>(Immutable<ArticleSummary> article)
             where TTargetGrain : IGrainWithIntegerKey, IAggregator<ArticleSummary>
         {
             return GrainFactory.GetGrain<TTargetGrain>(0).Aggregate(article);
         }
 
-        public Task Aggregate(ArticleSummary article)
+        public Task Aggregate(Immutable<ArticleSummary> article)
         {
             return Task.WhenAll(Broadcast<ILatestArticleAggregatorGrain>(article),
                 Broadcast<ILatestArticleByTagAggregatorGrain>(article));

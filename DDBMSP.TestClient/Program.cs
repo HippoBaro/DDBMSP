@@ -36,9 +36,7 @@ namespace DDBMSP.TestClient
                 return 1;
             }
 
-            DoClientWork(10, 20).Wait();
-            Console.WriteLine("Press Enter to terminate...");
-            Console.ReadLine();
+            DoClientWork(10000, 20).Wait();
             return 0;
         }
 
@@ -85,7 +83,7 @@ namespace DDBMSP.TestClient
             Console.WriteLine("Ready to populate cluster, press Enter to start.");
             Console.ReadLine();
 
-            var latencies = new List<int>();
+            var latencies = new List<int>(userToCreate * articlePerUser);
 
             var sw = Stopwatch.StartNew();
 
@@ -101,27 +99,66 @@ namespace DDBMSP.TestClient
                 await GrainClient.GrainFactory.GetGrain<IArticleDispatcher>(0).DispatchNewArticlesFromAuthor(userId, articles);
             });
             
+            var perSec = Stopwatch.StartNew();
+            var lastSecOp = 0;
             for (int i = 0; i < userToCreate / 8; i++)
             {
                 var t = Stopwatch.StartNew();
                 await Task.WhenAll(user(), user(), user(), user(), user(), user(), user(), user());
                 t.Stop();
                 latencies.Add((int)t.ElapsedMilliseconds);
-                Console.WriteLine($"{i*8}/{userToCreate} — {(float)i*8/(float)userToCreate*(float)100}% — {sw.Elapsed:c}");
+                lastSecOp += 8 * articlePerUser + 8;
+                
+                if (perSec.ElapsedMilliseconds <= 1000) continue;
+                var perSecondOp = lastSecOp;
+                lastSecOp = 0;
+                perSec.Restart();
+
+                float squareProduct(int key, int value, int key2) => value * key2 / (float)key;
+
+                var lat = t.ElapsedMilliseconds;
+                Console.WriteLine($"[{(float)i*8/(float)userToCreate*(float)100}%] — {perSecondOp} ops/sec — {lat} ms per {articlePerUser * 8 + 8} inserts ({lat / (float)168} ms per insert)");
             }
-            for (int i = 0; i < userToCreate % 8; i++)
+            for (var i = 0; i < userToCreate % 8; i++)
             {
                 await user();
             }
             sw.Stop();
-            Console.WriteLine($"Done!\nTotal time {sw.Elapsed:c}");
+            Console.WriteLine($"[100%]\n");
+            Console.WriteLine("|----------------STATS----------------|");
+            Console.WriteLine($"Total time {sw.Elapsed:c}");
+            Console.WriteLine($"Latency:\n\tMin = {latencies.Min()} ms\n\tMax = {latencies.Max()} ms\n\tAverage = {latencies.Average()} ms\n\t95 percentile = {Percentile(latencies, .95)} ms\n\t99 percentile = {Percentile(latencies, .99)} ms\n\t99.9 percentile = {Percentile(latencies, .999)} ms");
+            
             var usageArticle = await GrainClient.GrainFactory.GetGrain<IDistributedHashTable<Guid, ArticleState>>(0).GetBucketUsage();
             var totalArticle = await GrainClient.GrainFactory.GetGrain<IDistributedHashTable<Guid, ArticleState>>(0).Count();
-            Console.WriteLine($"Articles: Total = {totalArticle} Avr = {usageArticle.Average(item => item)}, Min = {usageArticle.Min(item => item)}, Max = {usageArticle.Max(item => item)} (delta = {usageArticle.Max(item => item) - usageArticle.Min(item => item)})");
+            Console.WriteLine($"Articles:\n\tTotal = {totalArticle}\n\tAvr = {usageArticle.Average(item => item)}\n\tMin = {usageArticle.Min(item => item)}\n\tMax = {usageArticle.Max(item => item)}\n\tDelta = {usageArticle.Max(item => item) - usageArticle.Min(item => item)}");
+            
             var usageUser = await GrainClient.GrainFactory.GetGrain<IDistributedHashTable<Guid, UserState>>(0).GetBucketUsage();
             var totalUser = await GrainClient.GrainFactory.GetGrain<IDistributedHashTable<Guid, UserState>>(0).Count();
-            Console.WriteLine($"Users: Total = {totalUser} Avr = {usageUser.Average(item => item)}, Min = {usageUser.Min(item => item)}, Max = {usageUser.Max(item => item)} (delta = {usageUser.Max(item => item) - usageUser.Min(item => item)})");
-            Console.WriteLine($"Latency: Min = {latencies.Min()} ms, Max = {latencies.Max()} ms, Average = {latencies.Average()} ms, 95 percentile = {Percentile(latencies, .95)} ms, 99 percentile = {Percentile(latencies, .99)} ms");
+            Console.WriteLine($"Users:\n\tTotal = {totalUser}\n\tAvr = {usageUser.Average(item => item)}\n\tMin = {usageUser.Min(item => item)}\n\tMax = {usageUser.Max(item => item)}\n\tDelta = {usageUser.Max(item => item) - usageUser.Min(item => item)}");
+        }
+        
+        private static async Task DoClientWorkNoBench(int userToCreate, int articlePerUser)
+        {
+            Console.WriteLine("Ready to populate cluster, press Enter to start.");
+            Console.ReadLine();
+            
+            var user = new Func<Task>(async () =>
+            {
+                var articles = new ArticleState[articlePerUser];
+                var userId = await NewUser();
+                for (var j = 0; j < articlePerUser; j++)
+                    articles[j] = CreateArticle();
+                await GrainClient.GrainFactory.GetGrain<IArticleDispatcher>(0).DispatchNewArticlesFromAuthor(userId, articles);
+            });
+            
+
+            var sw = Stopwatch.StartNew();
+            for (int i = 0; i < userToCreate / 8; i++)
+                await Task.WhenAll(user(), user(), user(), user(), user(), user(), user(), user());
+            for (var i = 0; i < userToCreate % 8; i++)
+                await user();
+            Console.WriteLine($"Total time {sw.Elapsed:c}");
         }
 
         static async Task<UserState> NewUser()

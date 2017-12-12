@@ -36,7 +36,10 @@ namespace DDBMSP.TestClient
                 return 1;
             }
 
-            DoClientWork(10000, 20).Wait();
+            if (args.Length > 0 && args[0] == "--insertoneloop")
+                PopulateOneLoop().Wait();
+            else
+                Populate(10000, 20).Wait();
             return 0;
         }
 
@@ -78,7 +81,7 @@ namespace DDBMSP.TestClient
             return sequence[k - 1] + d * (sequence[k] - sequence[k - 1]);
         }
 
-        private static async Task DoClientWork(int userToCreate, int articlePerUser)
+        private static async Task Populate(int userToCreate, int articlePerUser)
         {
             Console.WriteLine("Ready to populate cluster, press Enter to start.");
             Console.ReadLine();
@@ -92,10 +95,7 @@ namespace DDBMSP.TestClient
                 var articles = new ArticleState[articlePerUser];
                 var userId = await NewUser();
                 for (var j = 0; j < articlePerUser; j++)
-                {
                     articles[j] = CreateArticle();
-                }
-
                 await GrainClient.GrainFactory.GetGrain<IArticleDispatcher>(0).DispatchNewArticlesFromAuthor(userId, articles);
             });
             
@@ -109,24 +109,22 @@ namespace DDBMSP.TestClient
                 latencies.Add((int)t.ElapsedMilliseconds);
                 lastSecOp += 8 * articlePerUser + 8;
                 
-                if (perSec.ElapsedMilliseconds <= 1000) continue;
-                var perSecondOp = lastSecOp;
+                if (perSec.ElapsedMilliseconds <= 500) continue;
+                var perSecondOp = lastSecOp * 2;
                 lastSecOp = 0;
                 perSec.Restart();
 
                 float squareProduct(int key, int value, int key2) => value * key2 / (float)key;
 
                 var lat = t.ElapsedMilliseconds;
-                Console.WriteLine($"[{(float)i*8/(float)userToCreate*(float)100}%] — {perSecondOp} ops/sec — {lat} ms per {articlePerUser * 8 + 8} inserts ({lat / (float)168} ms per insert)");
+                Console.Write($"[{(int)(i*8/(float)userToCreate*100):D3}% — {sw.Elapsed.TotalSeconds:000} sec] — {perSecondOp} ops/sec — {lat} ms per {articlePerUser * 8 + 8} inserts ({(lat / (float)168):F3} ms per insert)\r");
             }
             for (var i = 0; i < userToCreate % 8; i++)
-            {
                 await user();
-            }
             sw.Stop();
-            Console.WriteLine($"[100%]\n");
+            Console.WriteLine($"[100% — {sw.Elapsed.TotalSeconds:000} sec]\n");
             Console.WriteLine("|----------------STATS----------------|");
-            Console.WriteLine($"Total time {sw.Elapsed:c}");
+            Console.WriteLine($"Total time {sw.Elapsed:g}");
             Console.WriteLine($"Latency:\n\tMin = {latencies.Min()} ms\n\tMax = {latencies.Max()} ms\n\tAverage = {latencies.Average()} ms\n\t95 percentile = {Percentile(latencies, .95)} ms\n\t99 percentile = {Percentile(latencies, .99)} ms\n\t99.9 percentile = {Percentile(latencies, .999)} ms");
             
             var usageArticle = await GrainClient.GrainFactory.GetGrain<IDistributedHashTable<Guid, ArticleState>>(0).GetBucketUsage();
@@ -137,46 +135,41 @@ namespace DDBMSP.TestClient
             var totalUser = await GrainClient.GrainFactory.GetGrain<IDistributedHashTable<Guid, UserState>>(0).Count();
             Console.WriteLine($"Users:\n\tTotal = {totalUser}\n\tAvr = {usageUser.Average(item => item)}\n\tMin = {usageUser.Min(item => item)}\n\tMax = {usageUser.Max(item => item)}\n\tDelta = {usageUser.Max(item => item) - usageUser.Min(item => item)}");
         }
-        
-        private static async Task DoClientWorkNoBench(int userToCreate, int articlePerUser)
+
+        private static async Task PopulateOneLoop()
         {
-            Console.WriteLine("Ready to populate cluster, press Enter to start.");
-            Console.ReadLine();
-            
             var user = new Func<Task>(async () =>
             {
-                var articles = new ArticleState[articlePerUser];
                 var userId = await NewUser();
-                for (var j = 0; j < articlePerUser; j++)
-                    articles[j] = CreateArticle();
-                await GrainClient.GrainFactory.GetGrain<IArticleDispatcher>(0).DispatchNewArticlesFromAuthor(userId, articles);
+                var article = CreateArticle();
+                await GrainClient.GrainFactory.GetGrain<IArticleDispatcher>(0)
+                    .DispatchNewArticlesFromAuthor(userId, article);
             });
-            
 
-            var sw = Stopwatch.StartNew();
-            for (int i = 0; i < userToCreate / 8; i++)
-                await Task.WhenAll(user(), user(), user(), user(), user(), user(), user(), user());
-            for (var i = 0; i < userToCreate % 8; i++)
-                await user();
-            Console.WriteLine($"Total time {sw.Elapsed:c}");
+            while (true)
+            {
+                Console.WriteLine("Ready to insert, press Enter to start.");
+                Console.ReadLine();
+                await user().ContinueWith(task => Task.Delay(500));
+            }
         }
 
         static async Task<UserState> NewUser()
         {
             string GenerateRandomName() =>
-                $"{LasttNameList[random.Next(LasttNameList.Count)]} {SurNameList[random.Next(SurNameList.Count)]}";
+                $"{LasttNameList[Random1.Next(LasttNameList.Count)]} {SurNameList[Random1.Next(SurNameList.Count)]}";
             
             UserState CreateUser()
             {
                 return new UserState
                 {
-                    Image = new Uri(ProfileList[random.Next(ProfileList.Count)]),
-                    Gender = random.Next(2) > 0 ? Gender.Female : Gender.Male,
-                    ObtainedCredits = random.Next(100),
+                    Image = new Uri(ProfileList[Random1.Next(ProfileList.Count)]),
+                    Gender = Random1.Next(2) > 0 ? Gender.Female : Gender.Male,
+                    ObtainedCredits = Random1.Next(100),
                     Name = GenerateRandomName(),
-                    PreferedLanguage = random.Next(2) > 0 ? Language.English : Language.Mandarin,
-                    Region = random.Next(2) > 0 ? Region.HongKong : Region.MainlandChina,
-                    University = UniversityList[random.Next(UniversityList.Count)],
+                    PreferedLanguage = Random1.Next(2) > 0 ? Language.English : Language.Mandarin,
+                    Region = Random1.Next(2) > 0 ? Region.HongKong : Region.MainlandChina,
+                    University = UniversityList[Random1.Next(UniversityList.Count)],
                     Articles = new List<ArticleSummary>()
                 };
             }
@@ -194,29 +187,31 @@ namespace DDBMSP.TestClient
             List<string> GetTagList()
             {
                 var ret = new List<string>();
-                if (random.Next(10) > 1)
+                if (Random1.Next(10) > 1)
                 {
-                    ret.Add(TagsList[random.Next(TagsList.Count)]);
-                    ret.Add(TagsList[random.Next(TagsList.Count)]);
+                    ret.Add(TagsList[Random1.Next(TagsList.Count)]);
+                    ret.Add(TagsList[Random1.Next(TagsList.Count)]);
                     return ret;
                 }
-                ret.Add(TagsList[random.Next(TagsList.Count)]);
+                ret.Add(TagsList[Random1.Next(TagsList.Count)]);
                 return ret;
             }
                 
             return new ArticleState
             {
-                Abstract = ExcerptsList[random.Next(ExcerptsList.Count)],
-                Content = Contents[random.Next(Contents.Count)],
-                Image = new Uri(ImagesList[random.Next(ImagesList.Count)]),
-                Language = random.Next(2) > 0 ? Language.English : Language.Mandarin,
+                Abstract = ExcerptsList[Random1.Next(ExcerptsList.Count)],
+                Content = Contents[Random1.Next(Contents.Count)],
+                Image = new Uri(ImagesList[Random1.Next(ImagesList.Count)]),
+                Language = Random1.Next(2) > 0 ? Language.English : Language.Mandarin,
                 Tags = GetTagList(),
-                Title = TitleList[random.Next(TitleList.Count)],
-                Catergory = random.Next(2) > 0 ? ArticleCategory.Science : ArticleCategory.Technology,
+                Title = TitleList[Random1.Next(TitleList.Count)],
+                Catergory = Random1.Next(2) > 0 ? ArticleCategory.Science : ArticleCategory.Technology,
             };
         }
-        
-        static Random random = new Random();
+
+        [ThreadStatic] private static Random _randm;
+
+        private static Random Random1 => _randm ?? (_randm = new Random());
 
         private static List<string> LasttNameList { get; set; } = new List<string>
         {

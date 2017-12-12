@@ -4,9 +4,9 @@ using DDBMSP.Interfaces.PODs.Article.Components;
 using Orleans;
 using Orleans.Concurrency;
 
-namespace DDBMSP.Interfaces.Grains.Aggregators.Articles
+namespace DDBMSP.Interfaces.Grains.Aggregators.Articles.LatestArticles
 {
-    public interface ILatestArticleAggregatorGrain : IGrainWithIntegerKey, IAggregator<ArticleSummary>
+    public interface IGlobalLatestArticlesAggregator : IGrainWithIntegerKey, IAggregator<List<ArticleSummary>>
     {
         Task<Immutable<List<ArticleSummary>>> GetLatestArticles(int max = 10);
     }

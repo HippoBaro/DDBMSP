@@ -1,17 +1,17 @@
-﻿using System.Collections.Generic;
+﻿﻿using System.Collections.Generic;
 
 namespace DDBMSP.Grains.DataStructures
 {
-    public class CircularFifoStack<T> : Queue<T>
+    public class CircularFifoStack<T> : LinkedList<T>
     {
         private const int Size = 100;
 
         public void Push(T obj)
         {
-            Enqueue(obj);
+            AddFirst(obj);
             while (Count > Size)
             {
-                Dequeue();
+                RemoveLast();
             }
         }
     }

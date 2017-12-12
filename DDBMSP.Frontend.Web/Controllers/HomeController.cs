@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using DDBMSP.Interfaces.Grains.Aggregators.Articles;
+using DDBMSP.Interfaces.Grains.Aggregators.Articles.LatestArticles;
+using DDBMSP.Interfaces.Grains.Aggregators.Articles.LatestArticlesByTag;
 using DDBMSP.Interfaces.Grains.Core.DistributedHashTable;
 using DDBMSP.Interfaces.PODs.Article;
 using DDBMSP.Interfaces.PODs.Article.Components;
 using DDBMSP.Interfaces.PODs.User;
-using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Orleans;
 using Orleans.Concurrency;
@@ -14,16 +14,13 @@ using Orleans.Concurrency;
 namespace DDBMSP.Frontend.Web.Controllers
 {   
     [Route("")]
-    [EnableCors("AllowSpecificOrigin")]
     public class HomeController : Controller
     {
         [HttpGet("")]
-        [EnableCors("AllowSpecificOrigin")]
         public async Task<IActionResult> Index()
         {
-            var friend = GrainClient.GrainFactory.GetGrain<ILatestArticleAggregatorGrain>(0);
+            var friend = GrainClient.GrainFactory.GetGrain<IGlobalLatestArticlesAggregator>(0);
             var res = await friend.GetLatestArticles();
-            Response.Headers.Add("Access-Control-Allow-Origin", "https://api.github.com"); 
             return View("/Views/Index.cshtml", res.Value ?? new List<ArticleSummary>());
         }
         
@@ -58,7 +55,7 @@ namespace DDBMSP.Frontend.Web.Controllers
         [Route("tag/{tag}")]
         public async Task<IActionResult> Tag(string tag)
         {
-            var friend = GrainClient.GrainFactory.GetGrain<ILatestArticleByTagAggregatorGrain>(0);
+            var friend = GrainClient.GrainFactory.GetGrain<IGlobalLatestArticleByTagAggregator>(0);
             var res = await friend.GetLatestArticlesForTag(tag.AsImmutable());
             return View("/Views/Tag.cshtml", new Tuple<string, List<ArticleSummary>>(tag, res.Value ?? new List<ArticleSummary>()));
         }

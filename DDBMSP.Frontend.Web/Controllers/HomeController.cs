@@ -24,6 +24,7 @@ namespace DDBMSP.Frontend.Web.Controllers
         {
             var friend = GrainClient.GrainFactory.GetGrain<IGlobalLatestArticlesAggregator>(0);
             var res = await friend.GetLatestArticles();
+            
             return View("/Views/Index.cshtml", res.Value ?? new List<ArticleSummary>());
         }
 
@@ -34,7 +35,11 @@ namespace DDBMSP.Frontend.Web.Controllers
             {
                 var article = await GrainClient.GrainFactory.GetGrain<IDistributedHashTable<Guid, ArticleState>>(0)
                     .Get(articleId);
-                return View("/Views/Post.cshtml", article.Value);
+                
+                var friend = GrainClient.GrainFactory.GetGrain<IGlobalLatestArticleByTagAggregator>(0);
+                var res = await friend.GetLatestArticlesForTag(article.Value.Tags.First().AsImmutable(), 5);
+                
+                return View("/Views/Post.cshtml", new Tuple<ArticleState, List<ArticleSummary>>(article.Value, res.Value));
             }
             catch (Exception)
             {

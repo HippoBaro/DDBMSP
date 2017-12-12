@@ -48,20 +48,7 @@
 		$('.search-page .close').click(function() {
 			$('.search-page').fadeOut();
 		});
-		count = 2;
-		$('.show-more').click(function() {
-			var total = 6;
-			if (count > total) {
-				return false;
-			} else {
-				loadArticle(count);
-				if (count == total) {
-					$('.show-more').hide();
-				}
-				count++;
-			}
-		});
-
+		
 		$('.ui.search')
 			.search({
 				apiSettings: {

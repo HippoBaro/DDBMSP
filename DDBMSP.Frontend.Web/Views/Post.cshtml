@@ -1,13 +1,16 @@
+@using System
+@using System.Collections.Generic
 @using System.Linq
 @using CommonMark
 @using DDBMSP.Frontend.Web
 @using DDBMSP.Interfaces.PODs.Article
+@using DDBMSP.Interfaces.PODs.Article.Components
 @using Microsoft.AspNetCore.Mvc.Rendering
 
-@model ArticleState
+@model Tuple<ArticleState, List<ArticleSummary>>
 
 @{
-    ViewData["Title"] = @Model.Title;
+    ViewData["Title"] = @Model.Item1.Title;
     ViewData["BodyStyleClass"] = "tag-template";
     Constants.CurrentPage = "Post";
 }
@@ -21,49 +24,49 @@
 <main id="site-main" class="site-main outer" role="main">
     <div class="inner">
 
-        <article class="post-full post @(Model.Image == null ? "no-image" : null)">
+        <article class="post-full post @(Model.Item1.Image == null ? "no-image" : null)">
 
             <header class="post-full-header">
                 <section class="post-full-meta">
-                    <time class="post-full-meta-date" datetime="@Model.CreationDate.ToString("dd MMMM yyyy")">@Model.CreationDate.ToString("dd MMMM yyyy")</time>
-                        @if (Model.Tags != null && Model.Tags.Any())
+                    <time class="post-full-meta-date" datetime="@Model.Item1.CreationDate.ToString("dd MMMM yyyy")">@Model.Item1.CreationDate.ToString("dd MMMM yyyy")</time>
+                        @if (Model.Item1.Tags != null && Model.Item1.Tags.Any())
                         {
-                            foreach (var tag in Model.Tags)
+                            foreach (var tag in Model.Item1.Tags)
                              {
                                  <span class="date-divider">/</span>
                                  <a href="http://localhost:5000/tag/@tag">@tag</a>
                              }
                         }
                 </section>
-                <h1 class="post-full-title">@Model.Title</h1>
+                <h1 class="post-full-title">@Model.Item1.Title</h1>
             </header>
 
-            @if (Model.Image != null)
+            @if (Model.Item1.Image != null)
             {
-                <figure class="post-full-image" style="background-image: url(@Model.Image)">
+                <figure class="post-full-image" style="background-image: url(@Model.Item1.Image)">
                 </figure>
             }
 
             <section class="post-full-content">
                 <div class="kg-card-markdown">
-                    @Html.Raw(CommonMarkConverter.Convert(Model.Content))
+                    @Html.Raw(CommonMarkConverter.Convert(Model.Item1.Content))
                 </div>
             </section>
 
             <footer class="post-full-footer">
                 <section class="author-card">
-                    @if (Model.Author.Image != null)
+                    @if (Model.Item1.Author.Image != null)
                     {
-                        <img class="author-profile-image" src="@Model.Author.Image" alt="@Model.Author.Name"/>
+                        <img class="author-profile-image" src="@Model.Item1.Author.Image" alt="@Model.Item1.Author.Name"/>
                     }
                     <section class="author-card-content">
-                        <h4 class="author-card-name"><a href="/author/@Model.Author.Id">@Model.Author.Name</a></h4>
-                        <p>Read <a href="/author/@Model.Author.Id">more posts</a> by this author.
+                        <h4 class="author-card-name"><a href="/author/@Model.Item1.Author.Id">@Model.Item1.Author.Name</a></h4>
+                        <p>Read <a href="/author/@Model.Item1.Author.Id">more posts</a> by this author.
                         </p>
                     </section>
                 </section>
                 <div class="post-full-footer-right">
-                    <a class="author-card-button" href="/author/@Model.Author.Id">Read More</a>
+                    <a class="author-card-button" href="/author/@Model.Item1.Author.Id">Read More</a>
                 </div>
             </footer>
 
@@ -71,52 +74,37 @@
     </div>
 </main>
 
-@*<aside class="read-next outer">
+<aside class="read-next outer">
     <div class="inner">
         <div class="read-next-feed">
-            {{#if primary_tag}}
-            {{#get "posts" filter="tags:{{primary_tag.slug}}+id:-{{id}}" limit="3" as |related_posts|}}
-                {{#if related_posts}}
-                <article class="read-next-card"
-                    {{#if ../primary_tag.feature_image}}
-                        style="background-image: url({{../primary_tag.feature_image}})"
-                    {{else}}
-                        {{#if @blog.cover_image}}
-                            style="background-image: url({{@blog.cover_image}})"{{/if}}
-                    {{/if}}
-                >
+            @if (Model.Item2 != null && Model.Item2.Count == 5)
+            {
+                <article class="read-next-card" style="background-image: url(@Model.Item2[0].Image)">
                     <header class="read-next-card-header">
-                        <small class="read-next-card-header-sitetitle">&mdash; {{@blog.title}} &mdash;</small>
-                        {{#../primary_tag}}
-                        <h3 class="read-next-card-header-title"><a href="{{url}}">{{name}}</a></h3>
-                        {{/../primary_tag}}
+                        <small class="read-next-card-header-sitetitle">&mdash; @Constants.BlogTitle &mdash;</small>
+                        <h3 class="read-next-card-header-title"><a href="/post/@Model.Item2[0].Id">@Model.Item2[0].Title</a>
+                        </h3>
                     </header>
-                    <div class="read-next-divider">{{> "icons/infinity"}}</div>
+                    <div class="read-next-divider">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <path d="M13 14.5s2 3 5 3 5.5-2.463 5.5-5.5S21 6.5 18 6.5c-5 0-7 11-12 11C2.962 17.5.5 15.037.5 12S3 6.5 6 6.5s4.5 3.5 4.5 3.5"></path>
+                        </svg>
+                    </div>
                     <div class="read-next-card-content">
                         <ul>
-                            {{#foreach related_posts}}
-                            <li><a href="{{url}}">{{title}}</a></li>
-                            {{/foreach}}
+                            <li><a href="/post/@Model.Item2[0].Id">@Model.Item2[0].Title</a></li>
+                            <li><a href="/post/@Model.Item2[1].Id">@Model.Item2[1].Title</a></li>
+                            <li><a href="/post/@Model.Item2[2].Id">@Model.Item2[2].Title</a></li>
                         </ul>
                     </div>
                     <footer class="read-next-card-footer">
-                        <a href="{{#../primary_tag}}{{url}}{{/../primary_tag}}">{{plural meta.pagination.total empty='No posts' singular='% post' plural='See all % posts'}} →</a>
+                        <a href="/tag/@Model.Item1.Tags[0]">See other related posts →</a>
                     </footer>
                 </article>
-                {{/if}}
-            {{/get}}
-            {{/if}}
 
-            {{!-- If there's a next post, display it using the same markup included from - partials/post-card.hbs --}}
-            {{#next_post}}
-                {{> "post-card"}}
-            {{/next_post}}
-
-            {{!-- If there's a previous post, display it using the same markup included from - partials/post-card.hbs --}}
-            {{#prev_post}}
-                {{> "post-card"}}
-            {{/prev_post}}
-
+                @Html.Partial("/Views/Partials/PostCard.cshtml", Model.Item2[3]);
+                @Html.Partial("/Views/Partials/PostCard.cshtml", Model.Item2[4]);
+            }
         </div>
     </div>
-</aside>*@
+</aside>

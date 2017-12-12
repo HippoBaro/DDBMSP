@@ -8,7 +8,7 @@ using DDBMSP.Interfaces.PODs.Article.Components;
 using Orleans;
 using Orleans.Concurrency;
 
-namespace DDBMSP.Grains.Aggregators.Articles.LastestArticlesByTagAggregator
+namespace DDBMSP.Grains.Aggregators.Articles.LatestArticlesByTag
 {
     [StatelessWorker]
     public class LocalLatestArticleByTagAggregator : Grain, ILocalLatestArticleByTagAggregator

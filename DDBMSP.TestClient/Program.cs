@@ -6,12 +6,14 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using DDBMSP.Interfaces.Enums;
+using DDBMSP.Interfaces.Grains.Aggregators.Articles.Search;
 using DDBMSP.Interfaces.Grains.Core.DistributedHashTable;
 using DDBMSP.Interfaces.Grains.Workers;
 using DDBMSP.Interfaces.PODs.Article;
 using DDBMSP.Interfaces.PODs.Article.Components;
 using DDBMSP.Interfaces.PODs.User;
 using Orleans;
+using Orleans.Concurrency;
 using Orleans.Runtime;
 using Orleans.Runtime.Configuration;
 using Orleans.Serialization;
@@ -38,6 +40,13 @@ namespace DDBMSP.TestClient
 
             if (args.Length > 0 && args[0] == "--insertoneloop")
                 PopulateOneLoop().Wait();
+            else if (args.Length > 0 && args[0] == "--search")
+            {
+                Console.WriteLine("Write your search input and press Enter");
+                var searchInut = Console.ReadLine();
+                Console.WriteLine("Searching...");
+                GrainClient.GrainFactory.GetGrain<IGlobalSearchArticleAggregator>(0).GetSearchResult(searchInut.AsImmutable()).Wait();
+            }
             else
                 Populate(10000, 20).Wait();
             return 0;
@@ -113,8 +122,6 @@ namespace DDBMSP.TestClient
                 var perSecondOp = lastSecOp * 2;
                 lastSecOp = 0;
                 perSec.Restart();
-
-                float squareProduct(int key, int value, int key2) => value * key2 / (float)key;
 
                 var lat = t.ElapsedMilliseconds;
                 Console.Write($"[{(int)(i*8/(float)userToCreate*100):D3}% — {sw.Elapsed.TotalSeconds:000} sec] — {perSecondOp} ops/sec — {lat} ms per {articlePerUser * 8 + 8} inserts ({(lat / (float)168):F3} ms per insert)\r");

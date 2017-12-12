@@ -16,7 +16,7 @@
             <header class="post-card-header">
                 @if (Model.Tags != null && Model.Tags.Any())
                 {
-                    <span class="post-card-tags">@Model.Tags.First()</span>
+                    <span class="post-card-tags">@string.Join(" / ", Model.Tags)</span>
                 }
                 <h2 class="post-card-title">@Model.Title</h2>
             </header>

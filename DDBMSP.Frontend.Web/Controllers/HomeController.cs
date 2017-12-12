@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using DDBMSP.Interfaces.Grains.Aggregators.Articles.LatestArticles;
 using DDBMSP.Interfaces.Grains.Aggregators.Articles.LatestArticlesByTag;
@@ -60,7 +61,7 @@ namespace DDBMSP.Frontend.Web.Controllers
         public async Task<IActionResult> Tag(string tag)
         {
             var friend = GrainClient.GrainFactory.GetGrain<IGlobalLatestArticleByTagAggregator>(0);
-            var res = await friend.GetLatestArticlesForTag(tag.AsImmutable());
+            var res = await friend.GetLatestArticlesForTag(tag.AsImmutable(), 100);
             return View("/Views/Tag.cshtml",
                 new Tuple<string, List<ArticleSummary>>(tag, res.Value ?? new List<ArticleSummary>()));
         }
@@ -74,13 +75,17 @@ namespace DDBMSP.Frontend.Web.Controllers
         }
 
         [Route("search")]
-        public async Task<IActionResult> Error(string q)
+        public async Task<IActionResult> Search(string q)
         {
+            if (string.IsNullOrWhiteSpace(q) || q.Length < 2)
+                return NoContent();
+            
             var friend = GrainClient.GrainFactory.GetGrain<IGlobalSearchArticleAggregator>(0);
-
             var res = await friend.GetSearchResult(q.AsImmutable());
 
-
+            if (!res.Value.Any())
+                return NoContent();
+            
             return Ok(new SearchResult
             {
                 Categories = new Dictionary<string, SearchCategory>

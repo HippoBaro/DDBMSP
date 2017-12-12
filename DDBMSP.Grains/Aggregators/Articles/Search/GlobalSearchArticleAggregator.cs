@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DDBMSP.Interfaces.Grains.Aggregators.Articles.Search;
 using DDBMSP.Interfaces.PODs.Article.Components;
 using Lucene.Net.Analysis.Core;
-using Lucene.Net.Analysis.Hunspell;
 using Lucene.Net.Documents;
 using Lucene.Net.Index;
 using Lucene.Net.Search;
@@ -78,6 +76,7 @@ namespace DDBMSP.Grains.Aggregators.Articles.Search
                 queryAnd.Add(new BooleanClause(new TermQuery(new Term("title", term)) {Boost = 2}, Occur.SHOULD));
                 queryAnd.Add(new BooleanClause(new TermQuery(new Term("abstract", term)), Occur.SHOULD));
                 queryAnd.Add(new BooleanClause(new TermQuery(new Term("tag", term)), Occur.SHOULD));
+                queryAnd.Add(new BooleanClause(new TermQuery(new Term("author", term)), Occur.SHOULD));
             }
             
             queryAnd.MinimumNumberShouldMatch = 1;

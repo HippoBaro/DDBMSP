@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using System.Threading.Tasks;
 using Orleans.Runtime.Configuration;
 using Orleans.Runtime.Host;
 using Orleans.Serialization;
@@ -8,15 +9,14 @@ namespace DDBMSP.Silo
 {
     public static class Program
     {
-        public static int Main(string[] args)
+        public static async Task Main(string[] args)
         {
             GC.TryStartNoGCRegion(200000000);
             var exitCode = StartSilo(args);
 
             Console.WriteLine("Press Enter to terminate...");
-            Console.ReadLine();
+            await Task.Delay(-1);
 
-            return exitCode;
         }
 
         private static int StartSilo(string[] args)

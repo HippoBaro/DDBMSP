@@ -84,14 +84,12 @@ namespace DDBMSP.Grains.Aggregators.Articles.Search
             var hits = Searcher.Search(new BooleanQuery {{queryAnd, Occur.MUST}}, 5).ScoreDocs;
 
             var res = new List<Dictionary<string, string>>(hits.Length);
-            foreach (var t in hits)
+            res.AddRange(hits.Select(t => new Dictionary<string, string>
             {
-                res.Add(new Dictionary<string, string>
-                {
-                    {"title", Searcher.Doc(t.Doc).Get("title")},
-                    {"id", "/post/" + Searcher.Doc(t.Doc).Get("id")}
-                });
-            }
+                {"title", Searcher.Doc(t.Doc).Get("title")},
+                {"id", "/post/" + Searcher.Doc(t.Doc).Get("id")},
+                {"description", Searcher.Doc(t.Doc).Get("abstract")}
+            }));
             return Task.FromResult(res.AsImmutable());
         }
     }

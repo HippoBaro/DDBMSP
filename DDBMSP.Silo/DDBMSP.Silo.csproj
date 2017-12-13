@@ -3,7 +3,10 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <ServerGarbageCollection>true</ServerGarbageCollection>
+    <LangVersion>7.1</LangVersion>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'" />
   <ItemGroup>
     <ProjectReference Include="..\DDBMSP.Grains\DDBMSP.Grains.csproj" />
     <ProjectReference Include="..\DDBMSP.Interfaces\DDBMSP.Interfaces.csproj" />

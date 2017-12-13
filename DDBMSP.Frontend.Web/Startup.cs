@@ -17,11 +17,6 @@ namespace DDBMSP.Frontend.Web
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddCors(options =>
-            {
-                options.AddPolicy("AllowSpecificOrigin",
-                    builder => builder.WithOrigins("http://api.github.com", "https://api.github.com"));
-            });
             services.AddMvc();
             
         }
@@ -35,8 +30,6 @@ namespace DDBMSP.Frontend.Web
             }
             app.UseStatusCodePagesWithReExecute("/Error" , "?statusCode={0}");
             app.UseStaticFiles();
-            
-            app.UseCors(builder => builder.WithOrigins("http://api.github.com"));
             
             app.UseMvc(routes =>
             {

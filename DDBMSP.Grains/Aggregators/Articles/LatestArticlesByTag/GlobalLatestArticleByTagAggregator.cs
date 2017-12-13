@@ -36,5 +36,20 @@ namespace DDBMSP.Grains.Aggregators.Articles.LatestArticlesByTag
                 ? State[tag.Value].Take(max).ToList().AsImmutable()
                 : new Immutable<List<ArticleSummary>>());
         }
+
+        public Task<Immutable<List<Dictionary<string, string>>>> SearchTags(Immutable<string> keywords)
+        {
+            var res = new List<Dictionary<string, string>>(State.Count);
+            var keys = keywords.Value.Split(' ');
+            res.AddRange(from key in keys
+                from tag in State
+                where tag.Key.Contains(key)
+                select new Dictionary<string, string>
+                {
+                    {"title", tag.Key},
+                    {"id", "/tag/" + tag.Key}
+                });
+            return Task.FromResult(res.AsImmutable());
+        }
     }
 }

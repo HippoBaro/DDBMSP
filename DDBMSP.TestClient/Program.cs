@@ -48,7 +48,7 @@ namespace DDBMSP.TestClient
                 GrainClient.GrainFactory.GetGrain<IGlobalSearchArticleAggregator>(0).GetSearchResult(searchInut.AsImmutable()).Wait();
             }
             else
-                Populate(10000, 20).Wait();
+                Populate(10000, 200).Wait();
             return 0;
         }
 

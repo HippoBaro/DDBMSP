@@ -85,17 +85,20 @@ namespace DDBMSP.Frontend.Web.Controllers
             if (string.IsNullOrWhiteSpace(q) || q.Length < 2)
                 return NoContent();
             
-            var friend = GrainClient.GrainFactory.GetGrain<IGlobalSearchArticleAggregator>(0);
-            var res = await friend.GetSearchResult(q.AsImmutable());
+            var articles = GrainClient.GrainFactory.GetGrain<IGlobalSearchArticleAggregator>(0).GetSearchResult(q.AsImmutable());
+            var tags = GrainClient.GrainFactory.GetGrain<IGlobalLatestArticleByTagAggregator>(0).SearchTags(q.AsImmutable());
+            
+            await Task.WhenAll(articles, tags);
 
-            if (!res.Value.Any())
+            if (!articles.Result.Value.Any() && tags.Result.Value.Any())
                 return NoContent();
             
             return Ok(new SearchResult
             {
                 Categories = new Dictionary<string, SearchCategory>
                 {
-                    {"Articles", new SearchCategory {Name = "Articles", Result = res.Value}}
+                    {"Articles", new SearchCategory {Name = "Articles", Result = articles.Result.Value}},
+                    {"Tags", new SearchCategory {Name = "Tags", Result = tags.Result.Value}}
                 }
             });
         }

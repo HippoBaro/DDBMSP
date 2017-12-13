@@ -48,7 +48,7 @@ namespace DDBMSP.TestClient
                 GrainClient.GrainFactory.GetGrain<IGlobalSearchArticleAggregator>(0).GetSearchResult(searchInut.AsImmutable()).Wait();
             }
             else
-                Populate(10000, 200).Wait();
+                Populate(10000, 20).Wait();
             return 0;
         }
 
@@ -110,13 +110,19 @@ namespace DDBMSP.TestClient
             
             var perSec = Stopwatch.StartNew();
             var lastSecOp = 0;
-            for (int i = 0; i < userToCreate / 8; i++)
+            var threadNumber = Environment.ProcessorCount;
+            for (var i = 0; i < userToCreate / threadNumber; i++)
             {
                 var t = Stopwatch.StartNew();
-                await Task.WhenAll(user(), user(), user(), user(), user(), user(), user(), user());
+                var tasks = new List<Task>(threadNumber);
+                for (var k = 0; k < threadNumber; k++)
+                {
+                    tasks.Add(user());
+                }
+                await Task.WhenAll(tasks);
                 t.Stop();
                 latencies.Add((int)t.ElapsedMilliseconds);
-                lastSecOp += 8 * articlePerUser + 8;
+                lastSecOp += threadNumber * articlePerUser + threadNumber;
                 
                 if (perSec.ElapsedMilliseconds <= 500) continue;
                 var perSecondOp = lastSecOp * 2;
@@ -124,9 +130,9 @@ namespace DDBMSP.TestClient
                 perSec.Restart();
 
                 var lat = t.ElapsedMilliseconds;
-                Console.Write($"[{(int)(i*8/(float)userToCreate*100):D3}% — {sw.Elapsed.TotalSeconds:000} sec] — {perSecondOp} ops/sec — {lat} ms per {articlePerUser * 8 + 8} inserts ({(lat / (float)168):F3} ms per insert)\r");
+                Console.Write($"[{(int)(i*threadNumber/(float)userToCreate*100):D3}% — {sw.Elapsed.TotalSeconds:000} sec] — {perSecondOp} ops/sec — {lat} ms per {articlePerUser * threadNumber + threadNumber} inserts\r");
             }
-            for (var i = 0; i < userToCreate % 8; i++)
+            for (var i = 0; i < userToCreate % threadNumber; i++)
                 await user();
             sw.Stop();
             Console.WriteLine($"[100% — {sw.Elapsed.TotalSeconds:000} sec]\n");

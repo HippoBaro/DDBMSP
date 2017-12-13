@@ -10,7 +10,7 @@ namespace DDBMSP.Grains.Core.DistributedHashTable
     [StatelessWorker]
     public class DistributedHashTable<TKey, TValue> : Grain, IDistributedHashTable<TKey, TValue>
     {
-        private const int BucketsNumber = 10;
+        private const int BucketsNumber = 100;
         
         public Task<Immutable<TValue>> Get(Immutable<TKey> key)
         {

@@ -19,7 +19,7 @@ namespace DDBMSP.Grains.Worker
             var dict = GrainFactory.GetGrain<IDistributedHashTable<Guid, ArticleState>>(0);
             var authorSummary = author.Summarize();
             var taskArticle = new List<Task>(articles.Length);
-            var taskArticleAgg = new List<Task>(articles.Length);
+            //var taskArticleAgg = new List<Task>(articles.Length);
             foreach (var article in articles)
             {
                 article.CreationDate = DateTime.UtcNow;
@@ -27,9 +27,9 @@ namespace DDBMSP.Grains.Worker
                 article.Author = authorSummary;
                 author.Articles.Add(article.Summarize());
                 taskArticle.Add(dict.Set(article.Id, article));
-                taskArticleAgg.Add(GrainFactory.GetGrain<IArticleAggregatorHubGrain>(0).Aggregate(article.Summarize().AsImmutable()));
+                //taskArticleAgg.Add(GrainFactory.GetGrain<IArticleAggregatorHubGrain>(0).Aggregate(article.Summarize().AsImmutable()));
             }
-            return Task.WhenAll(Task.WhenAll(taskArticle), Task.WhenAll(taskArticleAgg), GrainFactory.GetGrain<IDistributedHashTable<Guid, UserState>>(0).Set(author.Id, author));
+            return Task.WhenAll(Task.WhenAll(taskArticle)/*, Task.WhenAll(taskArticleAgg)*/, GrainFactory.GetGrain<IDistributedHashTable<Guid, UserState>>(0).Set(author.Id, author));
         }
     }
 }

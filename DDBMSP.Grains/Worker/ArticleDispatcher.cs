@@ -22,7 +22,6 @@ namespace DDBMSP.Grains.Worker
             var taskArticleAgg = new List<Task>(articles.Length);
             foreach (var article in articles)
             {
-                article.CreationDate = DateTime.UtcNow;
                 article.Id = Guid.NewGuid();
                 article.Author = authorSummary;
                 author.Articles.Add(article.Summarize());

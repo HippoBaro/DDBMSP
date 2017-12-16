@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -110,19 +110,13 @@ namespace DDBMSP.TestClient
             
             var perSec = Stopwatch.StartNew();
             var lastSecOp = 0;
-            var threadNumber = Environment.ProcessorCount;
-            for (var i = 0; i < userToCreate / threadNumber; i++)
+            for (int i = 0; i < userToCreate / 8; i++)
             {
                 var t = Stopwatch.StartNew();
-                var tasks = new List<Task>(threadNumber);
-                for (var k = 0; k < threadNumber; k++)
-                {
-                    tasks.Add(user());
-                }
-                await Task.WhenAll(tasks);
+                await Task.WhenAll(user(), user(), user(), user(), user(), user(), user(), user());
                 t.Stop();
                 latencies.Add((int)t.ElapsedMilliseconds);
-                lastSecOp += threadNumber * articlePerUser + threadNumber;
+                lastSecOp += 8 * articlePerUser + 8;
                 
                 if (perSec.ElapsedMilliseconds <= 500) continue;
                 var perSecondOp = lastSecOp * 2;
@@ -130,9 +124,9 @@ namespace DDBMSP.TestClient
                 perSec.Restart();
 
                 var lat = t.ElapsedMilliseconds;
-                Console.Write($"[{(int)(i*threadNumber/(float)userToCreate*100):D3}% — {sw.Elapsed.TotalSeconds:000} sec] — {perSecondOp} ops/sec — {lat} ms per {articlePerUser * threadNumber + threadNumber} inserts\r");
+                Console.Write($"[{(int)(i*8/(float)userToCreate*100):D3}% — {sw.Elapsed.TotalSeconds:000} sec] — {perSecondOp} ops/sec — {lat} ms per {articlePerUser * 8 + 8} inserts ({(lat / (float)168):F3} ms per insert)\r");
             }
-            for (var i = 0; i < userToCreate % threadNumber; i++)
+            for (var i = 0; i < userToCreate % 8; i++)
                 await user();
             sw.Stop();
             Console.WriteLine($"[100% — {sw.Elapsed.TotalSeconds:000} sec]\n");
@@ -212,6 +206,7 @@ namespace DDBMSP.TestClient
                 
             return new ArticleState
             {
+                CreationDate = DateTime.Now.AddHours(-Random1.Next(1000)),
                 Abstract = ExcerptsList[Random1.Next(ExcerptsList.Count)],
                 Content = Contents[Random1.Next(Contents.Count)],
                 Image = new Uri(ImagesList[Random1.Next(ImagesList.Count)]),

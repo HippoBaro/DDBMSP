@@ -15,7 +15,6 @@ using Orleans.Concurrency;
 
 namespace DDBMSP.Grains.Aggregators.Articles.Search
 {
-    [Reentrant]
     class GlobalSearchArticleAggregator : Grain, IGlobalSearchArticleAggregator
     {
         private RAMDirectory LuceneDirectory { get; } = new RAMDirectory();

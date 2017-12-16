@@ -6,9 +6,11 @@ using Orleans.Concurrency;
 
 namespace DDBMSP.Grains.Core.DistributedHashTable
 {
+    [Reentrant]
     public class DistributedHashTableBucket<TKey, TValue> : Grain, IDistributedHashTableBucket<TKey, TValue>
     {
         private Dictionary<TKey, TValue> Elements { get; set; } = new Dictionary<TKey, TValue>(30000);
+        private AsyncSerialExecutor SerialExecutor { get; set; } = new AsyncSerialExecutor();
         
         public Task<Immutable<TValue>> Get(Immutable<TKey> key)
         {
@@ -17,11 +19,16 @@ namespace DDBMSP.Grains.Core.DistributedHashTable
 
         public Task Set(Immutable<TKey> key, Immutable<TValue> value)
         {
-            if (Elements.ContainsKey(key.Value))
-                Elements[key.Value] = value.Value;
-            else
-                Elements.Add(key.Value, value.Value);
-            return Task.CompletedTask;
+            Task set()
+            {
+                if (Elements.ContainsKey(key.Value))
+                    Elements[key.Value] = value.Value;
+                else
+                    Elements.Add(key.Value, value.Value);
+                return Task.CompletedTask;
+            }
+
+            return SerialExecutor.AddNext(set);
         }
 
         public Task<int> Usage()

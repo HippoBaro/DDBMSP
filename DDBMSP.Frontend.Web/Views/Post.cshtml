@@ -29,10 +29,8 @@
             <header class="post-full-header">
                 <section class="post-full-meta">
                     <time class="post-full-meta-date" datetime="@Model.Item1.CreationDate.ToString("dd MMMM yyyy")">@Model.Item1.CreationDate.ToString("dd MMMM yyyy")</time>
-                    @if (Model.Item1.Tags != null && Model.Item1.Tags.Any())
-                    {
-                        foreach (var tag in Model.Item1.Tags)
-                        {
+                    @if (Model.Item1.Tags != null && Model.Item1.Tags.Any()) {
+                        foreach (var tag in Model.Item1.Tags) {
                             <span class="date-divider">/</span>
                             <a href="http://localhost:5000/tag/@tag">@tag</a>
                         }
@@ -41,8 +39,7 @@
                 <h1 class="post-full-title">@Model.Item1.Title</h1>
             </header>
 
-            @if (Model.Item1.Image != null)
-            {
+            @if (Model.Item1.Image != null) {
                 <figure class="post-full-image" style="background-image: url(@Model.Item1.Image)">
                 </figure>
             }

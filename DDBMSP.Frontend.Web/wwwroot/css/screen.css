@@ -1979,7 +1979,7 @@ a {
     z-index: 9999;
     left: 0;
     background: rgba(255, 255, 255, .97);
-    padding: 100px
+    padding: 20px 50px 00px;
 }
 
 .search-page.active {
@@ -1989,7 +1989,7 @@ a {
 .search-page
 .todo {
     text-align: left;
-    margin-bottom: 50px
+    margin-bottom: 5px
 }
 
 .search-page .todo

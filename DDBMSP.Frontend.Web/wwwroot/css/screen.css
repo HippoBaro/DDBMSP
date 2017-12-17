@@ -611,11 +611,11 @@ The first (most recent) post in the list is styled to be bigger than the others 
     position: relative;
     margin: 0 auto;
     padding: 70px 100px 0;
+    background: #fff;
     min-height: 230px;
     font-family: Georgia, serif;
     font-size: 2.2rem;
     line-height: 1.6em;
-    background: #fff;
 }
 
 @media (max-width: 1170px) {
@@ -2061,4 +2061,36 @@ input {
     max-width:100%;
     max-height:100%;
     overflow:auto;
+}
+
+.comments-full-content {
+    position: relative;
+    margin: 0 auto;
+    padding: 70px 100px 0;
+    background: #fff;
+    min-height: 230px;
+    font-size: 2.2rem;
+    line-height: 1.6em;
+}
+
+.comments-full-content:before {
+    position: absolute;
+    top: 15px;
+    left: -5px;
+    z-index: -1;
+    display: block;
+    width: 20px;
+    height: 200px;
+}
+
+.comments-full-content:after {
+    content: "";
+    position: absolute;
+    top: 15px;
+    right: -5px;
+    bottom: 50px;
+    z-index: -1;
+    display: block;
+    width: 20px;
+    height: 200px;
 }

@@ -35,15 +35,7 @@ namespace DDBMSP.TestClient
                 return 1;
             }
 
-            if (args.Length > 0 && args[0] == "--search") {
-                Console.WriteLine("Write your search input and press Enter");
-                var searchInut = Console.ReadLine();
-                Console.WriteLine("Searching...");
-                GrainClient.GrainFactory.GetGrain<IGlobalSearchArticleAggregator>(0)
-                    .GetSearchResult(searchInut.AsImmutable()).Wait();
-            }
-            else
-                Populate(10000, 200).Wait();
+            Populate(10000, 20).Wait();
             return 0;
         }
 
@@ -111,7 +103,7 @@ namespace DDBMSP.TestClient
 
                 var lat = t.ElapsedMilliseconds;
                 Console.Write(
-                    $"[{(int) (i * 8 / (float) userToCreate * 100):D3}% — {sw.Elapsed.TotalSeconds:000} sec] — {perSecondOp} ops/sec — {lat} ms per {articlePerUser * 8 + 8} inserts ( avg: {lat / (float) (articlePerUser * 8 + 8):F3} ms per insert)                        \r");
+                    $"[{(int) (i * 8 / (float) userToCreate * 100):D3}% — {sw.Elapsed.TotalSeconds:000} sec] — {perSecondOp} ops/sec — {lat} ms per {articlePerUser * 8 + 8} inserts (avg: {lat / (float) (articlePerUser * 8 + 8):F3} ms per insert)                        \r");
             }
             for (var i = 0; i < userToCreate % 8; i++)
                 await user();

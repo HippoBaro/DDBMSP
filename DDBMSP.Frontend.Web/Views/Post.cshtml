@@ -29,14 +29,14 @@
             <header class="post-full-header">
                 <section class="post-full-meta">
                     <time class="post-full-meta-date" datetime="@Model.Item1.CreationDate.ToString("dd MMMM yyyy")">@Model.Item1.CreationDate.ToString("dd MMMM yyyy")</time>
-                        @if (Model.Item1.Tags != null && Model.Item1.Tags.Any())
+                    @if (Model.Item1.Tags != null && Model.Item1.Tags.Any())
+                    {
+                        foreach (var tag in Model.Item1.Tags)
                         {
-                            foreach (var tag in Model.Item1.Tags)
-                             {
-                                 <span class="date-divider">/</span>
-                                 <a href="http://localhost:5000/tag/@tag">@tag</a>
-                             }
+                            <span class="date-divider">/</span>
+                            <a href="http://localhost:5000/tag/@tag">@tag</a>
                         }
+                    }
                 </section>
                 <h1 class="post-full-title">@Model.Item1.Title</h1>
             </header>
@@ -71,6 +71,39 @@
             </footer>
 
         </article>
+        
+        <div class="ui big comments comments-full-content">
+            <div class="comment">
+                <a class="avatar">
+                    <img src="@Model.Item1.Author.Image">
+                </a>
+                <div class="content">
+                    <a class="author">Joe Henderson</a>
+                    <div class="metadata">
+                        <div class="date">1 day ago</div>
+                    </div>
+                    <div class="text">
+                        <p>The hours, minutes and seconds stand as visible reminders that your effort put them all there. </p>
+                        <p>Preserve until your next run, when the watch lets you see how Impermanent your efforts are.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="comment">
+                <a class="avatar">
+                    <img src="@Model.Item1.Author.Image">
+                </a>
+                <div class="content">
+                    <a class="author">Christian Rocha</a>
+                    <div class="metadata">
+                        <div class="date">2 days ago</div>
+                    </div>
+                    <div class="text">
+                        I re-tweeted this.
+                    </div>
+                </div>
+            </div>
+        </div>
+       
     </div>
 </main>
 

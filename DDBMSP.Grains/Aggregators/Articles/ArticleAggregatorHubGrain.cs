@@ -13,6 +13,7 @@ using Orleans.Concurrency;
 namespace DDBMSP.Grains.Aggregators.Articles
 {
     [StatelessWorker]
+    [Reentrant]
     public class ArticleAggregatorHubGrain : Grain, IArticleAggregatorHubGrain
     {
         private Task Broadcast<TTargetGrain>(Immutable<ArticleSummary> article) where TTargetGrain : IGrain {
@@ -64,18 +65,14 @@ namespace DDBMSP.Grains.Aggregators.Articles
             return Task.CompletedTask;
         }
 
-        public Task Aggregate(Immutable<ArticleSummary> article) {
-            return Task.WhenAll(
-                Broadcast<ILocalLatestArticleAggregator>(article),
-                Broadcast<ILocalLatestArticleByTagAggregator>(article),
-                Broadcast<ILocalSearchArticleAggregator>(article));
-        }
+        public Task Aggregate(Immutable<ArticleSummary> article) => Task.WhenAll(
+            Broadcast<ILocalLatestArticleAggregator>(article),
+            Broadcast<ILocalLatestArticleByTagAggregator>(article),
+            Broadcast<ILocalSearchArticleAggregator>(article));
 
-        public Task AggregateRange(Immutable<List<ArticleSummary>> articles) {
-            return Task.WhenAll(
-                Broadcast<ILocalLatestArticleAggregator>(articles),
-                Broadcast<ILocalLatestArticleByTagAggregator>(articles),
-                Broadcast<ILocalSearchArticleAggregator>(articles));
-        }
+        public Task AggregateRange(Immutable<List<ArticleSummary>> articles) => Task.WhenAll(
+            Broadcast<ILocalLatestArticleAggregator>(articles),
+            Broadcast<ILocalLatestArticleByTagAggregator>(articles),
+            Broadcast<ILocalSearchArticleAggregator>(articles));
     }
 }

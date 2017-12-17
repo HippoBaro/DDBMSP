@@ -13,6 +13,7 @@ using Orleans.Concurrency;
 namespace DDBMSP.Grains.Worker
 {
     [StatelessWorker]
+    [Reentrant]
     public class ArticleDispatcher : Grain, IArticleDispatcher
     {
         public Task DispatchNewArticlesFromAuthor(UserState author, params ArticleState[] articles) {

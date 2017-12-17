@@ -9,6 +9,7 @@ using Orleans.Concurrency;
 namespace DDBMSP.Grains.Core.DistributedHashTable
 {
     [StatelessWorker]
+    [Reentrant]
     public class DistributedHashTable<TKey, TValue> : Grain, IDistributedHashTable<TKey, TValue>
     {
         private const int BucketsNumber = 100;

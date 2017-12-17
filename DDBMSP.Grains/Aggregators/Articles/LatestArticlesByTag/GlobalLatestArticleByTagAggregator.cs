@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DDBMSP.Grains.Core;
 using DDBMSP.Interfaces.Grains.Aggregators.Articles.LatestArticlesByTag;
 using DDBMSP.Interfaces.PODs.Article.Components;
 using Orleans;
@@ -9,42 +10,52 @@ using Orleans.Concurrency;
 
 namespace DDBMSP.Grains.Aggregators.Articles.LatestArticlesByTag
 {
-    public class GlobalLatestArticleByTagAggregator : Grain, IGlobalLatestArticleByTagAggregator
+    [Reentrant]
+    public class GlobalLatestArticleByTagAggregator : SingleWriterMultipleReadersGrain,
+        IGlobalLatestArticleByTagAggregator
     {
         private Dictionary<string, List<ArticleSummary>> State { get; } =
             new Dictionary<string, List<ArticleSummary>>();
 
         public Task Aggregate(Immutable<string> tag, Immutable<ArticleSummary> article) {
-            if (!State.ContainsKey(tag.Value))
-                State.Add(tag.Value, new List<ArticleSummary>());
+            Task Aggregate() {
+                if (!State.ContainsKey(tag.Value))
+                    State.Add(tag.Value, new List<ArticleSummary>());
 
-            var index = State[tag.Value].BinarySearch(article.Value,
-                Comparer<ArticleSummary>.Create((summary, articleSummary) =>
-                    DateTime.Compare(articleSummary.CreationDate, summary.CreationDate)));
-            if (index < 0)
-                State[tag.Value].Insert(~index, article.Value);
-            return Task.CompletedTask;
-        }
-
-        public Task AggregateRange(Immutable<string> tag, Immutable<List<ArticleSummary>> articles) {
-            if (!State.ContainsKey(tag.Value))
-                State.Add(tag.Value, new List<ArticleSummary>());
-
-            foreach (var article in articles.Value) {
-                var index = State[tag.Value].BinarySearch(article,
+                var index = State[tag.Value].BinarySearch(article.Value,
                     Comparer<ArticleSummary>.Create((summary, articleSummary) =>
                         DateTime.Compare(articleSummary.CreationDate, summary.CreationDate)));
                 if (index < 0)
-                    State[tag.Value].Insert(~index, article);
+                    State[tag.Value].Insert(~index, article.Value);
+                return Task.CompletedTask;
             }
-            return Task.CompletedTask;
+
+            return SerialExecutor.AddNext(Aggregate);
         }
 
-        public Task<Immutable<List<ArticleSummary>>> GetLatestArticlesForTag(Immutable<string> tag, int max = 10) {
-            return Task.FromResult(State.ContainsKey(tag.Value)
+        public Task AggregateRange(Immutable<string> tag, Immutable<List<ArticleSummary>> articles) {
+
+            Task AggregateRange() {
+                if (!State.ContainsKey(tag.Value))
+                    State.Add(tag.Value, new List<ArticleSummary>());
+
+                foreach (var article in articles.Value) {
+                    var index = State[tag.Value].BinarySearch(article,
+                        Comparer<ArticleSummary>.Create((summary, articleSummary) =>
+                            DateTime.Compare(articleSummary.CreationDate, summary.CreationDate)));
+                    if (index < 0)
+                        State[tag.Value].Insert(~index, article);
+                }
+                return Task.CompletedTask;
+            }
+
+            return SerialExecutor.AddNext(AggregateRange);
+        }
+
+        public Task<Immutable<List<ArticleSummary>>> GetLatestArticlesForTag(Immutable<string> tag, int max = 10) =>
+            Task.FromResult(State.ContainsKey(tag.Value)
                 ? State[tag.Value].Take(max).ToList().AsImmutable()
                 : new Immutable<List<ArticleSummary>>());
-        }
 
         public Task<Immutable<List<Dictionary<string, string>>>> SearchTags(Immutable<string> keywords) {
             var res = new List<Dictionary<string, string>>(State.Count);

@@ -8,14 +8,11 @@ using Orleans.Concurrency;
 namespace DDBMSP.Grains.Core.DistributedHashTable
 {
     [Reentrant]
-    public class DistributedHashTableBucket<TKey, TValue> : Grain, IDistributedHashTableBucket<TKey, TValue>
+    public class DistributedHashTableBucket<TKey, TValue> : SingleWriterMultipleReadersGrain, IDistributedHashTableBucket<TKey, TValue>
     {
         private Dictionary<TKey, TValue> Elements { get; } = new Dictionary<TKey, TValue>(30000);
-        private AsyncSerialExecutor SerialExecutor { get; } = new AsyncSerialExecutor();
-
-        public Task<Immutable<TValue>> Get(Immutable<TKey> key) {
-            return Task.FromResult(Elements[key.Value].AsImmutable());
-        }
+        
+        public Task<Immutable<TValue>> Get(Immutable<TKey> key) => Task.FromResult(Elements[key.Value].AsImmutable());
 
         public Task Set(Immutable<TKey> key, Immutable<TValue> value) {
             Task Set() {
@@ -39,8 +36,6 @@ namespace DDBMSP.Grains.Core.DistributedHashTable
             return SerialExecutor.AddNext(Set);
         }
 
-        public Task<int> Count() {
-            return Task.FromResult(Elements.Count);
-        }
+        public Task<int> Count() => Task.FromResult(Elements.Count);
     }
 }

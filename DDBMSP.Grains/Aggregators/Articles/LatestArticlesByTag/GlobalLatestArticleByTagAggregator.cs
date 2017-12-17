@@ -14,13 +14,23 @@ namespace DDBMSP.Grains.Aggregators.Articles.LatestArticlesByTag
         private Dictionary<string, List<ArticleSummary>> State { get; } =
             new Dictionary<string, List<ArticleSummary>>();
 
-        public Task Aggregate(Immutable<string> tag, Immutable<List<ArticleSummary>> articles)
-        {
+        public Task Aggregate(Immutable<string> tag, Immutable<ArticleSummary> article) {
             if (!State.ContainsKey(tag.Value))
                 State.Add(tag.Value, new List<ArticleSummary>());
-            
-            foreach (var article in articles.Value)
-            {
+
+            var index = State[tag.Value].BinarySearch(article.Value,
+                Comparer<ArticleSummary>.Create((summary, articleSummary) =>
+                    DateTime.Compare(articleSummary.CreationDate, summary.CreationDate)));
+            if (index < 0)
+                State[tag.Value].Insert(~index, article.Value);
+            return Task.CompletedTask;
+        }
+
+        public Task AggregateRange(Immutable<string> tag, Immutable<List<ArticleSummary>> articles) {
+            if (!State.ContainsKey(tag.Value))
+                State.Add(tag.Value, new List<ArticleSummary>());
+
+            foreach (var article in articles.Value) {
                 var index = State[tag.Value].BinarySearch(article,
                     Comparer<ArticleSummary>.Create((summary, articleSummary) =>
                         DateTime.Compare(articleSummary.CreationDate, summary.CreationDate)));
@@ -30,22 +40,19 @@ namespace DDBMSP.Grains.Aggregators.Articles.LatestArticlesByTag
             return Task.CompletedTask;
         }
 
-        public Task<Immutable<List<ArticleSummary>>> GetLatestArticlesForTag(Immutable<string> tag, int max = 10)
-        {
+        public Task<Immutable<List<ArticleSummary>>> GetLatestArticlesForTag(Immutable<string> tag, int max = 10) {
             return Task.FromResult(State.ContainsKey(tag.Value)
                 ? State[tag.Value].Take(max).ToList().AsImmutable()
                 : new Immutable<List<ArticleSummary>>());
         }
 
-        public Task<Immutable<List<Dictionary<string, string>>>> SearchTags(Immutable<string> keywords)
-        {
+        public Task<Immutable<List<Dictionary<string, string>>>> SearchTags(Immutable<string> keywords) {
             var res = new List<Dictionary<string, string>>(State.Count);
             var keys = keywords.Value.Split(' ');
             res.AddRange(from key in keys
                 from tag in State
                 where tag.Key.Contains(key)
-                select new Dictionary<string, string>
-                {
+                select new Dictionary<string, string> {
                     {"title", tag.Key},
                     {"id", "/tag/" + tag.Key}
                 });

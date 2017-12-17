@@ -20,9 +20,9 @@ using Orleans.Serialization;
 
 namespace DDBMSP.TestClient
 {
-    public class Program
+    public static class Program
     {
-        static int Main(string[] args)
+        private static int Main(string[] args)
         {
             var config = ClientConfiguration.LocalhostSilo();
             config.SerializationProviders.Add(typeof(ProtobufSerializer).GetTypeInfo());
@@ -54,7 +54,7 @@ namespace DDBMSP.TestClient
 
         private static void InitializeWithRetries(ClientConfiguration config, int initializeAttemptsBeforeFailing)
         {
-            int attempt = 0;
+            var attempt = 0;
             while (true)
             {
                 try
@@ -79,14 +79,14 @@ namespace DDBMSP.TestClient
         private static double Percentile(List<int> sequence, double excelPercentile)
         {
             sequence.Sort();
-            int N = sequence.Count;
-            double n = (N - 1) * excelPercentile + 1;
+            var N = sequence.Count;
+            var n = (N - 1) * excelPercentile + 1;
             // Another method: double n = (N + 1) * excelPercentile;
             if (n == 1d) return sequence[0];
             if (n == N) return sequence[N - 1];
             
-            int k = (int)n;
-            double d = n - k;
+            var k = (int)n;
+            var d = n - k;
             return sequence[k - 1] + d * (sequence[k] - sequence[k - 1]);
         }
 
@@ -110,7 +110,7 @@ namespace DDBMSP.TestClient
             
             var perSec = Stopwatch.StartNew();
             var lastSecOp = 0;
-            for (int i = 0; i < userToCreate / 8; i++)
+            for (var i = 0; i < userToCreate / 8; i++)
             {
                 var t = Stopwatch.StartNew();
                 await Task.WhenAll(user(), user(), user(), user(), user(), user(), user(), user());

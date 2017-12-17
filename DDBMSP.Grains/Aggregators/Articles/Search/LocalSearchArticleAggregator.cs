@@ -30,12 +30,18 @@ namespace DDBMSP.Grains.Aggregators.Articles.Search
             return Task.CompletedTask;
         }
 
+        public Task AggregateRange(Immutable<List<ArticleSummary>> articles) {
+            State.AddRange(articles.Value);
+            _newSinceLastReport += articles.Value.Count;
+            return Task.CompletedTask;
+        }
+
         private async Task Report(object _)
         {
             if (_newSinceLastReport == 0) return;
             
             var aggregator = GrainFactory.GetGrain<IGlobalSearchArticleAggregator>(0);
-            await aggregator.Aggregate(State.Take(_newSinceLastReport).ToList().AsImmutable());
+            await aggregator.AggregateRange(State.Take(_newSinceLastReport).ToList().AsImmutable());
             _newSinceLastReport = 0;
             
             State.Clear();

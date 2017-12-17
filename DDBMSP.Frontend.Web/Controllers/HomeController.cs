@@ -41,7 +41,7 @@ namespace DDBMSP.Frontend.Web.Controllers
                 
                 return View("/Views/Post.cshtml", new Tuple<ArticleState, List<ArticleSummary>>(article.Value, res.Value));
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 return NotFound();
             }

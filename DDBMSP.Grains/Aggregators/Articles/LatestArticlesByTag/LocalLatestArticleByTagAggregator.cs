@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DDBMSP.Grains.Core;
@@ -29,13 +30,19 @@ namespace DDBMSP.Grains.Aggregators.Articles.LatestArticlesByTag
             ++_newSinceLastReport;
             return Task.CompletedTask;
         }
-        
+
+        public Task AggregateRange(Immutable<List<ArticleSummary>> articles) {
+            State.Push(articles.Value);
+            _newSinceLastReport += articles.Value.Count;
+            return Task.CompletedTask;
+        }
+
         private async Task Report(object _)
         {
             if (_newSinceLastReport == 0) return;
             
             var aggregator = GrainFactory.GetGrain<IGlobalLatestArticleByTagAggregator>(0);
-            await aggregator.Aggregate(this.GetPrimaryKeyString().AsImmutable(), State.Take(_newSinceLastReport).ToList().AsImmutable());
+            await aggregator.AggregateRange(this.GetPrimaryKeyString().AsImmutable(), State.Take(_newSinceLastReport).ToList().AsImmutable());
             _newSinceLastReport = 0;
         }
     }

@@ -35,9 +35,22 @@ namespace DDBMSP.Grains.Aggregators.Articles.Search
                 });
             return base.OnActivateAsync();
         }
+        
+        public Task Aggregate(Immutable<ArticleSummary> article) {
+            var doc = new Document
+            {
+                new TextField("abstract", article.Value.Abstract, Field.Store.YES),
+                new TextField("title", article.Value.Title, Field.Store.YES),
+                new StringField("tag", article.Value.Tags.First(), Field.Store.YES),
+                new TextField("author", article.Value.Author.Name, Field.Store.YES),
+                new TextField("id", article.Value.Id.ToString(), Field.Store.YES)
+            };
+            Writer.AddDocument(doc);
+            Writer.Commit();
+            return Task.CompletedTask;
+        }
 
-        public Task Aggregate(Immutable<List<ArticleSummary>> articles)
-        {
+        public Task AggregateRange(Immutable<List<ArticleSummary>> articles) {
             foreach (var article in articles.Value)
             {
                 var doc = new Document

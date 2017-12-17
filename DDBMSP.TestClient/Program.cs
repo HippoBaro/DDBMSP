@@ -43,7 +43,7 @@ namespace DDBMSP.TestClient
                     .GetSearchResult(searchInut.AsImmutable()).Wait();
             }
             else
-                Populate(10000, 20).Wait();
+                Populate(10000, 200).Wait();
             return 0;
         }
 

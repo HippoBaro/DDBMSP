@@ -22,6 +22,7 @@ namespace DDBMSP.Grains.Aggregators.Articles.LatestArticles
                         DateTime.Compare(articleSummary.CreationDate, summary.CreationDate)));
                 if (index < 0)
                     State.Insert(~index, articles.Value);
+                State.RemoveRange(100, int.MaxValue);
                 return Task.CompletedTask;
             }
 
@@ -35,6 +36,7 @@ namespace DDBMSP.Grains.Aggregators.Articles.LatestArticles
                         DateTime.Compare(articleSummary.CreationDate, summary.CreationDate)));
                 if (index < 0)
                     State.InsertRange(~index, articles.Value);
+                State.RemoveRange(100, int.MaxValue);
                 return Task.CompletedTask;
             }
 

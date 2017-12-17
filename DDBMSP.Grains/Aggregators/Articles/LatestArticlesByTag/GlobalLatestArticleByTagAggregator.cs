@@ -25,8 +25,10 @@ namespace DDBMSP.Grains.Aggregators.Articles.LatestArticlesByTag
                 var index = State[tag.Value].BinarySearch(article.Value,
                     Comparer<ArticleSummary>.Create((summary, articleSummary) =>
                         DateTime.Compare(articleSummary.CreationDate, summary.CreationDate)));
-                if (index < 0)
-                    State[tag.Value].Insert(~index, article.Value);
+                if (index >= 0) return Task.CompletedTask;
+                State[tag.Value].Insert(~index, article.Value);
+                State[tag.Value].RemoveRange(100, int.MaxValue);
+
                 return Task.CompletedTask;
             }
 
@@ -43,8 +45,9 @@ namespace DDBMSP.Grains.Aggregators.Articles.LatestArticlesByTag
                     var index = State[tag.Value].BinarySearch(article,
                         Comparer<ArticleSummary>.Create((summary, articleSummary) =>
                             DateTime.Compare(articleSummary.CreationDate, summary.CreationDate)));
-                    if (index < 0)
-                        State[tag.Value].Insert(~index, article);
+                    if (index >= 0) continue;
+                    State[tag.Value].Insert(~index, article);
+                    State[tag.Value].RemoveRange(100, int.MaxValue);
                 }
                 return Task.CompletedTask;
             }

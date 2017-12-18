@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DDBMSP.TestClient", "DDBMSP
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DDBMSP.Frontend.Web", "DDBMSP.Frontend.Web\DDBMSP.Frontend.Web.csproj", "{6573A74F-F5FD-428E-AD1B-B13D77AA6B5B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DDBMSP.CLI", "DDBMSP.CLI\DDBMSP.CLI.csproj", "{837AAE62-12DD-491A-BA14-EDDA181401EF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -39,6 +41,10 @@ Global
 		{6573A74F-F5FD-428E-AD1B-B13D77AA6B5B}.Debug|x64.Build.0 = Debug|x64
 		{6573A74F-F5FD-428E-AD1B-B13D77AA6B5B}.Release|x64.ActiveCfg = Release|x64
 		{6573A74F-F5FD-428E-AD1B-B13D77AA6B5B}.Release|x64.Build.0 = Release|x64
+		{837AAE62-12DD-491A-BA14-EDDA181401EF}.Debug|x64.ActiveCfg = Debug|x64
+		{837AAE62-12DD-491A-BA14-EDDA181401EF}.Debug|x64.Build.0 = Debug|x64
+		{837AAE62-12DD-491A-BA14-EDDA181401EF}.Release|x64.ActiveCfg = Release|x64
+		{837AAE62-12DD-491A-BA14-EDDA181401EF}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

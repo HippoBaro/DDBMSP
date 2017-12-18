@@ -1,198 +1,15 @@
-﻿﻿using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
-using DDBMSP.Interfaces.Enums;
-using DDBMSP.Interfaces.Grains.Aggregators.Articles.Search;
-using DDBMSP.Interfaces.Grains.Core.DistributedHashTable;
-using DDBMSP.Interfaces.Grains.Workers;
-using DDBMSP.Interfaces.PODs.Article;
-using DDBMSP.Interfaces.PODs.Article.Components;
-using DDBMSP.Interfaces.PODs.User;
-using Orleans;
-using Orleans.Concurrency;
-using Orleans.Runtime;
-using Orleans.Runtime.Configuration;
-using Orleans.Serialization;
 
-namespace DDBMSP.TestClient
+namespace DDBMSP.CLI
 {
-    public static class Program
+    public static class RandomGenerationData
     {
-        private static int Main(string[] args) {
-            var config = ClientConfiguration.LocalhostSilo();
-            config.SerializationProviders.Add(typeof(ProtobufSerializer).GetTypeInfo());
-            try {
-                InitializeWithRetries(config, initializeAttemptsBeforeFailing: 5);
-            }
-            catch (Exception ex) {
-                Console.WriteLine($"Orleans client initialization failed failed due to {ex}");
+        [ThreadStatic]
+        public static Random _randm;
+        public static Random Random => _randm ?? (_randm = new Random());
 
-                Console.ReadLine();
-                return 1;
-            }
-
-            if (args.Length > 0 && args[0] == "--export")
-            Populate(10000, 20).Wait();
-            return 0;
-        }
-
-        private static void InitializeWithRetries(ClientConfiguration config, int initializeAttemptsBeforeFailing) {
-            var attempt = 0;
-            while (true) {
-                try {
-                    GrainClient.Initialize(config);
-                    Console.WriteLine("Client successfully connect to silo host");
-                    break;
-                }
-                catch (SiloUnavailableException) {
-                    attempt++;
-                    Console.WriteLine(
-                        $"Attempt {attempt} of {initializeAttemptsBeforeFailing} failed to initialize the Orleans client.");
-                    if (attempt > initializeAttemptsBeforeFailing) {
-                        throw;
-                    }
-                    Thread.Sleep(TimeSpan.FromSeconds(2));
-                }
-            }
-        }
-
-        private static double Percentile(List<int> sequence, double excelPercentile) {
-            sequence.Sort();
-            var N = sequence.Count;
-            var n = (N - 1) * excelPercentile + 1;
-            if (n == 1d) return sequence[0];
-            if (n == N) return sequence[N - 1];
-
-            var k = (int) n;
-            var d = n - k;
-            return sequence[k - 1] + d * (sequence[k] - sequence[k - 1]);
-        }
-
-        private static async Task Populate(int userToCreate, int articlePerUser) {
-            Console.WriteLine("Ready to populate cluster, press Enter to start.");
-            Console.ReadLine();
-
-            var latencies = new List<int>(userToCreate * articlePerUser);
-
-            var sw = Stopwatch.StartNew();
-
-            var user = new Func<Task>(async () => {
-                var articles = new List<ArticleState>(articlePerUser);
-                for (var j = 0; j < articlePerUser; j++)
-                    articles.Add(CreateArticle());
-                await GrainClient.GrainFactory.GetGrain<IArticleDispatcher>(0)
-                    .DispatchNewArticlesFromAuthor(NewUser().AsImmutable(), articles.AsImmutable());
-            });
-
-            var perSec = Stopwatch.StartNew();
-            var lastSecOp = 0;
-            for (var i = 0; i < userToCreate / 8; i++) {
-                var t = Stopwatch.StartNew();
-                await Task.WhenAll(user(), user(), user(), user(), user(), user(), user(), user());
-                t.Stop();
-                latencies.Add((int) t.ElapsedMilliseconds);
-                lastSecOp += 8 * articlePerUser + 8;
-
-                if (perSec.ElapsedMilliseconds <= 500) continue;
-                var perSecondOp = lastSecOp * 2;
-                lastSecOp = 0;
-                perSec.Restart();
-
-                var lat = t.ElapsedMilliseconds;
-                Console.Write(
-                    $"[{(int) (i * 8 / (float) userToCreate * 100):D3}% — {sw.Elapsed.TotalSeconds:000} sec] — {perSecondOp} ops/sec — {lat} ms per {articlePerUser * 8 + 8} inserts (avg: {lat / (float) (articlePerUser * 8 + 8):F3} ms per insert)                        \r");
-            }
-            for (var i = 0; i < userToCreate % 8; i++)
-                await user();
-            sw.Stop();
-            
-            Console.WriteLine($"[100% — {sw.Elapsed.TotalSeconds:000} sec]\n");
-            Console.WriteLine("|----------------STATS----------------|");
-            Console.WriteLine($"Total time {sw.Elapsed:g}");
-            Console.WriteLine($"Latency:\n\tMin = {latencies.Min()} ms\n\tMax = {latencies.Max()} ms\n\tAverage = {latencies.Average():F3} ms\n\t95 percentile = {Percentile(latencies, .95):F3} ms\n\t99 percentile = {Percentile(latencies, .99):F3} ms\n\t99.9 percentile = {Percentile(latencies, .999):F3} ms");
-
-            var usageArticle = await GrainClient.GrainFactory.GetGrain<IDistributedHashTable<Guid, ArticleState>>(0).GetBucketUsage();
-            var totalArticle = await GrainClient.GrainFactory.GetGrain<IDistributedHashTable<Guid, ArticleState>>(0).Count();
-            Console.WriteLine($"Articles:\n\tTotal = {totalArticle}\n\tAvr = {usageArticle.Average(item => item)}\n\tMin = {usageArticle.Min(item => item)}\n\tMax = {usageArticle.Max(item => item)}\n\tDelta = {usageArticle.Max(item => item) - usageArticle.Min(item => item)}");
-
-            var usageUser = await GrainClient.GrainFactory.GetGrain<IDistributedHashTable<Guid, UserState>>(0).GetBucketUsage();
-            var totalUser = await GrainClient.GrainFactory.GetGrain<IDistributedHashTable<Guid, UserState>>(0).Count();
-            Console.WriteLine($"Users:\n\tTotal = {totalUser}\n\tAvr = {usageUser.Average(item => item)}\n\tMin = {usageUser.Min(item => item)}\n\tMax = {usageUser.Max(item => item)}\n\tDelta = {usageUser.Max(item => item) - usageUser.Min(item => item)}");
-        }
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-
-        private static UserState NewUser() {
-            string GenerateRandomName() =>
-                $"{LasttNameList[Random1.Next(LasttNameList.Count)]} {SurNameList[Random1.Next(SurNameList.Count)]}";
-
-            return new UserState {
-                Id = Guid.NewGuid(),
-                Image = new Uri(ProfileList[Random1.Next(ProfileList.Count)]),
-                Gender = Random1.Next(2) > 0 ? Gender.Female : Gender.Male,
-                ObtainedCredits = Random1.Next(100),
-                Name = GenerateRandomName(),
-                PreferedLanguage = Random1.Next(2) > 0 ? Language.English : Language.Mandarin,
-                Region = Random1.Next(2) > 0 ? Region.HongKong : Region.MainlandChina,
-                University = UniversityList[Random1.Next(UniversityList.Count)],
-                Articles = new List<ArticleSummary>()
-            };
-        }
-
-        private static ArticleState CreateArticle() {
-            List<string> GetTagList() {
-                var ret = new List<string>();
-                if (Random1.Next(10) > 1) {
-                    ret.Add(TagsList[Random1.Next(TagsList.Count)]);
-                    ret.Add(TagsList[Random1.Next(TagsList.Count)]);
-                    return ret;
-                }
-                ret.Add(TagsList[Random1.Next(TagsList.Count)]);
-                return ret;
-            }
-
-            return new ArticleState {
-                CreationDate = DateTime.Now.AddHours(-Random1.Next(1000)),
-                Abstract = ExcerptsList[Random1.Next(ExcerptsList.Count)],
-                Content = Contents[Random1.Next(Contents.Count)],
-                Image = new Uri(ImagesList[Random1.Next(ImagesList.Count)]),
-                Language = Random1.Next(2) > 0 ? Language.English : Language.Mandarin,
-                Tags = GetTagList(),
-                Title = TitleList[Random1.Next(TitleList.Count)],
-                Catergory = Random1.Next(2) > 0 ? ArticleCategory.Science : ArticleCategory.Technology,
-            };
-        }
-
-        [ThreadStatic] private static Random _randm;
-
-        private static Random Random1 => _randm ?? (_randm = new Random());
-
-        private static List<string> LasttNameList { get; } = new List<string> {
+        public static List<string> LasttNameList { get; } = new List<string> {
             "Karenza",
             "Méabh",
             "Gae",
@@ -213,7 +30,7 @@ namespace DDBMSP.TestClient
             "Mihalis"
         };
 
-        private static List<string> SurNameList { get; } = new List<string> {
+        public static List<string> SurNameList { get; } = new List<string> {
             "Rhode",
             "Ofelia",
             "Rodrigo",
@@ -228,7 +45,7 @@ namespace DDBMSP.TestClient
             "Joris"
         };
 
-        private static List<string> Contents { get; } = new List<string> {
+        public static List<string> Contents { get; } = new List<string> {
             "# Purpuraque Insula Thersites fratres quo umbras quo\r\n\r\n## Quique greges respersit terga tuas Tiberinaque volat\r\n\r\nLorem markdownum quae; anum ex a cum *structis* aliqua sub tamen, adflat toto\r\nformosior Ulixes iuvenco aliter, cacumine. Magni tuum aevum manu sive pepulere\r\nparvos; vulgatos satisque oculos non, oblivia. Tamen io vix mihi bibulaeque\r\nsanguine. **Erat** reperta; pervenit, dum cohibentem\r\n[carmine](http://ire-neque.com/e) Telamon famulae. Taedas tempora ut optima modo\r\n**sua** temporis pars putat adiit, parte, iam, de.\r\n\r\nHausit de colo, dea Othrysque primo illo, sequitur iungat. Petebant ipse flector\r\naurum damna studiisque totis.\r\n\r\n## Falleret nunc nec ore vietum quodcunque ad\r\n\r\nNunc quoniam *fecit* silvis limina cecidisse Vestaque patiere nocentius hoste\r\nsibi? Capillis vertice ferre donec sua Nile concurrere **sed Pallade**, ubi\r\nmetum littera vocant per inponique reddita? Adhuc nec tulit rapinae oculos ictu\r\nprodis diligis flebant Gangetica manus tenebrisque Niobe, consequar erat.\r\nVidebam laboratum tendit illa his pallentem tandem nitentes capto penetralia\r\nprocellae collegit fecit ad famae certo iuncta adflati adfuit, **nisi**. Pomis\r\nne nurus nam tradiderat profectus totusque sonus parentis multis quorum.\r\n\r\n    balancing_session.mamp(5, newbie.jsf(softWordartDtd, unfriendGnutella,\r\n            volume));\r\n    schemaTorrent += 3 / 1 + ccd_fifo_text.hitHsf(nocHeap, ipad_address,\r\n            jpeg_mbps) / 546485;\r\n    if (yahoo_smartphone_capacity(pop * -4) < publishingDefragment) {\r\n        captchaFlowchart(marketing);\r\n    }\r\n    if (3 <= ocrNvram) {\r\n        permalinkFifo(cms.halftone(nullHoverRead, externalType), video +\r\n                restore, task_frozen_program);\r\n        page_web_deprecated += -4;\r\n        moodle = transistor.megabyte(metalCard,\r\n                wais.engine_cybersquatter_boot.ccdPowerVram(archie));\r\n    } else {\r\n        smtp.pad_hard_text(symbolicBitrate + 376261);\r\n    }\r\n\r\n## Pectore et enim non orant dixit fluitare\r\n\r\nParte discreta [lassus mihi](http://indignumlacertos.com/sensi.aspx); latuerunt\r\nconsulat da Phoebo parens volenti moderata iunctis. Sit praereptaque ipse [censu\r\nmanibus](http://motaarmata.io/clausocensus.html) Assyrius laborum hasta, est\r\ntibi sonumque turpi, erat. Suis ignes *Abarin dicentem Cererisque* saxumque\r\n**mortales** tardius receptis eadem et Hecates locus esse ficta undae\r\ncircumlitus quisquis. Sic *cum* rupit Aeolon solvit adest cadente protinus hae,\r\ncarens Pirenidas tetigisse moves multa sexta spoliis.\r\n\r\n## Cognoscere filia per\r\n\r\n*Praesens* Cnosiaco utinam de postquam tegit inpositum inficit egreditur pater,\r\nanumque iners nostri, [ego](http://nonsuae.org/tenuit.php). Odrysius verba,\r\npertimuit, stupet nudumque quoque *conplevit* rictus nati rapto redimicula\r\ndubitare ipsa: foedera caruissem. **Eodem iam ubi** terris praecincti redimitus\r\nnamque deducat.\r\n\r\n1. Dextrae in damnatus silentia dedit agnovit lacrimoso\r\n2. Sacra saltus parabant inprobe\r\n3. Consurgit novissimus\r\n4. Paulum congestos partem\r\n5. Pignus sed quamquam Aonio narravere Tenedonque semel\r\n6. Utrimque necem dat aevoque perde\r\n\r\nTum medicamine curva, nymphae patientem retorqueat praedaeque deorum! Silvisque\r\narcem, arbitrium tu hanc ego festaque seque alimenta Cecropis. Uni fuerunt Diana\r\ncornua magni, Pallas quo videtur, curat.",
             "# Fluctibus Actaeis\r\n\r\n## Exspectatas ausae\r\n\r\nLorem markdownum illi referunt. Frondere quondam et mentis totiens. Non Nereus;\r\nsum ut amor tanto caducifer natum quotiensque ardua.\r\n\r\n## Vis rediere et Pachyne fare tamen Athenae\r\n\r\nArcus [soror](http://suiillas.io/tempus.html) caedis movet, inploravere\r\nAndraemon infelicem nostra dolores lacertis guttur. Et pervenit, [ad\r\nprima](http://efficiensdeque.org/profuit), in undae saxum dixit hoc interdum\r\npererratis et misit dumque. Praeterque credas. Olim turpe rediit victrixque\r\n[primus flumine](http://www.clarum.org/) Gradive Desinet!\r\n\r\n- Superare tantum nec nomen hoc dea deum\r\n- Flammiferas sole quam aspergine tecum\r\n- Dea vina tuas Penthea in per sternit\r\n- Adversos opifex est Ortygiam\r\n- Causa corporis\r\n\r\n## Morbi si corpora\r\n\r\nIeiuna sortita picum **memorem** ferunt e velari, caeleste in, ipsa. Lege\r\nquaque. Viri altera sine animae cultum nepotibus Samius violentam meas annis\r\nluminis videt caeli: gelidis quiescet in coniugis utile. Non equi non loco\r\nanimam urbem inquit quoque quem quodque, fixa neque florentia signorum summa\r\netiamnum valles. Canos et, edax retro sed infecit nulla: **consorte mediocris\r\nflumina** placidos utrumque amico cauda ultro tutos quos.\r\n\r\n## Tactuque pensa\r\n\r\nEnim sonant, ibi tendere mollia inprudens ferrum purpureas cervice, post. Ubera\r\npiaeque lanam orbe taurus erubuit loca: flamma soceri?\r\n\r\nDomum conplexus ferenda et nactus duobus, [aquis\r\nposuit](http://www.sub.com/amor) frui? Nitidis undique in in alto, ipsa fugat,\r\nuna.\r\n\r\n*Imo* Aeneae signis *et pressit fractus* nubibus, volucrum solito Agamemnona\r\nvulnera, aura lucis? Pedum et quemque perque. Terra regna corpore cernens:\r\nflamma et templis Thracum!",
             "# Mihi temporis Aonides\r\n\r\n## Utraque mora\r\n\r\nLorem markdownum mihi meritum primordia arce exspatiemur quod metitur illa per\r\nacuto parcere tendens variusque clamore errans. Premit etiam cum ferae! Solum\r\nfors rauco nova est iste cernis? Aurum tabe sequantur servabant claro, lumina\r\ndignior quisquam semiferos silvis succidit novas *reverti caput avidum*.\r\nQuamquam nectare dixerat [o rapto\r\nconsorte](http://www.loquuntur.net/corpus-venisses) coepta cortice miranti\r\nsplendidus fatur coniciunt facta exstinctum sine navalibus.\r\n\r\n## Cani uterum\r\n\r\nStetit suum, venienti morte speculatur iuro ne parvumque viridis atque quoque.\r\nHostem non fuit [o suppressit atque](http://deam-ineo.org/oculos-perfundit)\r\nHecaten, Olympo faucesque tempusque caerula!\r\n\r\n1. Robora suo imum inserui quam\r\n2. Nunc haerenti O velatam semper data\r\n3. Quos Gargaphie arva mensuraque quoque\r\n\r\n## Nos Rhoetus somnus nisi\r\n\r\nPutes ultra, deum utque, Gorgone stridore vultum, et vitae non auras melior non\r\nChaos triumpha undas. Aeaeae torum discurrunt in diros *placidos* caluere\r\npatrium positaeque tu certa **effugit aequos** iuravimus lumina quamvis, cum\r\nfrons.\r\n\r\n1. Deseruitque ludere herbis\r\n2. Init tempora\r\n3. Movebere movit Curetida laeto\r\n4. Fugit et e Iphis muta regia monstrum\r\n5. Pluviale nec deus falsosque Tusco fratris ipsa\r\n6. Et tota plectrumque morte\r\n\r\n## Fama solent\r\n\r\nClymeneia gener silicem; ille movere dixit cum caelo egregius, est manibusque\r\ncuras aquae et. Nunc una Lami sis, sequemur sibi advertite ardor dicta, ab. Esse\r\nper est te diem quandoquidem incessit ut succinctis et Sigea et erat lues.\r\n\r\nAcuta sacros adventum secundi demisso quercum corpus ignea sua. Rursus medio\r\nvidit ab audet didicit: peccavimus longae viderat, nec ossa data, licet! Tamen\r\naether, circumspicit viro genitor avara **erat** tantum fatemur ipsis, hostia.\r\nSeque enim Atlas, sua eundem erit, depulerat, omine? Amorem letoque dapes terret\r\nRhodanumque magna: est tollere, mater nostris, novis nunc!",
@@ -245,7 +62,7 @@ namespace DDBMSP.TestClient
             "# Satam omnes inducta capillis Achaide\r\n\r\n## Tu vitae\r\n\r\nLorem *markdownum tenentis* dubio inplent! Remos neglectos alas daedalus\r\noperique [intellecta](http://www.daremille.com/edoprecibus.aspx); vos cedite\r\ndari stabis plena.\r\n\r\n    if (responsive - balancing_file - -2) {\r\n        memory(meme_status_os(prebinding, filename_dot_native), 1,\r\n                iteration_column);\r\n        transfer(kdeHardUser, ribbon, dynamicClockPage);\r\n        captchaDefaultMedia.nas_wep -= snippet * card_bit;\r\n    } else {\r\n        prebinding_alpha = fi(gnutella, 65, graymail);\r\n        processorFpuTween(threading_hub, plain(impression), 3);\r\n    }\r\n    big_megabyte = oasis_prompt_vertical(ldap, vector_null * cdSpreadsheet) +\r\n            system;\r\n    var megapixel_powerpoint = 1 / 59;\r\n\r\n## De tamen negat auctor digna\r\n\r\nMulta ferum deae visis poenamque imitante protinus quod quoniam naribus profuga,\r\nnactusque. Equus caeli per filius, passa nimbis in saecula simul adest attulerat\r\nvenit.\r\n\r\n> Tali infringere vulnera. Quam ausa, haberent non, et altaque mortale: ora quae\r\n> hunc sine procul inscius: erat, fluit. Non meo exturbare manus petentia, more\r\n> [gener](http://inductasiuves.com/doctihinc.aspx), unda nunc, cum quae viribus\r\n> undis, et. Tyria congestos parenti; omnia summa in nec miscet patriosque\r\n> tantique, cornua? Ilioneus sua Numidasque popularis insula, sui certa\r\n> **petis**: membris nec fronti ponitur.\r\n\r\n## Perdidit manent\r\n\r\nAit tibique, ire [iubet tristis cresce](http://qui-soror.io/) partem\r\n[pecorumque](http://penatescapillos.net/) quae frustra et esse haut: memini.\r\n[Crinale ante](http://diesque.net/equorum-excidit), nec in virum et animos\r\npossis et semel libidine cum ad deceperat inter: modo pater. Vides fores radice\r\navidaeque mali; nec illa fibris torum *perdam*. Hastam tua pedem viderat sed\r\nalios Tyrios de. Coniunx hos Atrides Althaea Nilus, ab Iovis tantum iubar: vidit\r\nsiccis *inficit tu* verba herbas faticinasque ante hausit.\r\n\r\n> Mora post manet *illas illi est* quae rubent mecum suam saxea. Longo laetaris,\r\n> simul terram perire ad parvos dies tamen negata lapsa futuri\r\n> [Theridamas](http://intremuit.org/). In deam Ianthe! Inde mea falsam intrare\r\n> dura dixerat; tibi ora iura iactate, amatum est illi profanae. Quos est\r\n> gramina; luctibus invitam conscendere iram, credar cupido purgamina rupit\r\n> **praedelassat**: faveas corpore.\r\n\r\nHunc **negare** conscendit additus quae: haud sim fidelius crines tamen odoribus\r\nalipedis. Dulcedine deus vetustas: Daphnidis testatos nequeunt, tectoque exige.\r\n**Iura Aeginae** inmittitur, ei sono umerique ignes tacetve, iam timui et super\r\nsimulacra caput, orbis et.",
         };
 
-        private static List<string> TitleList { get; } = new List<string> {
+        public static List<string> TitleList { get; } = new List<string> {
             "How To Make More computing By Doing Less",
             "The Truth Is You Are Not The Only Person Concerned About computing",
             "Secrets To Getting computing To Complete Tasks Quickly And Efficiently",
@@ -281,7 +98,7 @@ namespace DDBMSP.TestClient
             "Sick And Tired Of Doing actor system The Old Way? Read This"
         };
 
-        private static List<string> ExcerptsList { get; } = new List<string> {
+        public static List<string> ExcerptsList { get; } = new List<string> {
             "Picture removal detract earnest is by. Esteems met joy attempt way clothes yet demesne tedious. Replying an marianne do it an entrance advanced. Two dare say play when hold. Required bringing me material stanhill jointure is as he. Mutual indeed yet her living result matter him bed whence. ",
             "His followed carriage proposal entrance directly had elegance. Greater for cottage gay parties natural. Remaining he furniture on he discourse suspected perpetual. Power dried her taken place day ought the. Four and our ham west miss. Education shameless who middleton agreement how. We in found world chief is at means weeks smile. ",
             "Meant balls it if up doubt small purse. Required his you put the outlived answered position. An pleasure exertion if believed provided to. All led out world these music while asked. Paid mind even sons does he door no. Attended overcame repeated it is perceive marianne in. In am think on style child of. Servants moreover in sensible he it ye possible. ",
@@ -297,7 +114,7 @@ namespace DDBMSP.TestClient
             "She wholly fat who window extent either formal. Removing welcomed civility or hastened is. Justice elderly but perhaps expense six her are another passage. Full her ten open fond walk not down. For request general express unknown are. He in just mr door body held john down he.",
         };
 
-        private static List<string> ImagesList { get; } = new List<string> {
+        public static List<string> ImagesList { get; } = new List<string> {
             "https://static.businessnews.com.au/sites/default/files/styles/medium_906x604/public/articles-2017-11/Cars%20Parked%20on%20Side%20of%20Road.jpg",
             "http://z75.d.sdska.ru/2-z75-f1124905-76fa-4a9d-9c09-6b1d1192834c.jpg",
             "http://thesmartdigest.com/wp-content/uploads/2017/05/Philips-Pasta-Maker.jpg",
@@ -343,7 +160,7 @@ namespace DDBMSP.TestClient
             "http://2.bp.blogspot.com/-GoOrNU2mIdA/VlcCd_8Kt7I/AAAAAAAAThA/PpDTSbHKIuE/s1600/Library%2Bin%2BPyongyang.jpg"
         };
 
-        private static List<string> UniversityList { get; } = new List<string> {
+        public static List<string> UniversityList { get; } = new List<string> {
             "Academie voor Hoger Kunst- en Cultuuronderwijs",
             "Academy of Graduate Studies",
             "Massachusetts Institute of Technology",
@@ -357,7 +174,7 @@ namespace DDBMSP.TestClient
             "Columbia University in the City of New York"
         };
 
-        private static List<string> ProfileList { get; } = new List<string> {
+        public static List<string> ProfileList { get; } = new List<string> {
             "https://media-exp2.licdn.com/media-proxy/ext?w=800&h=800&hash=HYqJcBfXKDsZPizzHDTJaynAfWM%3D&ora=1%2CaFBCTXdkRmpGL2lvQUFBPQ%2CxAVta5g-0R6nlh8Tw1Ij6bSL41qjq1FOQJWTC232RCSq_dSDYnbvZpSAJev_9gJCLXBdkgQxfe6yRDDhWtu4K4ryedxxlpf4JZX6bBcB",
             "https://media-exp1.licdn.com/media-proxy/ext?w=800&h=800&hash=c6lxgbkcfEJgTciVCOFablcwk2Y%3D&ora=1%2CaFBCTXdkRmpGL2lvQUFBPQ%2CxAVta5g-0R6nlh8Tw1Ij6bSL41qjq1FOQJWTC232RCSq-d2AZXXrZoSMO-f0-kBVIHNFjQYyfui1QDP8E5ahes7ye9lyjpH4ZM3-MldWcQRu1j0CtIJvdElp5dq2C-w",
             "http://www.wista.net/storage/wistabook/profile/992/profile_image_thumb.jpg",
@@ -369,7 +186,7 @@ namespace DDBMSP.TestClient
             "https://careerblog.du.edu/wp-content/uploads/sites/5/2016/11/rob-humphrey.jpg",
         };
 
-        private static List<string> TagsList { get; } = new List<string> {
+        public static List<string> TagsList { get; } = new List<string> {
             "space",
             "opera",
             "actor-system",

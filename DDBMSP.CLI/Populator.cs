@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
+using DDBMSP.Interfaces.Grains.Querier;
 using DDBMSP.Interfaces.Grains.Workers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Bson;
@@ -33,6 +34,9 @@ namespace DDBMSP.CLI
             
             ReadData();
             await Upload();
+
+            await GrainClient.GrainFactory.GetGrain<IGenericQuerier>(0).Execute();
+            
             return 0;
         }
 
@@ -77,7 +81,7 @@ namespace DDBMSP.CLI
             return sequence[k - 1] + d * (sequence[k] - sequence[k - 1]);
         }
 
-        private async Task Upload() {
+        private Task Upload() {
             
             UploadPB = Program.ProgressBar.Spawn(Units.Count, "Uploading...", Program.ProgressBarOption);
             UploadPB.Tick();
@@ -100,10 +104,11 @@ namespace DDBMSP.CLI
                 PopulateUnit(Units.Skip(Units.Count - Units.Count % Environment.ProcessorCount).Take(Units.Count % Environment.ProcessorCount), ref ops, ref lat);
             }
             UploadPB.Tick(Units.Count, $"Done. Latency: Min = {latencies.Min()}ms, Max = {latencies.Max()}ms, Average = {latencies.Average():F3}ms, 95% = {Percentile(latencies, .95):F3}ms, 99% = {Percentile(latencies, .99):F3}ms, 99.9% = {Percentile(latencies, .999):F3}ms");
-            Program.ProgressBar.Tick();
+            Program.ProgressBar.Tick(4, "Done.");
+            return Task.CompletedTask;
         }
 
-        private void Connect() {
+        private static void Connect() {
             var config = ClientConfiguration.LocalhostSilo();
             config.SerializationProviders.Add(typeof(ProtobufSerializer).GetTypeInfo());
             

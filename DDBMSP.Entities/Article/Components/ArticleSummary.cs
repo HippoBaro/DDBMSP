@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using DDBMSP.Interfaces.PODs.User.Components;
+using DDBMSP.Entities.User.Components;
 
-namespace DDBMSP.Interfaces.PODs.Article.Components
+namespace DDBMSP.Entities.Article.Components
 {
     public class ArticleSummary
     {
@@ -13,6 +13,8 @@ namespace DDBMSP.Interfaces.PODs.Article.Components
         public List<string> Tags { get; set; }
         public UserSummary Author { get; set; }
         public Uri Image { get; set; }
+
+        public ArticleSummary() { }
 
         public ArticleSummary(ArticleState articleState)
         {

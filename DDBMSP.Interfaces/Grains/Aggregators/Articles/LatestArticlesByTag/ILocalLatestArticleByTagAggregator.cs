@@ -1,4 +1,4 @@
-﻿using DDBMSP.Interfaces.PODs.Article.Components;
+﻿using DDBMSP.Entities.Article.Components;
 using Orleans;
 
 namespace DDBMSP.Interfaces.Grains.Aggregators.Articles.LatestArticlesByTag

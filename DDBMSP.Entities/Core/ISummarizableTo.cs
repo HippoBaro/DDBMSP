@@ -1,4 +1,4 @@
-﻿namespace DDBMSP.Interfaces.PODs.Core
+﻿namespace DDBMSP.Entities.Core
 {
     public interface ISummarizableTo<out TSummary>
     {

@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DDBMSP.Common;
+using DDBMSP.Entities.Article.Components;
 using DDBMSP.Grains.Core;
-using DDBMSP.Grains.DataStructures;
 using DDBMSP.Interfaces.Grains.Aggregators.Articles.LatestArticles;
-using DDBMSP.Interfaces.PODs.Article.Components;
 using Orleans;
 using Orleans.Concurrency;
 

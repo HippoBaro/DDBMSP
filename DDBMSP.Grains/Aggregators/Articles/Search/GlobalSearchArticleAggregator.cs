@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DDBMSP.Entities.Article.Components;
 using DDBMSP.Grains.Core;
 using DDBMSP.Interfaces.Grains.Aggregators.Articles.Search;
-using DDBMSP.Interfaces.PODs.Article.Components;
 using Lucene.Net.Analysis.Core;
 using Lucene.Net.Documents;
 using Lucene.Net.Index;
@@ -11,7 +11,6 @@ using Lucene.Net.Search;
 using Lucene.Net.Search.Spans;
 using Lucene.Net.Store;
 using Lucene.Net.Util;
-using Orleans;
 using Orleans.Concurrency;
 
 namespace DDBMSP.Grains.Aggregators.Articles.Search

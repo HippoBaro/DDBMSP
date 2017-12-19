@@ -1,6 +1,6 @@
 ﻿﻿using System.Collections.Generic;
 
-namespace DDBMSP.Grains.DataStructures
+namespace DDBMSP.Common
 {
     public class CircularFifoStack<T> : LinkedList<T>
     {

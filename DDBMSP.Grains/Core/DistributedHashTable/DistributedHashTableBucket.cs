@@ -1,8 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using DDBMSP.Common;
+using DDBMSP.Entities.Article;
+using DDBMSP.Entities.Query;
+using DDBMSP.Entities.User;
 using DDBMSP.Interfaces.Grains.Core.DistributedHashTable;
-using Orleans;
+using Lucene.Net.Index;
+using Newtonsoft.Json;
 using Orleans.Concurrency;
 
 namespace DDBMSP.Grains.Core.DistributedHashTable
@@ -37,5 +42,26 @@ namespace DDBMSP.Grains.Core.DistributedHashTable
         }
 
         public Task<int> Count() => Task.FromResult(Elements.Count);
+        
+        public Task<Immutable<Dictionary<TKey, TValue>>> Enumerate() => Task.FromResult(Elements.AsImmutable());
+
+        public async Task<Immutable<string>> Execute(Immutable<QueryDefinition> query) {
+
+            var context = new Globals {
+                Articles = Elements as Dictionary<Guid, ArticleState>,
+                Users = Elements as Dictionary<Guid, UserState>
+            };
+
+            try {
+                
+                var result = await Evaluator.Execute(ScriptType.QuerySelector, "test", context);
+            
+                return new Immutable<string>(JsonConvert.SerializeObject(result));
+            }
+            catch (Exception e) {
+                Console.WriteLine(e);
+                throw;
+            }
+        }
     }
 }

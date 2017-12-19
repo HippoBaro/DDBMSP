@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using DDBMSP.Interfaces.PODs.Article;
-using DDBMSP.Interfaces.PODs.User;
+using DDBMSP.Entities.Article;
+using DDBMSP.Entities.User;
 using Orleans;
 using Orleans.Concurrency;
 

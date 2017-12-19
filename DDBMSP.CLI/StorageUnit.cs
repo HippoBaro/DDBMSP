@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using DDBMSP.Interfaces.PODs.Article;
-using DDBMSP.Interfaces.PODs.User;
+using DDBMSP.Entities.Article;
+using DDBMSP.Entities.User;
 
 namespace DDBMSP.CLI
 {

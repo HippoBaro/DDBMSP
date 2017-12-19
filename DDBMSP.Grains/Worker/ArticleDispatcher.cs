@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using DDBMSP.Entities.Article;
+using DDBMSP.Entities.User;
 using DDBMSP.Interfaces.Grains.Aggregators.Articles;
 using DDBMSP.Interfaces.Grains.Core.DistributedHashTable;
 using DDBMSP.Interfaces.Grains.Workers;
-using DDBMSP.Interfaces.PODs.Article;
-using DDBMSP.Interfaces.PODs.Article.Components;
-using DDBMSP.Interfaces.PODs.User;
 using Orleans;
 using Orleans.Concurrency;
 
@@ -27,11 +26,11 @@ namespace DDBMSP.Grains.Worker
                 author.Value.Articles.Add(article.Summarize());
                 dictRange.Add(article.Id, article);
             }
-
+            
             return Task.WhenAll(
                 dict.SetRange(dictRange.AsImmutable()),
                 GrainFactory.GetGrain<IArticleAggregatorHubGrain>(0).AggregateRange(author.Value.Articles.AsImmutable()),
-                GrainFactory.GetGrain<IDistributedHashTable<Guid, UserState>>(0).Set(author.Value.Id, author.Value));
+                GrainFactory.GetGrain<IDistributedHashTable<Guid, UserState>>(0).Set(author.Value.Id.AsImmutable(), author.Value.AsImmutable()));
         }
     }
 }

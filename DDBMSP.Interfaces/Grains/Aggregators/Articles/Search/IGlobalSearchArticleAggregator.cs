@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using DDBMSP.Interfaces.PODs.Article.Components;
+using DDBMSP.Entities.Article.Components;
 using Orleans;
 using Orleans.Concurrency;
 

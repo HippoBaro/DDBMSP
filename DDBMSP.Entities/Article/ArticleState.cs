@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using DDBMSP.Interfaces.Enums;
-using DDBMSP.Interfaces.PODs.Article.Components;
-using DDBMSP.Interfaces.PODs.Core;
-using DDBMSP.Interfaces.PODs.User.Components;
+using DDBMSP.Entities.Article.Components;
+using DDBMSP.Entities.Core;
+using DDBMSP.Entities.Enums;
+using DDBMSP.Entities.User.Components;
 
-namespace DDBMSP.Interfaces.PODs.Article
+namespace DDBMSP.Entities.Article
 {
     public class ArticleState : ISummarizableTo<ArticleSummary>
     {

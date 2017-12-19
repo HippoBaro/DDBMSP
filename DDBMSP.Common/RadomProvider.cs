@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace DDBMSP.Grains.Core
+namespace DDBMSP.Common
 {
     public static class RadomProvider
     {

@@ -1,12 +1,13 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace DDBMSP.Interfaces.Enums
+namespace DDBMSP.Entities.Enums
 {
     [JsonConverter(typeof(StringEnumConverter), true)]
-    public enum ArticleCategory
+    public enum Gender
     {
-        Science,
-        Technology
+        Male,
+        Female,
+        Transgender //Why not
     }
 }

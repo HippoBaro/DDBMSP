@@ -3,17 +3,14 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
-using CommandLine;
-using DDBMSP.Grains;
-using DDBMSP.Interfaces.Enums;
-using DDBMSP.Interfaces.PODs.Article;
-using DDBMSP.Interfaces.PODs.Article.Components;
-using DDBMSP.Interfaces.PODs.User;
-using Newtonsoft.Json;
+ using CommandLine;
+ using DDBMSP.Entities.Article;
+ using DDBMSP.Entities.Article.Components;
+ using DDBMSP.Entities.Enums;
+ using DDBMSP.Entities.User;
+ using Newtonsoft.Json;
 using Newtonsoft.Json.Bson;
-using Newtonsoft.Json.Converters;
-using ShellProgressBar;
+ using ShellProgressBar;
 
 namespace DDBMSP.CLI
 {

@@ -2,10 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DDBMSP.Entities.Article.Components;
 using DDBMSP.Grains.Core;
 using DDBMSP.Interfaces.Grains.Aggregators.Articles.LatestArticles;
-using DDBMSP.Interfaces.PODs.Article.Components;
-using Orleans;
 using Orleans.Concurrency;
 
 namespace DDBMSP.Grains.Aggregators.Articles.LatestArticles

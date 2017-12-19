@@ -2,9 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DDBMSP.Common;
 using DDBMSP.Interfaces.Grains.Core.DistributedHashTable;
 using Orleans;
 using Orleans.Concurrency;
+using DDBMSP.Entities.Query;
+using Lucene.Net.Search;
+using Newtonsoft.Json;
 
 namespace DDBMSP.Grains.Core.DistributedHashTable
 {
@@ -12,7 +16,7 @@ namespace DDBMSP.Grains.Core.DistributedHashTable
     [Reentrant]
     public class DistributedHashTable<TKey, TValue> : Grain, IDistributedHashTable<TKey, TValue>
     {
-        private const int BucketsNumber = 100;
+        private const int BucketsNumber = 1;
 
         public Task<Immutable<TValue>> Get(Immutable<TKey> key) {
             // Calculate the hash code of the key, eliminate negative values.
@@ -38,7 +42,7 @@ namespace DDBMSP.Grains.Core.DistributedHashTable
             var dispatch = new Dictionary<int, List<KeyValuePair<TKey, TValue>>>(dict.Value.Count);
 
             foreach (var value in dict.Value) {
-                
+
                 // Calculate the hash code of the key, eliminate negative values.
                 var hashCode = value.Key.GetHashCode() & 0x7FFFFFFF;
                 var targetBucket = hashCode % BucketsNumber;
@@ -48,7 +52,9 @@ namespace DDBMSP.Grains.Core.DistributedHashTable
             }
 
             var tasks = new List<Task>(dispatch.Count);
-            tasks.AddRange(dispatch.Select(d => GrainFactory.GetGrain<IDistributedHashTableBucket<TKey, TValue>>(d.Key).SetRange(d.Value.AsImmutable())));
+            tasks.AddRange(dispatch.Select(d =>
+                GrainFactory.GetGrain<IDistributedHashTableBucket<TKey, TValue>>(d.Key)
+                    .SetRange(d.Value.AsImmutable())));
             return Task.WhenAll(tasks);
         }
 
@@ -66,6 +72,28 @@ namespace DDBMSP.Grains.Core.DistributedHashTable
                 tasks.Add(GrainFactory.GetGrain<IDistributedHashTableBucket<TKey, TValue>>(i).Count());
             }
             return (await Task.WhenAll(tasks)).Sum();
+        }
+
+        public async Task<Immutable<string>> Execute(Immutable<QueryDefinition> query) {
+            var tasks = new List<Task<Immutable<string>>>(BucketsNumber);
+            for (var i = 0; i < BucketsNumber; i++) {
+                tasks.Add(GrainFactory.GetGrain<IDistributedHashTableBucket<TKey, TValue>>(i).Execute(query));
+            }
+
+            try {
+                await Task.WhenAll(tasks);
+
+                var agg = tasks.Select(task => JsonConvert.DeserializeObject(task.Result.Value));
+
+                var context = new Globals {TaskResult = agg};
+
+                return JsonConvert.SerializeObject(await Evaluator.Execute(ScriptType.QueryAggregator, "test", context))
+                    .AsImmutable();
+            }
+            catch (Exception e) {
+                Console.WriteLine(e);
+                throw;
+            }
         }
     }
 }

@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DDBMSP.Entities.Article.Components;
 using DDBMSP.Interfaces.Grains.Aggregators.Articles;
 using DDBMSP.Interfaces.Grains.Aggregators.Articles.LatestArticles;
 using DDBMSP.Interfaces.Grains.Aggregators.Articles.LatestArticlesByTag;
 using DDBMSP.Interfaces.Grains.Aggregators.Articles.Search;
-using DDBMSP.Interfaces.PODs.Article.Components;
 using Orleans;
 using Orleans.Concurrency;
 

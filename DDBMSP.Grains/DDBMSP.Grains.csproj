@@ -6,16 +6,25 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'" />
   <ItemGroup>
+    <ProjectReference Include="..\DDBMSP.Common\DDBMSP.Common.csproj">
+      <Project>{544120F9-00C9-4D3E-A124-0ADDCF79B1BD}</Project>
+      <Name>DDBMSP.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DDBMSP.Entities\DDBMSP.Entities.csproj" />
     <ProjectReference Include="..\DDBMSP.Interfaces\DDBMSP.Interfaces.csproj">
       <Project>{04683BAF-B9CB-46DA-B072-FF6BF9DADF4A}</Project>
       <Name>DDBMSP.Interfaces</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="AsyncEnumerator" Version="2.1.0" />
     <PackageReference Include="Lucene.Net" Version="4.8.0-beta00005" />
     <PackageReference Include="Lucene.Net.Analysis.Common" Version="4.8.0-beta00005" />
     <PackageReference Include="Lucene.Net.QueryParser" Version="4.8.0-beta00005" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="2.6.1" />
     <PackageReference Include="Microsoft.Orleans.Core" Version="2.0.0-preview4-20171025" />
     <PackageReference Include="Microsoft.Orleans.OrleansCodeGenerator.Build" Version="2.0.0-preview4-20171025" />
+    <PackageReference Include="Microsoft.Orleans.OrleansGoogleUtils" Version="2.0.0-beta2" />
+    <PackageReference Include="Newtonsoft.Json.Bson" Version="1.0.1" />
   </ItemGroup>
 </Project>

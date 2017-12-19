@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using DDBMSP.Interfaces.Grains.Querier;
 using Orleans;
 using Orleans.Concurrency;
 
 namespace DDBMSP.Interfaces.Grains.Core.DistributedHashTable
 {
-    public interface IDistributedHashTable<TKey, TValue> : IGrainWithIntegerKey
+    public interface IDistributedHashTable<TKey, TValue> : IGrainWithIntegerKey, IDynamicQueryable
     {
         Task<Immutable<TValue>> Get(Immutable<TKey> key);
         Task<Immutable<TValue>> Get(TKey key);

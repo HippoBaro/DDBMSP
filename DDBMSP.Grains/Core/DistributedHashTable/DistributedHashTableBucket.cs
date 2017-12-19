@@ -6,8 +6,6 @@ using DDBMSP.Entities.Article;
 using DDBMSP.Entities.Query;
 using DDBMSP.Entities.User;
 using DDBMSP.Interfaces.Grains.Core.DistributedHashTable;
-using Lucene.Net.Index;
-using Newtonsoft.Json;
 using Orleans.Concurrency;
 
 namespace DDBMSP.Grains.Core.DistributedHashTable
@@ -45,7 +43,7 @@ namespace DDBMSP.Grains.Core.DistributedHashTable
         
         public Task<Immutable<Dictionary<TKey, TValue>>> Enumerate() => Task.FromResult(Elements.AsImmutable());
 
-        public async Task<Immutable<string>> Execute(Immutable<QueryDefinition> query) {
+        public async Task<Immutable<dynamic>> Execute(Immutable<QueryDefinition> query) {
 
             var context = new Globals {
                 Articles = Elements as Dictionary<Guid, ArticleState>,
@@ -54,9 +52,9 @@ namespace DDBMSP.Grains.Core.DistributedHashTable
 
             try {
                 
-                var result = await Evaluator.Execute(ScriptType.QuerySelector, "test", context);
+                var result = await Evaluator.Execute(ScriptType.QuerySelector, "test2", context);
             
-                return new Immutable<string>(JsonConvert.SerializeObject(result));
+                return result.AsImmutable();
             }
             catch (Exception e) {
                 Console.WriteLine(e);

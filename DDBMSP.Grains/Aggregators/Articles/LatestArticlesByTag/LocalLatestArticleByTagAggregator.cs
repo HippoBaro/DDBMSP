@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using DDBMSP.Common;
 using DDBMSP.Entities.Article.Components;
-using DDBMSP.Grains.Core;
 using DDBMSP.Interfaces.Grains.Aggregators.Articles.LatestArticlesByTag;
 using Orleans;
 using Orleans.Concurrency;

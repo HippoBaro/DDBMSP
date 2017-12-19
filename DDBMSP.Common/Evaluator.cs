@@ -33,8 +33,8 @@ namespace DDBMSP.Common
     {
         private static ScriptOptions ScriptOptions { get; } = ScriptOptions.Default
             .WithReferences(typeof(ArticleState).Assembly, typeof(System.Linq.IQueryable).Assembly,
-                typeof(IEnumerable<>).Assembly)
-            .WithImports("DDBMSP.Entities.Article", "DDBMSP.Entities.User", "System.Linq",
+                typeof(IEnumerable<>).Assembly, typeof(Guid).Assembly)
+            .WithImports("DDBMSP.Entities.Article", "DDBMSP.Entities.User", "System.Linq", "System",
                 "System.Collections.Generic");
 
         private static Dictionary<string, QueryScript> Queries { get; } = new Dictionary<string, QueryScript>();

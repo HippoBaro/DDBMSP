@@ -7,8 +7,6 @@ using DDBMSP.Interfaces.Grains.Core.DistributedHashTable;
 using Orleans;
 using Orleans.Concurrency;
 using DDBMSP.Entities.Query;
-using Lucene.Net.Search;
-using Newtonsoft.Json;
 
 namespace DDBMSP.Grains.Core.DistributedHashTable
 {
@@ -74,21 +72,22 @@ namespace DDBMSP.Grains.Core.DistributedHashTable
             return (await Task.WhenAll(tasks)).Sum();
         }
 
-        public async Task<Immutable<string>> Execute(Immutable<QueryDefinition> query) {
-            var tasks = new List<Task<Immutable<string>>>(BucketsNumber);
+        public async Task<Immutable<dynamic>> Execute(Immutable<QueryDefinition> query) {
+            var tasks = new List<Task<Immutable<dynamic>>>(BucketsNumber);
             for (var i = 0; i < BucketsNumber; i++) {
-                tasks.Add(GrainFactory.GetGrain<IDistributedHashTableBucket<TKey, TValue>>(i).Execute(query));
+
+                var test = GrainFactory.GetGrain<IDistributedHashTableBucket<TKey, TValue>>(i).Execute(query);
+                tasks.Add(test);
             }
 
             try {
                 await Task.WhenAll(tasks);
 
-                var agg = tasks.Select(task => JsonConvert.DeserializeObject(task.Result.Value));
+                var agg = tasks.Select(task => task.Result.Value);
 
                 var context = new Globals {TaskResult = agg};
 
-                return JsonConvert.SerializeObject(await Evaluator.Execute(ScriptType.QueryAggregator, "test", context))
-                    .AsImmutable();
+                return new Immutable<dynamic>(await Evaluator.Execute(ScriptType.QueryAggregator, "test2", context));
             }
             catch (Exception e) {
                 Console.WriteLine(e);

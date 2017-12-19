@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
+using DDBMSP.Entities.Query;
 using DDBMSP.Interfaces.Grains.Querier;
 using DDBMSP.Interfaces.Grains.Workers;
 using Newtonsoft.Json;
@@ -20,7 +21,7 @@ using ShellProgressBar;
 
 namespace DDBMSP.CLI
 {
-    [Verb("populate", HelpText = "Generate data (user, articles, views, comments, etc.)")]
+    [Verb("populate", HelpText = "Populate your cluster with data")]
     internal class Populator
     {
 
@@ -34,8 +35,6 @@ namespace DDBMSP.CLI
             
             ReadData();
             await Upload();
-
-            await GrainClient.GrainFactory.GetGrain<IGenericQuerier>(0).Execute();
             
             return 0;
         }
@@ -108,19 +107,6 @@ namespace DDBMSP.CLI
             return Task.CompletedTask;
         }
 
-        private static void Connect() {
-            var config = ClientConfiguration.LocalhostSilo();
-            config.SerializationProviders.Add(typeof(ProtobufSerializer).GetTypeInfo());
-            
-            try {
-                InitializeWithRetries(config, 5);
-            }
-            catch (Exception ex) {
-                Console.WriteLine($"Orleans client initialization failed failed due to {ex}");
-                throw;
-            }
-        }
-
         private void PopulateUnit(IEnumerable<StorageUnit> units, ref int ops, ref int lat) {
             var tasks = new List<Task>(units.Count());
             
@@ -135,6 +121,19 @@ namespace DDBMSP.CLI
             ops += units.Sum(unit => unit.EntityCount);
         }
         
+        private static void Connect() {
+            var config = ClientConfiguration.LocalhostSilo();
+            config.SerializationProviders.Add(typeof(ProtobufSerializer).GetTypeInfo());
+            config.FallbackSerializationProvider = typeof(ILBasedSerializer).GetTypeInfo();
+            
+            try {
+                InitializeWithRetries(config, 5);
+            }
+            catch (Exception ex) {
+                Console.WriteLine($"Orleans client initialization failed failed due to {ex}");
+                throw;
+            }
+        }
         
         private static void InitializeWithRetries(ClientConfiguration config, int initializeAttemptsBeforeFailing) {
             var attempt = 0;

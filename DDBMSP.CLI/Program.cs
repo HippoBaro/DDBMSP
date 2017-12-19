@@ -18,10 +18,11 @@ namespace DDBMSP.CLI
         };
         
         private static int Main(string[] args) {
-            return Parser.Default.ParseArguments<Generator, Populator>(args)
+            return Parser.Default.ParseArguments<Generator, Populator, Interactive.Interactive>(args)
                 .MapResult(
                     (Generator opts) => opts.Run(),
                     (Populator o) => o.Run().Result,
+                    (Interactive.Interactive o) => o.Run().Result,
                     errs => 1);
         }
     }

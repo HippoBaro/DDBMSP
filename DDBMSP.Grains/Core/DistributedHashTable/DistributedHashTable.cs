@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DDBMSP.Common;
 using DDBMSP.Interfaces.Grains.Core.DistributedHashTable;
 using Orleans;
 using Orleans.Concurrency;
-using DDBMSP.Entities.Query;
 
 namespace DDBMSP.Grains.Core.DistributedHashTable
 {
@@ -72,27 +70,14 @@ namespace DDBMSP.Grains.Core.DistributedHashTable
             return (await Task.WhenAll(tasks)).Sum();
         }
 
-        public async Task<Immutable<dynamic>> Execute(Immutable<QueryDefinition> query) {
+        public async Task<Immutable<dynamic>> Query(Immutable<string> queryName) {
             var tasks = new List<Task<Immutable<dynamic>>>(BucketsNumber);
             for (var i = 0; i < BucketsNumber; i++) {
-
-                var test = GrainFactory.GetGrain<IDistributedHashTableBucket<TKey, TValue>>(i).Execute(query);
-                tasks.Add(test);
+                tasks.Add(GrainFactory.GetGrain<IDistributedHashTableBucket<TKey, TValue>>(i).Query(queryName));
             }
-
-            try {
-                await Task.WhenAll(tasks);
-
-                var agg = tasks.Select(task => task.Result.Value);
-
-                var context = new Globals {TaskResult = agg};
-
-                return new Immutable<dynamic>(await Evaluator.Execute(ScriptType.QueryAggregator, "test2", context));
-            }
-            catch (Exception e) {
-                Console.WriteLine(e);
-                throw;
-            }
+            await Task.WhenAll(tasks);
+            return new Immutable<dynamic>(await QueryEngine.Execute(ScriptType.QueryAggregator, queryName.Value,
+                new QueryContext {TaskResult = tasks.Select(task => task.Result.Value)}));
         }
     }
 }

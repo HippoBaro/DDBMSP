@@ -11,10 +11,11 @@ using Orleans.Concurrency;
 namespace DDBMSP.Grains.Core.DistributedHashTable
 {
     [Reentrant]
-    public class DistributedHashTableBucket<TKey, TValue> : SingleWriterMultipleReadersGrain, IDistributedHashTableBucket<TKey, TValue>
+    public class DistributedHashTableBucket<TKey, TValue> : SingleWriterMultipleReadersGrain,
+        IDistributedHashTableBucket<TKey, TValue>
     {
         private Dictionary<TKey, TValue> Elements { get; } = new Dictionary<TKey, TValue>(30000);
-        
+
         public Task<Immutable<TValue>> Get(Immutable<TKey> key) => Task.FromResult(Elements[key.Value].AsImmutable());
 
         public Task Set(Immutable<TKey> key, Immutable<TValue> value) {
@@ -36,30 +37,20 @@ namespace DDBMSP.Grains.Core.DistributedHashTable
                 }
                 return Task.CompletedTask;
             }
+
             return SerialExecutor.AddNext(Set);
         }
 
         public Task<int> Count() => Task.FromResult(Elements.Count);
-        
+
         public Task<Immutable<Dictionary<TKey, TValue>>> Enumerate() => Task.FromResult(Elements.AsImmutable());
 
-        public async Task<Immutable<dynamic>> Execute(Immutable<QueryDefinition> query) {
-
-            var context = new Globals {
+        public async Task<Immutable<dynamic>> Query(Immutable<string> queryName) {
+            var result = await QueryEngine.Execute(ScriptType.QuerySelector, queryName.Value, new QueryContext {
                 Articles = Elements as Dictionary<Guid, ArticleState>,
                 Users = Elements as Dictionary<Guid, UserState>
-            };
-
-            try {
-                
-                var result = await Evaluator.Execute(ScriptType.QuerySelector, "test2", context);
-            
-                return result.AsImmutable();
-            }
-            catch (Exception e) {
-                Console.WriteLine(e);
-                throw;
-            }
+            });
+            return result.AsImmutable();
         }
     }
 }

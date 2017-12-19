@@ -23,6 +23,7 @@ namespace DDBMSP.Silo
         {
             var siloConfig = ClusterConfiguration.LocalhostPrimarySilo();
             siloConfig.Globals.SerializationProviders.Add(typeof(ProtobufSerializer).GetTypeInfo());
+            //siloConfig.Globals.FallbackSerializationProvider = typeof(ILBasedSerializer).GetTypeInfo();
             siloConfig.AddSimpleMessageStreamProvider("Default", true);
             siloConfig.AddMemoryStorageProvider();
             siloConfig.LoadFromFile("OrleansConfiguration.xml");

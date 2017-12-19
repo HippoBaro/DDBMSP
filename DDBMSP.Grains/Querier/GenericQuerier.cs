@@ -15,16 +15,13 @@ namespace DDBMSP.Grains.Querier
     [Reentrant]
     public class GenericQuerier : Grain, IGenericQuerier
     {
-        public async Task<dynamic> Execute() {
-            var articles = GrainFactory.GetGrain<IDistributedHashTable<Guid, ArticleState>>(0);
-
+        public Task CommitQuery(Immutable<QueryDefinition> queryDefinition) {
+            /*
             var query = new QueryDefinition {
                 AggregationLambda = "Selected.Sum()",
                 SelectorLambda = "Articles.Count(pair => !string.IsNullOrEmpty(pair.Value.Title))",
                 ReturnTypeName = "int"
             };
-
-            Guid toto;
             
             var query2 = new QueryDefinition {
                 AggregationLambda = "Selected.SelectMany(dict => dict).ToDictionary(pair => pair.Key, pair => pair.Value)",
@@ -32,32 +29,17 @@ namespace DDBMSP.Grains.Querier
                 ReturnTypeName = "IEnumerable<KeyValuePair<Guid, ArticleState>>"
             };
             
-            var t = Stopwatch.StartNew();
-            Evaluator.CompileAndRegister(query, "test");
-            Console.WriteLine($"Compile: {t.Elapsed:g}");
-            t.Restart();
+            newquery -n test -t "IEnumerable<KeyValuePair<Guid, ArticleState>>" -s "Articles.Where(pair => pair.Value.Title != null)" -a "Selected.SelectMany(dict => dict).ToDictionary(pair => pair.Key, pair => pair.Value)"
             
-            Evaluator.CompileAndRegister(query2, "test2");
-            Console.WriteLine($"Compile: {t.Elapsed:g}");
-            t.Restart();
+            */
+            
+            QueryEngine.CompileAndRegister(queryDefinition.Value);
+            return Task.CompletedTask;
+        }
 
-            try {
-
-                var test = await GrainFactory.GetGrain<IDistributedHashTable<Guid, ArticleState>>(0)
-                    .Execute(query2.AsImmutable());
-                
-                //var str = (await articles.Execute(query.AsImmutable())).Value;
-                Console.WriteLine($"Query: {t.ElapsedMilliseconds}ms");
-                //var count = JsonConvert.DeserializeObject<int>(str);
-
-                Console.WriteLine(test.Value.Count);
-
-            }
-            catch (Exception e) {
-                Console.WriteLine(e);
-                throw;
-            }
-            return null;
+        public async Task<Immutable<dynamic>> Query(Immutable<string> queryName) {
+            return await GrainFactory.GetGrain<IDistributedHashTable<Guid, ArticleState>>(0)
+                .Query(queryName);;
         }
     }
 }

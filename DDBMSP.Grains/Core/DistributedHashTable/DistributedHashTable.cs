@@ -1,7 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DDBMSP.Common;
+using DDBMSP.Common.QueryEngine;
+using DDBMSP.Entities.Query;
 using DDBMSP.Interfaces.Grains.Core.DistributedHashTable;
 using Orleans;
 using Orleans.Concurrency;
@@ -12,7 +15,7 @@ namespace DDBMSP.Grains.Core.DistributedHashTable
     [Reentrant]
     public class DistributedHashTable<TKey, TValue> : Grain, IDistributedHashTable<TKey, TValue>
     {
-        private const int BucketsNumber = 1;
+        private const int BucketsNumber = 100;
 
         public Task<Immutable<TValue>> Get(Immutable<TKey> key) {
             // Calculate the hash code of the key, eliminate negative values.
@@ -70,13 +73,15 @@ namespace DDBMSP.Grains.Core.DistributedHashTable
             return (await Task.WhenAll(tasks)).Sum();
         }
 
-        public async Task<Immutable<dynamic>> Query(Immutable<string> queryName) {
+        public async Task<Immutable<dynamic>> Query(Immutable<QueryDefinition> queryDefinition) {
+            Console.WriteLine($"HashTable starting contacting buckets");
             var tasks = new List<Task<Immutable<dynamic>>>(BucketsNumber);
             for (var i = 0; i < BucketsNumber; i++) {
-                tasks.Add(GrainFactory.GetGrain<IDistributedHashTableBucket<TKey, TValue>>(i).Query(queryName));
+                tasks.Add(GrainFactory.GetGrain<IDistributedHashTableBucket<TKey, TValue>>(i).Query(queryDefinition));
             }
             await Task.WhenAll(tasks);
-            return new Immutable<dynamic>(await QueryEngine.Execute(ScriptType.QueryAggregator, queryName.Value,
+            Console.WriteLine($"HashTable starting aggregating");
+            return new Immutable<dynamic>(await QueryEngine.Execute(ScriptType.QueryAggregator, queryDefinition.Value,
                 new QueryContext {TaskResult = tasks.Select(task => task.Result.Value)}));
         }
     }

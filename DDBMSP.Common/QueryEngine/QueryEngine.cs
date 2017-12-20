@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using DDBMSP.Entities.Article;
 using DDBMSP.Entities.Query;
@@ -7,7 +8,7 @@ using DDBMSP.Entities.User;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
 
-namespace DDBMSP.Common
+namespace DDBMSP.Common.QueryEngine
 {
     public enum ScriptType
     {
@@ -30,13 +31,13 @@ namespace DDBMSP.Common
 
     public static class QueryEngine
     {
-        private static Dictionary<string, QueryScript> Queries { get; } = new Dictionary<string, QueryScript>();
-
-        private static ScriptOptions ScriptOptions { get; } = ScriptOptions.Default
+        private static ScriptOptions ScriptOptions = ScriptOptions.Default
             .WithReferences(typeof(ArticleState).Assembly, typeof(System.Linq.IQueryable).Assembly,
                 typeof(IEnumerable<>).Assembly, typeof(Guid).Assembly)
             .WithImports("DDBMSP.Entities.Article", "DDBMSP.Entities.User", "System.Linq", "System",
                 "System.Collections.Generic").WithEmitDebugInformation(false);
+        
+        private static Dictionary<string, QueryScript> Queries = new Dictionary<string, QueryScript>();
 
         public static void CompileAndRegister(QueryDefinition queryDefinition) {
             if (Queries.ContainsKey(queryDefinition.Name))
@@ -55,10 +56,24 @@ namespace DDBMSP.Common
             });
         }
 
-        public static async Task<object> Execute(ScriptType type, string name, QueryContext context) {
-            if (type == ScriptType.QuerySelector)
-                return await Queries[name].Selector.Invoke(context);
-            return await Queries[name].Aggregator.Invoke(context);
+        public static async Task<object> Execute(ScriptType type, QueryDefinition queryDefinition, QueryContext context) {
+            Console.WriteLine($"{Thread.CurrentThread.ManagedThreadId}: In thread");
+            if (!Queries.ContainsKey(queryDefinition.Name))
+                CompileAndRegister(queryDefinition);
+            
+            dynamic ret;
+            if (type == ScriptType.QuerySelector) {
+                Console.WriteLine($"{Thread.CurrentThread.ManagedThreadId}: Executing Selector");
+                ret = await Queries[queryDefinition.Name].Selector.Invoke(context);
+            }
+            else {
+                Console.WriteLine($"{Thread.CurrentThread.ManagedThreadId}: Executing Aggregator");
+                ret = await Queries[queryDefinition.Name].Aggregator.Invoke(context);
+            }
+            
+            Console.WriteLine($"{Thread.CurrentThread.ManagedThreadId}: Returning");
+            return ret;
         }
+        
     }
 }

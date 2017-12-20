@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using DDBMSP.Common;
 using DDBMSP.Entities.Article;
@@ -15,31 +18,27 @@ namespace DDBMSP.Grains.Querier
     [Reentrant]
     public class GenericQuerier : Grain, IGenericQuerier
     {
-        public Task CommitQuery(Immutable<QueryDefinition> queryDefinition) {
-            /*
-            var query = new QueryDefinition {
-                AggregationLambda = "Selected.Sum()",
-                SelectorLambda = "Articles.Count(pair => !string.IsNullOrEmpty(pair.Value.Title))",
-                ReturnTypeName = "int"
-            };
-            
-            var query2 = new QueryDefinition {
-                AggregationLambda = "Selected.SelectMany(dict => dict).ToDictionary(pair => pair.Key, pair => pair.Value)",
-                SelectorLambda = "Articles.Where(pair => pair.Value.Author.Name.Contains(\"Mira\"))",
-                ReturnTypeName = "IEnumerable<KeyValuePair<Guid, ArticleState>>"
-            };
-            
-            newquery -n test -t "IEnumerable<KeyValuePair<Guid, ArticleState>>" -s "Articles.Where(pair => pair.Value.Title != null)" -a "Selected.SelectMany(dict => dict).ToDictionary(pair => pair.Key, pair => pair.Value)"
-            
-            */
-            
-            QueryEngine.CompileAndRegister(queryDefinition.Value);
-            return Task.CompletedTask;
-        }
-
         public async Task<Immutable<dynamic>> Query(Immutable<string> queryName) {
-            return await GrainFactory.GetGrain<IDistributedHashTable<Guid, ArticleState>>(0)
-                .Query(queryName);;
+            var def = await GrainFactory.GetGrain<IQueryRepository>(0).GetQueryDefinition(queryName);
+            var ret = await GrainFactory.GetGrain<IDistributedHashTable<Guid, ArticleState>>(0)
+                .Query(def);
+            
+            Console.WriteLine("Returning query's result");
+            
+            Console.WriteLine(ret.Value.GetType().Name);
+            
+            var t = new Dictionary<Guid, ArticleState>();
+
+            var tt = t.Take(1);
+
+            if (ret.Value.GetType().Name.StartsWith("Dictionary")) {
+                Console.WriteLine("It's a dictionnary");
+                var ret2 = ret.Value.Take(1).AsImmutable();
+                Console.WriteLine(ret2.Value.GetType().Name);
+                return ret2;
+            }
+            
+            return ret;
         }
     }
 }

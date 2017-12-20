@@ -6,6 +6,6 @@ namespace DDBMSP.Interfaces.Grains.Querier
 {
     public interface IDynamicQueryable
     {
-        Task<Immutable<dynamic>> Query(Immutable<string> queryName);
+        Task<Immutable<dynamic>> Query(Immutable<QueryDefinition> queryDefinition);
     }
 }

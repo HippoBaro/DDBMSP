@@ -26,7 +26,7 @@ namespace DDBMSP.CLI.Interactive
         public string Aggregator { get; set; }
 
         public async Task<int> Run() {
-            var querier = GrainClient.GrainFactory.GetGrain<IGenericQuerier>(0);
+            var querier = GrainClient.GrainFactory.GetGrain<IQueryRepository>(0);
             
             var query = new QueryDefinition {
                 AggregationLambda = Aggregator,

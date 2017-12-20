@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using DDBMSP.Entities.Article;
 using DDBMSP.Entities.Query;
@@ -57,21 +56,17 @@ namespace DDBMSP.Common.QueryEngine
         }
 
         public static async Task<object> Execute(ScriptType type, QueryDefinition queryDefinition, QueryContext context) {
-            Console.WriteLine($"{Thread.CurrentThread.ManagedThreadId}: In thread");
             if (!Queries.ContainsKey(queryDefinition.Name))
                 CompileAndRegister(queryDefinition);
             
             dynamic ret;
             if (type == ScriptType.QuerySelector) {
-                Console.WriteLine($"{Thread.CurrentThread.ManagedThreadId}: Executing Selector");
                 ret = await Queries[queryDefinition.Name].Selector.Invoke(context);
             }
             else {
-                Console.WriteLine($"{Thread.CurrentThread.ManagedThreadId}: Executing Aggregator");
                 ret = await Queries[queryDefinition.Name].Aggregator.Invoke(context);
             }
             
-            Console.WriteLine($"{Thread.CurrentThread.ManagedThreadId}: Returning");
             return ret;
         }
         

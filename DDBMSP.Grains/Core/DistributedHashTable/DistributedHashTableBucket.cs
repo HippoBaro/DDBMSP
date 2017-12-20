@@ -48,7 +48,6 @@ namespace DDBMSP.Grains.Core.DistributedHashTable
         public Task<Immutable<Dictionary<TKey, TValue>>> Enumerate() => Task.FromResult(Elements.AsImmutable());
 
         public async Task<Immutable<dynamic>> Query(Immutable<QueryDefinition> queryDefinition) {
-            Console.WriteLine($"Bucket {this.GetPrimaryKeyLong()} starting query");
             var result = await QueryEngine.Execute(ScriptType.QuerySelector, queryDefinition.Value, new QueryContext {
                 Articles = Elements as Dictionary<Guid, ArticleState>,
                 Users = Elements as Dictionary<Guid, UserState>

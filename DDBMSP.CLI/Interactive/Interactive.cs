@@ -96,7 +96,7 @@ namespace DDBMSP.CLI.Interactive
         private static void Connect() {
             var config = ClientConfiguration.LocalhostSilo();
             config.ResponseTimeout = TimeSpan.FromMinutes(5);
-            config.SerializationProviders.Add(typeof(ProtobufSerializer).GetTypeInfo());
+            //config.SerializationProviders.Add(typeof(ProtobufSerializer).GetTypeInfo());
             //config.FallbackSerializationProvider = typeof(ILBasedSerializer).GetTypeInfo();
             
             try {

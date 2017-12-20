@@ -22,7 +22,7 @@ namespace DDBMSP.Silo
         private static int StartSilo(string[] args)
         {
             var siloConfig = ClusterConfiguration.LocalhostPrimarySilo();
-            siloConfig.Globals.SerializationProviders.Add(typeof(ProtobufSerializer).GetTypeInfo());
+            //siloConfig.Globals.SerializationProviders.Add(typeof(ProtobufSerializer).GetTypeInfo());
             //siloConfig.Globals.FallbackSerializationProvider = typeof(ILBasedSerializer).GetTypeInfo();
             siloConfig.AddSimpleMessageStreamProvider("Default", true);
             siloConfig.AddMemoryStorageProvider();

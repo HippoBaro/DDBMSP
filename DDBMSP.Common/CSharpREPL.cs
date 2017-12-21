@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Dynamic;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using DDBMSP.Entities.Article;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
@@ -20,7 +18,7 @@ namespace DDBMSP.Common
         }
         
         private static ScriptOptions ScriptOptions { get; } = ScriptOptions.Default
-            .WithReferences(typeof(ArticleState).Assembly, typeof(System.Linq.IQueryable).Assembly,
+            .WithReferences(typeof(ArticleState).Assembly, typeof(IQueryable).Assembly,
                 typeof(IEnumerable<>).Assembly, typeof(Guid).Assembly)
             .WithImports("DDBMSP.Entities.Article", "DDBMSP.Entities.User", "System.Linq", "System",
                 "System.Collections.Generic").WithEmitDebugInformation(false);
@@ -35,7 +33,7 @@ namespace DDBMSP.Common
             ScriptState = script.RunAsync(ScriptContext).Result;
         }
 
-        public async Task<dynamic> REPL(string line) {
+        public async Task<dynamic> Evaluate(string line) {
             return (ScriptState = await ScriptState.ContinueWithAsync<dynamic>(line, ScriptOptions)).ReturnValue;
         }
         

@@ -7,8 +7,6 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
-using DDBMSP.Entities.Query;
-using DDBMSP.Interfaces.Grains.Querier;
 using DDBMSP.Interfaces.Grains.Workers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Bson;

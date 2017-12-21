@@ -39,36 +39,48 @@ namespace DDBMSP.Common.QueryEngine
         private static Dictionary<string, QueryScript> Queries = new Dictionary<string, QueryScript>();
 
         public static void CompileAndRegister(QueryDefinition queryDefinition) {
-            if (Queries.ContainsKey(queryDefinition.Name))
-                throw new Exception($"Query \"{queryDefinition.Name}\" already exists.");
-            
-            var selector = CSharpScript.Create(queryDefinition.SelectorLambda, ScriptOptions, typeof(QueryContext));
-            selector.Compile();
+            try {
+                if (Queries.ContainsKey(queryDefinition.Name))
+                    throw new Exception($"Query \"{queryDefinition.Name}\" already exists.");
 
-            var aggregator = CSharpScript.Create($"var Selected = TaskResult.Select(i=>({queryDefinition.ReturnTypeName})i);",
-                ScriptOptions, typeof(QueryContext)).ContinueWith<object>(queryDefinition.AggregationLambda, ScriptOptions);
-            aggregator.Compile();
-            
-            Queries.Add(queryDefinition.Name, new QueryScript {
-                Aggregator = aggregator.CreateDelegate(),
-                Selector = selector.CreateDelegate()
-            });
+                var selector = CSharpScript.Create(queryDefinition.SelectorLambda, ScriptOptions, typeof(QueryContext));
+                selector.Compile();
+
+                var aggregator = CSharpScript.Create(
+                        $"var Selected = TaskResult.Select(i=>({queryDefinition.ReturnTypeName})i);",
+                        ScriptOptions, typeof(QueryContext))
+                    .ContinueWith<object>(queryDefinition.AggregationLambda, ScriptOptions);
+                aggregator.Compile();
+
+                Queries.Add(queryDefinition.Name, new QueryScript {
+                    Aggregator = aggregator.CreateDelegate(),
+                    Selector = selector.CreateDelegate()
+                });
+            }
+            catch (Exception e) {
+                throw new Exception(e.Message);
+            }
         }
 
         public static async Task<object> Execute(ScriptType type, QueryDefinition queryDefinition, QueryContext context) {
-            if (!Queries.ContainsKey(queryDefinition.Name))
-                CompileAndRegister(queryDefinition);
+            try {
+                if (!Queries.ContainsKey(queryDefinition.Name))
+                    CompileAndRegister(queryDefinition);
             
-            dynamic ret;
-            if (type == ScriptType.QuerySelector) {
-                ret = await Queries[queryDefinition.Name].Selector.Invoke(context);
-            }
-            else {
-                ret = await Queries[queryDefinition.Name].Aggregator.Invoke(context);
-            }
+                dynamic ret;
+                if (type == ScriptType.QuerySelector) {
+                    ret = await Queries[queryDefinition.Name].Selector.Invoke(context);
+                }
+                else {
+                    ret = await Queries[queryDefinition.Name].Aggregator.Invoke(context);
+                }
             
-            return ret;
+                return ret;
+            }
+            catch (Exception e) {
+                Console.WriteLine("Throw!");
+                throw new Exception(e.Message);
+            }
         }
-        
     }
 }

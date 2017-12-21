@@ -6,7 +6,7 @@ namespace DDBMSP.CLI
     public static class RandomGenerationData
     {
         [ThreadStatic]
-        public static Random _randm;
+        private static Random _randm;
         public static Random Random => _randm ?? (_randm = new Random());
 
         public static List<string> LasttNameList { get; } = new List<string> {

@@ -1,13 +1,8 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
-using DDBMSP.Common;
 using DDBMSP.Entities.Article;
 using DDBMSP.Entities.Query;
 using DDBMSP.Interfaces.Grains.Core.DistributedHashTable;
@@ -30,8 +25,8 @@ namespace DDBMSP.Grains.Querier
 
             try {
                 IFormatter formatter = new BinaryFormatter();  
-                var stream = new MemoryStream(5000000);  
-                formatter.Serialize(stream, (TResult)ret.Value);  
+                var stream = new MemoryStream(5000000);
+                formatter.Serialize(stream, ret.Value);
                 stream.Close();
                 
                 Console.WriteLine("Returning query's result");

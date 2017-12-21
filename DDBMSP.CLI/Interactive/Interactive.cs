@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
@@ -10,7 +9,6 @@ using DDBMSP.Common;
 using Orleans;
 using Orleans.Runtime;
 using Orleans.Runtime.Configuration;
-using Orleans.Serialization;
 
 namespace DDBMSP.CLI.Interactive
 {
@@ -57,8 +55,7 @@ namespace DDBMSP.CLI.Interactive
                 });
                 result.WithParsed(o => shouldInterpret = false);
                 
-                var ret = result
-                    .MapResult(
+                result.MapResult(
                         (CommitQuery opts) => opts.Run().Result,
                         (ExecuteQuery o) => o.Run(Repl).Result,
                         (Quit o) => o.Run(),
@@ -66,7 +63,7 @@ namespace DDBMSP.CLI.Interactive
 
                 if (shouldInterpret) {
                     try {
-                        var res = await Repl.REPL(line);
+                        var res = await Repl.Evaluate(line);
                         if (res != null)
                             Console.WriteLine(res);
                     }

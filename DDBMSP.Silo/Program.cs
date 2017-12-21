@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Reflection;
 using System.Threading.Tasks;
 using Orleans.Runtime.Configuration;
 using Orleans.Runtime.Host;
-using Orleans.Serialization;
 
 namespace DDBMSP.Silo
 {
@@ -12,14 +10,14 @@ namespace DDBMSP.Silo
         public static async Task Main(string[] args)
         {
             GC.TryStartNoGCRegion(200000000);
-            var exitCode = StartSilo(args);
+            StartSilo();
 
             Console.WriteLine("Press Enter to terminate...");
             await Task.Delay(-1);
 
         }
 
-        private static int StartSilo(string[] args)
+        private static void StartSilo()
         {
             var siloConfig = ClusterConfiguration.LocalhostPrimarySilo();
             //siloConfig.Globals.SerializationProviders.Add(typeof(ProtobufSerializer).GetTypeInfo());
@@ -31,8 +29,6 @@ namespace DDBMSP.Silo
             silo.InitializeOrleansSilo(); 
             //silo.Config.Globals.RegisterDashboard();
             silo.StartOrleansSilo();
-            
-            return 0;
         }
     }
 }

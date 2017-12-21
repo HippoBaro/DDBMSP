@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using DDBMSP.Common;
 using DDBMSP.Common.QueryEngine;
 using DDBMSP.Entities.Query;
 using DDBMSP.Interfaces.Grains.Core.DistributedHashTable;
@@ -88,8 +87,13 @@ namespace DDBMSP.Grains.Core.DistributedHashTable
                 tasks.Add(GrainFactory.GetGrain<IDistributedHashTableBucket<TKey, TValue>>(i).Query(queryDefinition));
             }
             await Task.WhenAll(tasks);
-            return new Immutable<dynamic>(await QueryEngine.Execute(ScriptType.QueryAggregator, queryDefinition.Value,
-                new QueryContext {TaskResult = tasks.Select(task => task.Result.Value)}));
+            try {
+                return new Immutable<dynamic>(await QueryEngine.Execute(ScriptType.QueryAggregator, queryDefinition.Value,
+                    new QueryContext {TaskResult = tasks.Select(task => task.Result.Value)}));
+            }
+            catch (Exception e) {
+                throw new Exception(e.Message);
+            }
         }
     }
 }

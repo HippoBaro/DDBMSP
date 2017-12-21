@@ -17,13 +17,9 @@ namespace DDBMSP.Grains.Worker
     {
         public Task DispatchNewArticlesFromAuthor(Immutable<UserState> author, Immutable<List<ArticleState>> articles) {
             var dict = GrainFactory.GetGrain<IDistributedHashTable<Guid, ArticleState>>(0);
-            var authorSummary = author.Value.Summarize();
             var dictRange = new Dictionary<Guid, ArticleState>(articles.Value.Count);
 
             foreach (var article in articles.Value) {
-                article.Id = Guid.NewGuid();
-                article.Author = authorSummary;
-                author.Value.Articles.Add(article.Summarize());
                 dictRange.Add(article.Id, article);
             }
             

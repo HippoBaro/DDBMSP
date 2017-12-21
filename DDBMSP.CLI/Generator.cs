@@ -81,6 +81,11 @@ namespace DDBMSP.CLI
                     User = Users.First.Value,
                     Articles = Articles.Take(articlePerUser).ToList()
                 };
+                foreach (var article in ret.Articles) {
+                    article.Author = ret.User.Summarize();
+                    ret.User.Articles.Add(article.Summarize());
+                }
+                
                 ret.EntityCount = 1 + ret.Articles.Count;
                 
                 Users.RemoveFirst();

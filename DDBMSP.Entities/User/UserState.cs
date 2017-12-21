@@ -7,6 +7,7 @@ using DDBMSP.Entities.User.Components;
 
 namespace DDBMSP.Entities.User
 {
+    [Serializable]
     public class UserState : ISummarizableTo<UserSummary>
     {
         public Guid Id { get; set; }

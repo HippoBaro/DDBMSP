@@ -2,6 +2,7 @@
 
 namespace DDBMSP.Entities.User.Components
 {
+    [Serializable]
     public class UserSummary
     {
         public Guid Id { get; set; }

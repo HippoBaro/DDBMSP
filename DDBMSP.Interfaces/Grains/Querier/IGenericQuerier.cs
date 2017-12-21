@@ -5,9 +5,9 @@ using Orleans.Concurrency;
 
 namespace DDBMSP.Interfaces.Grains.Querier
 {
-    public interface IGenericQuerier : IGrainWithIntegerKey
+    public interface IGenericQuerier<TRessource, TResult> : IGrainWithIntegerKey
     {
-        Task<Immutable<object>> Query(Immutable<string> queryName);
+        Task<Immutable<byte[]>> Query(Immutable<string> queryName);
         Task<Immutable<QueryDefinition>> GetQueryDefinition(Immutable<string> queryName);
     }
 }

@@ -1,9 +1,13 @@
-﻿﻿using System;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 using CommandLine;
 using DDBMSP.Common;
-using DDBMSP.Entities.Query;
+using DDBMSP.Entities.Article;
 using DDBMSP.Interfaces.Grains.Querier;
 using Orleans;
 using Orleans.Concurrency;
@@ -20,13 +24,19 @@ namespace DDBMSP.CLI.Interactive
         public string VariableName { get; set; }
 
         public async Task<int> Run(CSharpRepl repl) {
-            var querier = GrainClient.GrainFactory.GetGrain<IGenericQuerier>(0);
+            var querier = GrainClient.GrainFactory.GetGrain<IGenericQuerier<ArticleState, IEnumerable<KeyValuePair<Guid, ArticleState>>>>(0);
             try {
                 var t = Stopwatch.StartNew();
                 var res = await querier.Query(Name.AsImmutable());
+                
+                IFormatter formatter = new BinaryFormatter();  
+                Stream stream = new MemoryStream(res.Value, false);  
+                var obj = formatter.Deserialize(stream);
+                stream.Close();
+                
                 Console.WriteLine($"{t.ElapsedMilliseconds}ms");
 
-                await repl.AddToState(res.Value, VariableName);
+                await repl.AddToState(obj, VariableName);
                 return 0;
             }
             catch (Exception e) {

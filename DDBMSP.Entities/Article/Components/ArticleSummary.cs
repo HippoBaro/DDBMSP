@@ -4,6 +4,7 @@ using DDBMSP.Entities.User.Components;
 
 namespace DDBMSP.Entities.Article.Components
 {
+    [Serializable]
     public class ArticleSummary
     {
         public Guid Id { get; set; }

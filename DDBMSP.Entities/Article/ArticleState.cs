@@ -7,6 +7,7 @@ using DDBMSP.Entities.User.Components;
 
 namespace DDBMSP.Entities.Article
 {
+    [Serializable]
     public class ArticleState : ISummarizableTo<ArticleSummary>
     {
         public Guid Id { get; set; }

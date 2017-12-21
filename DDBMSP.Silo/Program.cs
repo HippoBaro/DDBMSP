@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Reflection;
 using System.Threading.Tasks;
 using Orleans.Runtime.Configuration;
 using Orleans.Runtime.Host;
+using Orleans.Serialization;
 
 namespace DDBMSP.Silo
 {
@@ -21,13 +23,11 @@ namespace DDBMSP.Silo
         {
             var siloConfig = ClusterConfiguration.LocalhostPrimarySilo();
             //siloConfig.Globals.SerializationProviders.Add(typeof(ProtobufSerializer).GetTypeInfo());
-            //siloConfig.Globals.FallbackSerializationProvider = typeof(ILBasedSerializer).GetTypeInfo();
             siloConfig.AddSimpleMessageStreamProvider("Default", true);
             siloConfig.AddMemoryStorageProvider();
             siloConfig.LoadFromFile("OrleansConfiguration.xml");
             var silo = new SiloHost("DDDMSPSilo", siloConfig); 
             silo.InitializeOrleansSilo(); 
-            //silo.Config.Globals.RegisterDashboard();
             silo.StartOrleansSilo();
         }
     }

@@ -1,0 +1,4 @@
+[submodule "OrleansDashboard"]
+	path = OrleansDashboard
+	url = https://github.com/OrleansContrib/OrleansDashboard.git
+	branch = 2.0

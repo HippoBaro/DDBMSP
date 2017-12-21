@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DDBMSP.Entities", "DDBMSP.E
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DDBMSP.Common", "DDBMSP.Common\DDBMSP.Common.csproj", "{544120F9-00C9-4D3E-A124-0ADDCF79B1BD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrleansDashboard", "OrleansDashboard\OrleansDashboard\OrleansDashboard.csproj", "{417685D8-6443-4A87-AC8B-104F9CA3A408}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -51,6 +53,10 @@ Global
 		{544120F9-00C9-4D3E-A124-0ADDCF79B1BD}.Debug|x64.Build.0 = Debug|x64
 		{544120F9-00C9-4D3E-A124-0ADDCF79B1BD}.Release|x64.ActiveCfg = Release|x64
 		{544120F9-00C9-4D3E-A124-0ADDCF79B1BD}.Release|x64.Build.0 = Release|x64
+		{417685D8-6443-4A87-AC8B-104F9CA3A408}.Debug|x64.ActiveCfg = Debug|x64
+		{417685D8-6443-4A87-AC8B-104F9CA3A408}.Debug|x64.Build.0 = Debug|x64
+		{417685D8-6443-4A87-AC8B-104F9CA3A408}.Release|x64.ActiveCfg = Release|x64
+		{417685D8-6443-4A87-AC8B-104F9CA3A408}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

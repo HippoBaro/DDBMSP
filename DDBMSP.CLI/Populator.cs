@@ -122,7 +122,6 @@ namespace DDBMSP.CLI
         private static void Connect() {
             var config = ClientConfiguration.LocalhostSilo();
             config.SerializationProviders.Add(typeof(ProtobufSerializer).GetTypeInfo());
-            config.FallbackSerializationProvider = typeof(ILBasedSerializer).GetTypeInfo();
             
             try {
                 InitializeWithRetries(config, 5);

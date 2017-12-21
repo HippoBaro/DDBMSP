@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
@@ -9,6 +10,7 @@ using DDBMSP.Common;
 using Orleans;
 using Orleans.Runtime;
 using Orleans.Runtime.Configuration;
+using Orleans.Serialization;
 
 namespace DDBMSP.CLI.Interactive
 {
@@ -93,8 +95,7 @@ namespace DDBMSP.CLI.Interactive
         private static void Connect() {
             var config = ClientConfiguration.LocalhostSilo();
             config.ResponseTimeout = TimeSpan.FromMinutes(5);
-            //config.SerializationProviders.Add(typeof(ProtobufSerializer).GetTypeInfo());
-            //config.FallbackSerializationProvider = typeof(ILBasedSerializer).GetTypeInfo();
+            config.SerializationProviders.Add(typeof(ProtobufSerializer).GetTypeInfo());
             
             try {
                 InitializeWithRetries(config, 5);

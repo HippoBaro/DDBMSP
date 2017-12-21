@@ -17,14 +17,14 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="AsyncEnumerator" Version="2.1.0" />
     <PackageReference Include="Lucene.Net" Version="4.8.0-beta00005" />
     <PackageReference Include="Lucene.Net.Analysis.Common" Version="4.8.0-beta00005" />
     <PackageReference Include="Lucene.Net.QueryParser" Version="4.8.0-beta00005" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="2.6.1" />
-    <PackageReference Include="Microsoft.Orleans.Core" Version="2.0.0-preview4-20171025" />
-    <PackageReference Include="Microsoft.Orleans.OrleansCodeGenerator.Build" Version="2.0.0-preview4-20171025" />
-    <PackageReference Include="Microsoft.Orleans.OrleansGoogleUtils" Version="2.0.0-beta2" />
+    <PackageReference Include="Microsoft.Orleans.Core" Version="2.0.0-beta3" />
+    <PackageReference Include="Microsoft.Orleans.OrleansCodeGenerator.Build" Version="2.0.0-beta3" />
+    <PackageReference Include="Microsoft.Orleans.OrleansGoogleUtils" Version="2.0.0-beta3" />
+    <PackageReference Include="NETStandard.Library" Version="2.0.1" />
     <PackageReference Include="Newtonsoft.Json.Bson" Version="1.0.1" />
   </ItemGroup>
 </Project>

@@ -16,7 +16,6 @@ namespace DDBMSP.Silo
 
             Console.WriteLine("Press Enter to terminate...");
             await Task.Delay(-1);
-
         }
 
         private static void StartSilo()

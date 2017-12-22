@@ -13,7 +13,6 @@ namespace DDBMSP.Interfaces.Grains.Core.DistributedHashTable
         Task Set(Immutable<TKey> key, Immutable<TValue> value);
         Task Set(TKey key, TValue value);
         Task SetRange(Immutable<Dictionary<TKey, TValue>> dict);
-        Task SetRangeUnsafe(Immutable<Dictionary<TKey, TValue>> dict);
         
         Task<List<int>> GetBucketUsage();
 

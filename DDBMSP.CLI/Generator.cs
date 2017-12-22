@@ -81,9 +81,12 @@ namespace DDBMSP.CLI
         }
 
         private void GenerateUnits() {
+            
+            Console.WriteLine($"{Activities.Count(state => state.Type == UserActivityType.Commented)}");
+            
             StorageUnit New() {
                 var articlePerUser = ArticlesNumber / UserNumber;
-                var activitiesPerArticle = ArticlesNumber / ActivitiesNumber;
+                var activitiesPerArticle = ActivitiesNumber / ArticlesNumber;
                 
                 var ret = new StorageUnit {
                     User = Users.First.Value,
@@ -95,7 +98,7 @@ namespace DDBMSP.CLI
                     ret.User.Articles.Add(article.Summarize());
                     ret.Activities.Add(new List<UserActivityState>(Activities.Take(activitiesPerArticle).ToList()));
                     for (var i = 0; i < activitiesPerArticle; i++) {
-                        Articles.RemoveFirst();
+                        Activities.RemoveFirst();
                     }
                 }
 
@@ -189,7 +192,7 @@ namespace DDBMSP.CLI
         private void GenerateComments() {
             UserActivityState New() {
                 var ret = new UserActivityState {
-                    Type = (UserActivityType)RandomGenerationData.Random.Next(2),
+                    Type = (UserActivityType)RandomGenerationData.Random.Next(3),
                     User = Users.ElementAt(RandomGenerationData.Random.Next(Users.Count)).Summarize(),
                     CreationDate = DateTime.Now.AddHours(-RandomGenerationData.Random.Next(1000))
                 };

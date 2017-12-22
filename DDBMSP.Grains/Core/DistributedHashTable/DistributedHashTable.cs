@@ -40,7 +40,6 @@ namespace DDBMSP.Grains.Core.DistributedHashTable
             var dispatch = new Dictionary<int, List<KeyValuePair<TKey, TValue>>>(dict.Value.Count);
 
             foreach (var value in dict.Value) {
-
                 // Calculate the hash code of the key, eliminate negative values.
                 var hashCode = value.Key.GetHashCode() & 0x7FFFFFFF;
                 var targetBucket = hashCode % BucketsNumber;
@@ -54,16 +53,6 @@ namespace DDBMSP.Grains.Core.DistributedHashTable
                 GrainFactory.GetGrain<IDistributedHashTableBucket<TKey, TValue>>(d.Key)
                     .SetRange(d.Value.AsEnumerable().AsImmutable())));
             return Task.WhenAll(tasks);
-        }
-
-        public Task SetRangeUnsafe(Immutable<Dictionary<TKey, TValue>> dict) {
-
-            // Calculate the hash code of the key, eliminate negative values.
-            var hashCode = dict.Value.First().Key.GetHashCode() & 0x7FFFFFFF;
-            var targetBucket = hashCode % BucketsNumber;
-            
-            return Task.WhenAll(GrainFactory.GetGrain<IDistributedHashTableBucket<TKey, TValue>>(targetBucket)
-                .SetRange(dict.Value.AsEnumerable().AsImmutable()));
         }
 
         public async Task<List<int>> GetBucketUsage() {

@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using DDBMSP.Entities;
 using DDBMSP.Entities.Article;
 using DDBMSP.Entities.User;
+using DDBMSP.Entities.UserActivity;
 using DDBMSP.Interfaces.Grains.Aggregators.Articles;
 using DDBMSP.Interfaces.Grains.Core.DistributedHashTable;
 using DDBMSP.Interfaces.Grains.Workers;
@@ -21,15 +22,20 @@ namespace DDBMSP.Grains.Worker
             var author = unit.Value.User;
             var activities = unit.Value.Activities;
             
-            var dict = GrainFactory.GetGrain<IDistributedHashTable<Guid, ArticleState>>(0);
-            var dictRange = new Dictionary<Guid, ArticleState>(articles.Count);
+            var dictArticles = GrainFactory.GetGrain<IDistributedHashTable<Guid, ArticleState>>(0);
+            var dictArticlesRange = new Dictionary<Guid, ArticleState>(articles.Count);
+            
+            var dictActivities = GrainFactory.GetGrain<IDistributedHashTable<Guid, List<UserActivityState>>>(0);
+            var dictActivitiesRange = new Dictionary<Guid, List<UserActivityState>>(activities.Count);
 
-            foreach (var article in articles) {
-                dictRange.Add(article.Id, article);
+            for (int i = 0; i < articles.Count; i++) {
+                dictArticlesRange.Add(articles[i].Id, articles[i]);
+                dictActivitiesRange.Add(articles[i].Id, activities[i]);
             }
             
             return Task.WhenAll(
-                dict.SetRangeUnsafe(dictRange.AsImmutable()),
+                dictArticles.SetRange(dictArticlesRange.AsImmutable()),
+                dictActivities.SetRange(dictActivitiesRange.AsImmutable()),
                 GrainFactory.GetGrain<IArticleAggregatorHubGrain>(0).AggregateRange(author.Articles.AsImmutable()),
                 GrainFactory.GetGrain<IDistributedHashTable<Guid, UserState>>(0).Set(author.Id.AsImmutable(), author.AsImmutable()));
         }

@@ -4,10 +4,12 @@
 @using CommonMark
 @using DDBMSP.Entities.Article
 @using DDBMSP.Entities.Article.Components
+@using DDBMSP.Entities.Enums
+@using DDBMSP.Entities.UserActivity
 @using DDBMSP.Frontend.Web
 @using Microsoft.AspNetCore.Mvc.Rendering
 
-@model Tuple<ArticleState, List<ArticleSummary>>
+@model Tuple<ArticleState, List<ArticleSummary>, List<UserActivityState>>
 
 @{
     ViewData["Title"] = @Model.Item1.Title;
@@ -69,37 +71,26 @@
 
         </article>
         
-        <div class="ui big comments comments-full-content">
-            <div class="comment">
-                <a class="avatar">
-                    <img src="@Model.Item1.Author.Image">
-                </a>
-                <div class="content">
-                    <a class="author">Joe Henderson</a>
-                    <div class="metadata">
-                        <div class="date">1 day ago</div>
+        @if (Model.Item3 != null && Model.Item3.Any(a => a.Type == UserActivityType.Commented)) {
+            <div class="ui big comments comments-full-content">
+                @foreach (var activity in Model.Item3.Where(a => a.Type == UserActivityType.Commented)) {
+                    <div class="comment">
+                        <a class="avatar">
+                            <img src="@activity.User.Image">
+                        </a>
+                        <div class="content">
+                            <a class="author">@activity.User.Name</a>
+                            <div class="metadata">
+                                <div class="date">@activity.CreationDate.ToString("dd MMMM yyyy")</div>
+                            </div>
+                            <div class="text">
+                                @activity.Comment
+                            </div>
+                        </div>
                     </div>
-                    <div class="text">
-                        <p>The hours, minutes and seconds stand as visible reminders that your effort put them all there. </p>
-                        <p>Preserve until your next run, when the watch lets you see how Impermanent your efforts are.</p>
-                    </div>
-                </div>
+                }
             </div>
-            <div class="comment">
-                <a class="avatar">
-                    <img src="@Model.Item1.Author.Image">
-                </a>
-                <div class="content">
-                    <a class="author">Christian Rocha</a>
-                    <div class="metadata">
-                        <div class="date">2 days ago</div>
-                    </div>
-                    <div class="text">
-                        I re-tweeted this.
-                    </div>
-                </div>
-            </div>
-        </div>
+        }
        
     </div>
 </main>

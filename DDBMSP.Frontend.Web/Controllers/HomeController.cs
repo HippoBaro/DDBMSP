@@ -6,6 +6,7 @@ using DDBMSP.Entities.Article;
 using DDBMSP.Entities.Article.Components;
 using DDBMSP.Entities.Search;
 using DDBMSP.Entities.User;
+using DDBMSP.Entities.UserActivity;
 using DDBMSP.Interfaces.Grains.Aggregators.Articles.LatestArticles;
 using DDBMSP.Interfaces.Grains.Aggregators.Articles.LatestArticlesByTag;
 using DDBMSP.Interfaces.Grains.Aggregators.Articles.Search;
@@ -20,51 +21,55 @@ namespace DDBMSP.Frontend.Web.Controllers
     public class HomeController : Controller
     {
         [HttpGet("")]
-        public async Task<IActionResult> Index()
-        {
+        public async Task<IActionResult> Index() {
             var friend = GrainClient.GrainFactory.GetGrain<IGlobalLatestArticlesAggregator>(0);
             var res = await friend.GetLatestArticles();
-            
+
             return View("/Views/Index.cshtml", res.Value ?? new List<ArticleSummary>());
         }
 
         [Route("post/{articleId}")]
-        public async Task<IActionResult> Article(Guid articleId)
-        {
-            try
-            {
-                var article = await GrainClient.GrainFactory.GetGrain<IDistributedHashTable<Guid, ArticleState>>(0)
+        public async Task<IActionResult> Article(Guid articleId) {
+            List<UserActivityState> activities = null;
+            try {
+                var article = await GrainClient.GrainFactory
+                    .GetGrain<IDistributedHashTable<Guid, ArticleState>>(0)
                     .Get(articleId);
+
+                try {
+                    activities = (await GrainClient.GrainFactory
+                        .GetGrain<IDistributedHashTable<Guid, List<UserActivityState>>>(0)
+                        .Get(articleId)).Value;
+                }
+                catch (Exception) {}
                 
-                var friend = GrainClient.GrainFactory.GetGrain<IGlobalLatestArticleByTagAggregator>(0);
-                var res = await friend.GetLatestArticlesForTag(article.Value.Tags.First().AsImmutable(), 5);
-                
-                return View("/Views/Post.cshtml", new Tuple<ArticleState, List<ArticleSummary>>(article.Value, res.Value));
+                var res = await GrainClient.GrainFactory
+                    .GetGrain<IGlobalLatestArticleByTagAggregator>(0)
+                    .GetLatestArticlesForTag(article.Value.Tags.First().AsImmutable(), 5);
+
+                return View("/Views/Post.cshtml",
+                    new Tuple<ArticleState, List<ArticleSummary>, List<UserActivityState>>(article.Value, res.Value,
+                        activities));
             }
-            catch (Exception)
-            {
+            catch (Exception e) {
                 return NotFound();
             }
         }
 
         [Route("author/{authorId}")]
-        public async Task<IActionResult> Tag(Guid authorId)
-        {
-            try
-            {
+        public async Task<IActionResult> Tag(Guid authorId) {
+            try {
                 var user = await GrainClient.GrainFactory.GetGrain<IDistributedHashTable<Guid, UserState>>(0)
                     .Get(authorId);
                 return View("/Views/Author.cshtml", user.Value);
             }
-            catch (Exception)
-            {
+            catch (Exception) {
                 return NotFound();
             }
         }
 
         [Route("tag/{tag}")]
-        public async Task<IActionResult> Tag(string tag)
-        {
+        public async Task<IActionResult> Tag(string tag) {
             var friend = GrainClient.GrainFactory.GetGrain<IGlobalLatestArticleByTagAggregator>(0);
             var res = await friend.GetLatestArticlesForTag(tag.AsImmutable(), 100);
             return View("/Views/Tag.cshtml",
@@ -72,31 +77,29 @@ namespace DDBMSP.Frontend.Web.Controllers
         }
 
         [Route("Error")]
-        public IActionResult Error(int? statusCode)
-        {
+        public IActionResult Error(int? statusCode) {
             if (!statusCode.HasValue) return View("/Views/Error.cshtml");
             var viewName = statusCode.ToString();
             return View("/Views/Error.cshtml", viewName);
         }
 
         [Route("search")]
-        public async Task<IActionResult> Search(string q)
-        {
+        public async Task<IActionResult> Search(string q) {
             if (string.IsNullOrWhiteSpace(q) || q.Length < 2)
                 return NoContent();
-            
-            var articles = GrainClient.GrainFactory.GetGrain<IGlobalSearchArticleAggregator>(0).GetSearchResult(q.AsImmutable());
-            var tags = GrainClient.GrainFactory.GetGrain<IGlobalLatestArticleByTagAggregator>(0).SearchTags(q.AsImmutable());
-            
+
+            var articles = GrainClient.GrainFactory.GetGrain<IGlobalSearchArticleAggregator>(0)
+                .GetSearchResult(q.AsImmutable());
+            var tags = GrainClient.GrainFactory.GetGrain<IGlobalLatestArticleByTagAggregator>(0)
+                .SearchTags(q.AsImmutable());
+
             await Task.WhenAll(articles, tags);
 
             if (!articles.Result.Value.Any() && tags.Result.Value.Any())
                 return NoContent();
-            
-            return Ok(new SearchResult
-            {
-                Categories = new Dictionary<string, SearchCategory>
-                {
+
+            return Ok(new SearchResult {
+                Categories = new Dictionary<string, SearchCategory> {
                     {"Articles", new SearchCategory {Name = "Articles", Result = articles.Result.Value}},
                     {"Tags", new SearchCategory {Name = "Tags", Result = tags.Result.Value}}
                 }

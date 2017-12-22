@@ -11,5 +11,6 @@ namespace DDBMSP.Interfaces.Grains.Workers
     public interface IArticleDispatcher : IGrainWithIntegerKey
     {
         Task DispatchStorageUnit(Immutable<StorageUnit> unit);
+        Task DispatchStorageUnits(Immutable<List<StorageUnit>> units);
     }
 }

@@ -14,6 +14,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NETCore.App" Version="2.0.4" />
+    <PackageReference Include="Microsoft.Orleans.Client" Version="2.0.0-beta3" />
     <PackageReference Include="Microsoft.Orleans.OrleansGoogleUtils" Version="2.0.0-beta3" />
     <PackageReference Include="Microsoft.Orleans.Serialization.Bond" Version="2.0.0-beta3" />
     <PackageReference Include="Microsoft.Orleans.Server" Version="2.0.0-beta3" />

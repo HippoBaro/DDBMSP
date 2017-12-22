@@ -29,6 +29,8 @@ namespace DDBMSP.CLI
 
         public List<StorageUnit> Units { get; set; } = new List<StorageUnit>();
 
+        public int BytesPerUnit { get; set; }
+
         public async Task<int> Run() {
             Init();
             
@@ -61,6 +63,7 @@ namespace DDBMSP.CLI
                     if (ReadingPB.Percentage == 100)
                         ReadingPB.Tick("Closing stream...");
                 }
+                BytesPerUnit = (int)(s.Length / Units.Count);
                 ReadingPB.Tick((int) (s.Length/10), "Closing stream...");
             }
             ReadingPB.Tick("Done.");
@@ -87,36 +90,39 @@ namespace DDBMSP.CLI
             var latencies = new List<int>(Units.Count);
             int ops = 0;
             int lat = 0;
+            int unit = 0;
             
             var t = Stopwatch.StartNew();
-            for (int i = 0; i < Units.Count / Environment.ProcessorCount; i++) {
-                PopulateUnit(Units.Skip(i * Environment.ProcessorCount).Take(Environment.ProcessorCount), ref ops, ref lat);
+            for (int i = 0; i < Units.Count / Environment.ProcessorCount * Environment.ProcessorCount; i++) {
+                PopulateUnit(Units.Skip(i * Environment.ProcessorCount * Environment.ProcessorCount).Take(Environment.ProcessorCount * Environment.ProcessorCount), ref ops, ref lat, ref unit);
                 latencies.Add(lat);
                 
                 if (t.ElapsedMilliseconds <= Program.ProgressBarRefreshDelay) continue;
                 t.Restart();
-                UploadPB.Tick(i * Environment.ProcessorCount, $"{ops*2} ops/sec — {lat}ms per batch inserts — Latency: Min = {latencies.Min()}ms, Max = {latencies.Max()}ms, Average = {latencies.Average():F3}ms, 95% = {Percentile(latencies, .95):F3}ms, 99% = {Percentile(latencies, .99):F3}ms, 99.9% = {Percentile(latencies, .999):F3}ms");
+                UploadPB.Tick(i * Environment.ProcessorCount * Environment.ProcessorCount, $"{ops*2} ops/sec, {unit * BytesPerUnit / 1000000}MB/s — {lat}ms per batch inserts — Latency: Min = {latencies.Min()}ms, Max = {latencies.Max()}ms, Average = {latencies.Average():F3}ms, 95% = {Percentile(latencies, .95):F3}ms, 99% = {Percentile(latencies, .99):F3}ms, 99.9% = {Percentile(latencies, .999):F3}ms");
                 ops = 0;
+                unit = 0;
             }
-            if (Units.Count % Environment.ProcessorCount != 0) {
-                PopulateUnit(Units.Skip(Units.Count - Units.Count % Environment.ProcessorCount).Take(Units.Count % Environment.ProcessorCount), ref ops, ref lat);
+            if (Units.Count % Environment.ProcessorCount * Environment.ProcessorCount != 0) {
+                PopulateUnit(Units.Skip(Units.Count - Units.Count % Environment.ProcessorCount * Environment.ProcessorCount).Take(Units.Count % Environment.ProcessorCount * Environment.ProcessorCount), ref ops, ref lat, ref unit);
             }
             UploadPB.Tick(Units.Count, $"Done. Latency: Min = {latencies.Min()}ms, Max = {latencies.Max()}ms, Average = {latencies.Average():F3}ms, 95% = {Percentile(latencies, .95):F3}ms, 99% = {Percentile(latencies, .99):F3}ms, 99.9% = {Percentile(latencies, .999):F3}ms");
             Program.ProgressBar.Tick(4, "Done.");
             return Task.CompletedTask;
         }
 
-        private void PopulateUnit(IEnumerable<StorageUnit> units, ref int ops, ref int lat) {
+        private void PopulateUnit(IEnumerable<StorageUnit> units, ref int ops, ref int lat, ref int unit) {
             var tasks = new List<Task>(units.Count());
             
-            for (var i = 0; i < units.Count(); i++) {
+            for (var i = 0; i < units.Count() / Environment.ProcessorCount; i++) {
                 tasks.Add(GrainClient.GrainFactory.GetGrain<IArticleDispatcher>(0)
-                    .DispatchStorageUnit(units.ElementAt(i).AsImmutable()));
+                    .DispatchStorageUnits(units.Skip(i * Environment.ProcessorCount).Take(Environment.ProcessorCount).ToList().AsImmutable()));
             }
             var t = Stopwatch.StartNew();
             Task.WhenAll(tasks).Wait();
             lat = (int) t.ElapsedMilliseconds;
-            ops += units.Sum(unit => unit.EntityCount);
+            ops += units.Sum(u => u.EntityCount);
+            unit += units.Count();
         }
         
         private static void Connect() {

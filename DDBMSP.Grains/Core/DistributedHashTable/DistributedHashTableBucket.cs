@@ -15,7 +15,7 @@ namespace DDBMSP.Grains.Core.DistributedHashTable
     public class DistributedHashTableBucket<TKey, TValue> : SingleWriterMultipleReadersGrain,
         IDistributedHashTableBucket<TKey, TValue>
     {
-        private Dictionary<TKey, TValue> Elements { get; } = new Dictionary<TKey, TValue>(30000);
+        private Dictionary<TKey, TValue> Elements { get; } = new Dictionary<TKey, TValue>(100000);
 
         public Task<Immutable<TValue>> Get(Immutable<TKey> key) => Task.FromResult(Elements[key.Value].AsImmutable());
 
@@ -43,7 +43,7 @@ namespace DDBMSP.Grains.Core.DistributedHashTable
         }
 
         public Task<int> Count() => Task.FromResult(Elements.Count);
-        
+
         public Task<Immutable<Dictionary<TKey, TValue>>> Enumerate() => Task.FromResult(Elements.AsImmutable());
 
         public async Task<Immutable<dynamic>> Query(Immutable<QueryDefinition> queryDefinition) {
@@ -51,7 +51,7 @@ namespace DDBMSP.Grains.Core.DistributedHashTable
                 new QueryContext {
                     __Elements = Elements.Values.Cast<dynamic>()
                 });
-            
+
             return result.AsImmutable();
         }
     }

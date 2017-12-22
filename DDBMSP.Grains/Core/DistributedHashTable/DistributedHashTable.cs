@@ -14,7 +14,7 @@ namespace DDBMSP.Grains.Core.DistributedHashTable
     [Reentrant]
     public class DistributedHashTable<TKey, TValue> : Grain, IDistributedHashTable<TKey, TValue>
     {
-        private const int BucketsNumber = 100;
+        private const int BucketsNumber = 2;
 
         public Task<Immutable<TValue>> Get(Immutable<TKey> key) {
             // Calculate the hash code of the key, eliminate negative values.

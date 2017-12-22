@@ -44,7 +44,6 @@ namespace DDBMSP.CLI.Interactive
                 var t = Stopwatch.StartNew();
                 await querier.CommitQuery(query.AsImmutable());
                 Console.WriteLine($"Succesfully compiled \"{Name}\" definition in {t.ElapsedMilliseconds}ms");
-                Console.WriteLine($"\"{Name}\" is now globally available.");
                 return 0;
             }
             catch (Exception e) {

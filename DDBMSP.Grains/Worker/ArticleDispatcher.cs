@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using DDBMSP.Entities;
 using DDBMSP.Entities.Article;
@@ -37,7 +38,14 @@ namespace DDBMSP.Grains.Worker
                 dictArticles.SetRange(dictArticlesRange.AsImmutable()),
                 dictActivities.SetRange(dictActivitiesRange.AsImmutable()),
                 GrainFactory.GetGrain<IArticleAggregatorHubGrain>(0).AggregateRange(author.Articles.AsImmutable()),
-                GrainFactory.GetGrain<IDistributedHashTable<Guid, UserState>>(0).Set(author.Id.AsImmutable(), author.AsImmutable()));
+                GrainFactory.GetGrain<IDistributedHashTable<Guid, UserState>>(0).Set(author.Id.AsImmutable(), author.AsImmutable())
+                );
+        }
+        
+        public Task DispatchStorageUnits(Immutable<List<StorageUnit>> units) {
+            var tasks = new List<Task>(units.Value.Count);
+            tasks.AddRange(units.Value.Select(unit => DispatchStorageUnit(unit.AsImmutable())));
+            return Task.WhenAll(tasks);
         }
     }
 }

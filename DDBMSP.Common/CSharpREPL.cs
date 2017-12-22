@@ -20,7 +20,7 @@ namespace DDBMSP.Common
         private static ScriptOptions ScriptOptions { get; } = ScriptOptions.Default
             .WithReferences(typeof(ArticleState).Assembly, typeof(IQueryable).Assembly,
                 typeof(IEnumerable<>).Assembly, typeof(Guid).Assembly)
-            .WithImports("DDBMSP.Entities.Article", "DDBMSP.Entities.User", "System.Linq", "System",
+            .WithImports("DDBMSP.Entities.Article", "DDBMSP.Entities.User", "DDBMSP.Entities.UserActivity", "System.Linq", "System",
                 "System.Collections.Generic").WithEmitDebugInformation(false);
         
         public ScriptState<dynamic> ScriptState { get; set; }

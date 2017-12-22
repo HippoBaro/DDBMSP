@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -6,6 +7,7 @@ using System.Threading.Tasks;
 using DDBMSP.Entities.Article;
 using DDBMSP.Entities.Query;
 using DDBMSP.Entities.User;
+using DDBMSP.Entities.UserActivity;
 using DDBMSP.Interfaces.Grains.Core.DistributedHashTable;
 using DDBMSP.Interfaces.Grains.Querier;
 using Orleans;
@@ -41,6 +43,8 @@ namespace DDBMSP.Grains.Querier
                     return await Query<ArticleState>(def);
                 case "User":
                     return await Query<UserState>(def);
+                case "Activity":
+                    return await Query<List<UserActivityState>>(def);
                 default:
                     throw new Exception("Unknown ressource type");
             }

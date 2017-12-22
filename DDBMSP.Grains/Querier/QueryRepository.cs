@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using DDBMSP.Common.QueryEngine;
 using DDBMSP.Entities.Query;
+using DDBMSP.Entities.UserActivity;
 using DDBMSP.Grains.Core;
 using DDBMSP.Interfaces.Grains.Querier;
 using Orleans.Concurrency;
@@ -39,6 +41,9 @@ namespace DDBMSP.Grains.Querier
             
             newquery -n test -r User -t "int" -s "Elements.Count()" -a "Selected.Sum()"
             newquery -n test1k -r Article -t "IEnumerable<ArticleState>" -s "Elements.Where(article => article.Title != null)" -a "Selected.SelectMany(d => d).Take(1000).ToList()"
+            
+            newquery -n testActivities -r Article -t "IEnumerable<UserActivityState>" -s "Elements.Select(list => list.Where(state => state.User.Name.Contains("Iachin")))" -a "Selected.SelectMany(d => d).ToList()"
+            
             */
 
             return SerialExecutor.AddNext(() => {

@@ -20,13 +20,13 @@ namespace DDBMSP.CLI.Interactive
         [Option('n', "name", Required = true, HelpText = "Name of the to-be-executed query")]
         public string Name { get; set; }
         
-        [Option('p', "pipe", Required = true, HelpText = "Name of the variable to pipe result into")]
+        [Option('p', "pipe", Required = false, HelpText = "Name of the variable to pipe result into")]
         public string VariableName { get; set; }
 
         public async Task<int> Run(CSharpRepl repl) {
-            var querier = GrainClient.GrainFactory.GetGrain<IGenericQuerier<ArticleState, IEnumerable<KeyValuePair<Guid, ArticleState>>>>(0);
             try {
                 var t = Stopwatch.StartNew();
+                var querier = GrainClient.GrainFactory.GetGrain<IGenericQuerier>(0);
                 var res = await querier.Query(Name.AsImmutable());
                 
                 IFormatter formatter = new BinaryFormatter();  
@@ -36,7 +36,10 @@ namespace DDBMSP.CLI.Interactive
                 
                 Console.WriteLine($"{t.ElapsedMilliseconds}ms");
 
-                await repl.AddToState(obj, VariableName);
+                if (VariableName != null)
+                    await repl.AddToState(obj, VariableName);
+                else
+                    await repl.Display(obj);
                 return 0;
             }
             catch (Exception e) {

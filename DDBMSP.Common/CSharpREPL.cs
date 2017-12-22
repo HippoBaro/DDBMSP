@@ -16,13 +16,13 @@ namespace DDBMSP.Common
             public int __Counter { get; set; } = 0;
             public List<dynamic> __Results { get; } = new List<dynamic>();
         }
-        
+
         private static ScriptOptions ScriptOptions { get; } = ScriptOptions.Default
             .WithReferences(typeof(ArticleState).Assembly, typeof(IQueryable).Assembly,
                 typeof(IEnumerable<>).Assembly, typeof(Guid).Assembly)
             .WithImports("DDBMSP.Entities.Article", "DDBMSP.Entities.User", "System.Linq", "System",
                 "System.Collections.Generic").WithEmitDebugInformation(false);
-        
+
         public InteractiveAssemblyLoader InteractiveAssemblyLoader { get; set; } = new InteractiveAssemblyLoader();
         public ScriptState<dynamic> ScriptState { get; set; }
 
@@ -33,10 +33,8 @@ namespace DDBMSP.Common
             ScriptState = script.RunAsync(ScriptContext).Result;
         }
 
-        public async Task<dynamic> Evaluate(string line) {
-            return (ScriptState = await ScriptState.ContinueWithAsync<dynamic>(line, ScriptOptions)).ReturnValue;
-        }
-        
+        public async Task<dynamic> Evaluate(string line) => (ScriptState = await ScriptState.ContinueWithAsync<dynamic>(line, ScriptOptions)).ReturnValue;
+
         public async Task AddToState(dynamic obj, string name) {
             Type type = obj.GetType();
             ScriptContext.__Results.Add(obj);
@@ -47,8 +45,16 @@ namespace DDBMSP.Common
             }
             else {
                 ScriptState = await ScriptState.ContinueWithAsync<dynamic>(
-                    $"var {name} = Convert.ChangeType(__Results[__Counter++], Type.GetType(\"{type.AssemblyQualifiedName}\"));", ScriptOptions);
+                    $"var {name} = Convert.ChangeType(__Results[__Counter++], Type.GetType(\"{type.AssemblyQualifiedName}\"));",
+                    ScriptOptions);
             }
+        }
+
+        public async Task Display(dynamic obj) {
+            Type type = obj.GetType();
+            ScriptContext.__Results.Add(obj);
+            ScriptState = await ScriptState.ContinueWithAsync<dynamic>(
+                $"Console.WriteLine((({type.Name}) __Results[__Counter++]).ToString())", ScriptOptions);
         }
     }
 }

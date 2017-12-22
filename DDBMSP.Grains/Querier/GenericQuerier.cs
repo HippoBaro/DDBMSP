@@ -5,6 +5,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 using DDBMSP.Entities.Article;
 using DDBMSP.Entities.Query;
+using DDBMSP.Entities.User;
 using DDBMSP.Interfaces.Grains.Core.DistributedHashTable;
 using DDBMSP.Interfaces.Grains.Querier;
 using Orleans;
@@ -14,16 +15,11 @@ namespace DDBMSP.Grains.Querier
 {
     [StatelessWorker]
     [Reentrant]
-    public class GenericQuerier<TRessource, TResult> : Grain, IGenericQuerier<TRessource, TResult>
+    public class GenericQuerier : Grain, IGenericQuerier
     {
-        public async Task<Immutable<byte[]>> Query(Immutable<string> queryName) {
-            var def = await GrainFactory.GetGrain<IQueryRepository>(0).GetQueryDefinition(queryName);
-            var ret = await GrainFactory.GetGrain<IDistributedHashTable<Guid, ArticleState>>(0)
-                .Query(def);
-            
-            Console.WriteLine("Serialiazing query's result");
-
+        private async Task<Immutable<byte[]>> Query<TRessourceType>(Immutable<QueryDefinition> queryDef) {
             try {
+                var ret = await GrainFactory.GetGrain<IDistributedHashTable<Guid, TRessourceType>>(0).Query(queryDef);
                 IFormatter formatter = new BinaryFormatter();  
                 var stream = new MemoryStream(5000000);
                 formatter.Serialize(stream, ret.Value);
@@ -33,8 +29,20 @@ namespace DDBMSP.Grains.Querier
                 return stream.GetBuffer().AsImmutable();
             }
             catch (Exception e) {
-                Console.WriteLine(e.Message);
-                throw;
+                throw new Exception(e.Message);
+            }
+        }
+
+        public async Task<Immutable<byte[]>> Query(Immutable<string> queryName) {
+            var def = await GrainFactory.GetGrain<IQueryRepository>(0).GetQueryDefinition(queryName);
+
+            switch (def.Value.TargetRessource) {
+                case "Article":
+                    return await Query<ArticleState>(def);
+                case "User":
+                    return await Query<UserState>(def);
+                default:
+                    throw new Exception("Unknown ressource type");
             }
         }
 

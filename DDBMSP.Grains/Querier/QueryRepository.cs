@@ -37,7 +37,8 @@ namespace DDBMSP.Grains.Querier
             newquery -n test -t "KeyValuePair<Guid, ArticleState>" -s "Articles.Where(pair => pair.Value.Title != null)" -a "Selected.SelectMany(dict => dict).ToDictionary(pair => pair.Key, pair => pair.Value).ToList()"
             newquery -n test1k -t "KeyValuePair<Guid, ArticleState>" -s "Articles.Where(pair => pair.Value.Title != null)" -a "Selected.SelectMany(dict => dict).ToDictionary(pair => pair.Key, pair => pair.Value).Take(1000).ToList()"
             
-            newquery -n test -t "int" -s "Articles.Count(pair => !string.IsNullOrEmpty(pair.Value.Title))" -a "Selected.Sum()"
+            newquery -n test -r User -t "int" -s "Elements.Count()" -a "Selected.Sum()"
+            newquery -n test1k -r Article -t "IEnumerable<ArticleState>" -s "Elements.Where(article => article.Title != null)" -a "Selected.SelectMany(d => d).Take(1000).ToList()"
             */
 
             return SerialExecutor.AddNext(() => {

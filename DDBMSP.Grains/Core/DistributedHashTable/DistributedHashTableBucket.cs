@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using DDBMSP.Common.QueryEngine;
 using DDBMSP.Entities.Article;
@@ -46,10 +47,11 @@ namespace DDBMSP.Grains.Core.DistributedHashTable
         public Task<Immutable<Dictionary<TKey, TValue>>> Enumerate() => Task.FromResult(Elements.AsImmutable());
 
         public async Task<Immutable<dynamic>> Query(Immutable<QueryDefinition> queryDefinition) {
-            var result = await QueryEngine.Execute(ScriptType.QuerySelector, queryDefinition.Value, new QueryContext {
-                Articles = Elements as Dictionary<Guid, ArticleState>,
-                Users = Elements as Dictionary<Guid, UserState>
-            });
+            var result = await QueryEngine.Execute(ScriptType.QuerySelector, queryDefinition.Value,
+                new QueryContext {
+                    __Elements = Elements.Values.Cast<dynamic>()
+                });
+            
             return result.AsImmutable();
         }
     }

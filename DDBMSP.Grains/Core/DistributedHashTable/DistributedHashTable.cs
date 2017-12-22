@@ -74,7 +74,7 @@ namespace DDBMSP.Grains.Core.DistributedHashTable
 
         public Task<Immutable<List<IDistributedHashTableBucket<TKey, TValue>>>> GetBuckets() {
             var ret = new List<IDistributedHashTableBucket<TKey, TValue>>(BucketsNumber);
-            for (int i = 0; i < BucketsNumber; i++) {
+            for (var i = 0; i < BucketsNumber; i++) {
                 ret.Add(GrainFactory.GetGrain<IDistributedHashTableBucket<TKey, TValue>>(i));
             }
 
@@ -86,10 +86,12 @@ namespace DDBMSP.Grains.Core.DistributedHashTable
             for (var i = 0; i < BucketsNumber; i++) {
                 tasks.Add(GrainFactory.GetGrain<IDistributedHashTableBucket<TKey, TValue>>(i).Query(queryDefinition));
             }
+            
             await Task.WhenAll(tasks);
             try {
-                return new Immutable<dynamic>(await QueryEngine.Execute(ScriptType.QueryAggregator, queryDefinition.Value,
-                    new QueryContext {TaskResult = tasks.Select(task => task.Result.Value)}));
+                return new Immutable<dynamic>(await QueryEngine.Execute(ScriptType.QueryAggregator,
+                    queryDefinition.Value,
+                    new QueryContext { __TaskResult = tasks.Select(task => task.Result.Value) }));
             }
             catch (Exception e) {
                 throw new Exception(e.Message);

@@ -15,6 +15,9 @@ namespace DDBMSP.CLI.Interactive
         [Option('n', "name", Required = true, HelpText = "Name of the to-be-created query")]
         public string Name { get; set; }
         
+        [Option('r', "ressource", Required = true, HelpText = "Ressource to query from")]
+        public string TargetRessource { get; set; }
+        
         [Option('t', "type", Required = true,
             HelpText = "Expected return type of the query (ex. bool, int, IEnumerable<ArticleState>, etc.")]
         public string Type { get; set; }
@@ -32,7 +35,8 @@ namespace DDBMSP.CLI.Interactive
                 AggregationLambda = Aggregator,
                 SelectorLambda = Selector,
                 ReturnTypeName = Type,
-                Name = Name
+                Name = Name,
+                TargetRessource = TargetRessource
             };
             
             Console.WriteLine($"Compiling \"{Name}\" definition...");

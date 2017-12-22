@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.Serialization;
@@ -7,7 +6,6 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 using CommandLine;
 using DDBMSP.Common;
-using DDBMSP.Entities.Article;
 using DDBMSP.Interfaces.Grains.Querier;
 using Orleans;
 using Orleans.Concurrency;
@@ -33,8 +31,6 @@ namespace DDBMSP.CLI.Interactive
                 Stream stream = new MemoryStream(res.Value, false);  
                 var obj = formatter.Deserialize(stream);
                 stream.Close();
-                
-                Console.WriteLine($"{t.ElapsedMilliseconds}ms");
 
                 if (VariableName != null)
                     await repl.AddToState(obj, VariableName);

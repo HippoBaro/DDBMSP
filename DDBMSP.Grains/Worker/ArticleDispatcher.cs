@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using DDBMSP.Entities;
 using DDBMSP.Entities.Article;
 using DDBMSP.Entities.User;
 using DDBMSP.Interfaces.Grains.Aggregators.Articles;
@@ -15,18 +16,22 @@ namespace DDBMSP.Grains.Worker
     [Reentrant]
     public class ArticleDispatcher : Grain, IArticleDispatcher
     {
-        public Task DispatchNewArticlesFromAuthor(Immutable<UserState> author, Immutable<List<ArticleState>> articles) {
+        public Task DispatchStorageUnit(Immutable<StorageUnit> unit) {
+            var articles = unit.Value.Articles;
+            var author = unit.Value.User;
+            var activities = unit.Value.Activities;
+            
             var dict = GrainFactory.GetGrain<IDistributedHashTable<Guid, ArticleState>>(0);
-            var dictRange = new Dictionary<Guid, ArticleState>(articles.Value.Count);
+            var dictRange = new Dictionary<Guid, ArticleState>(articles.Count);
 
-            foreach (var article in articles.Value) {
+            foreach (var article in articles) {
                 dictRange.Add(article.Id, article);
             }
             
             return Task.WhenAll(
-                dict.SetRange(dictRange.AsImmutable()),
-                GrainFactory.GetGrain<IArticleAggregatorHubGrain>(0).AggregateRange(author.Value.Articles.AsImmutable()),
-                GrainFactory.GetGrain<IDistributedHashTable<Guid, UserState>>(0).Set(author.Value.Id.AsImmutable(), author.Value.AsImmutable()));
+                dict.SetRangeUnsafe(dictRange.AsImmutable()),
+                GrainFactory.GetGrain<IArticleAggregatorHubGrain>(0).AggregateRange(author.Articles.AsImmutable()),
+                GrainFactory.GetGrain<IDistributedHashTable<Guid, UserState>>(0).Set(author.Id.AsImmutable(), author.AsImmutable()));
         }
     }
 }

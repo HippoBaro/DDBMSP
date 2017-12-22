@@ -1,16 +1,18 @@
-﻿﻿using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
- using CommandLine;
- using DDBMSP.Entities.Article;
- using DDBMSP.Entities.Article.Components;
- using DDBMSP.Entities.Enums;
- using DDBMSP.Entities.User;
- using Newtonsoft.Json;
+using CommandLine;
+using DDBMSP.Entities;
+using DDBMSP.Entities.Article;
+using DDBMSP.Entities.Article.Components;
+using DDBMSP.Entities.Enums;
+using DDBMSP.Entities.User;
+using DDBMSP.Entities.UserActivity;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Bson;
- using ShellProgressBar;
+using ShellProgressBar;
 
 namespace DDBMSP.CLI
 {
@@ -21,6 +23,9 @@ namespace DDBMSP.CLI
         
         [Option('a', "articles", Required = true, HelpText = "The total number of articles to generate")]
         public int ArticlesNumber { get; set; }
+        
+        [Option('c', "activities", Required = true, HelpText = "The total number of activities to generate")]
+        public int ActivitiesNumber { get; set; }
         
         [Option('r', "random-number-of-articles-per-user", Required = false,
             HelpText = "Each user has a random number of articles. Default: false")]
@@ -36,6 +41,7 @@ namespace DDBMSP.CLI
         
         private LinkedList<UserState> Users { get; } = new LinkedList<UserState>();
         private LinkedList<ArticleState> Articles { get;  } = new LinkedList<ArticleState>();
+        private LinkedList<UserActivityState> Activities { get;  } = new LinkedList<UserActivityState>();
         private List<StorageUnit> Units { get; } = new List<StorageUnit>();
 
         public int Run() {
@@ -46,6 +52,7 @@ namespace DDBMSP.CLI
             
             GenerateUsers();
             GenerateArticles();
+            GenerateComments();
 
             GenerateUnits();
             
@@ -76,17 +83,23 @@ namespace DDBMSP.CLI
         private void GenerateUnits() {
             StorageUnit New() {
                 var articlePerUser = ArticlesNumber / UserNumber;
+                var activitiesPerArticle = ArticlesNumber / ActivitiesNumber;
                 
-                var ret =  new StorageUnit {
+                var ret = new StorageUnit {
                     User = Users.First.Value,
-                    Articles = Articles.Take(articlePerUser).ToList()
+                    Articles = Articles.Take(articlePerUser).ToList(),
+                    Activities = new List<List<UserActivityState>>()
                 };
                 foreach (var article in ret.Articles) {
                     article.Author = ret.User.Summarize();
                     ret.User.Articles.Add(article.Summarize());
+                    ret.Activities.Add(new List<UserActivityState>(Activities.Take(activitiesPerArticle).ToList()));
+                    for (var i = 0; i < activitiesPerArticle; i++) {
+                        Articles.RemoveFirst();
+                    }
                 }
-                
-                ret.EntityCount = 1 + ret.Articles.Count;
+
+                ret.EntityCount = 1 + ret.Articles.Count + ret.Articles.Count * activitiesPerArticle;
                 
                 Users.RemoveFirst();
                 for (var i = 0; i < articlePerUser; i++) {
@@ -172,9 +185,36 @@ namespace DDBMSP.CLI
             ArticlePB.Tick(ArticlesNumber);
             Program.ProgressBar.Tick();
         }
+        
+        private void GenerateComments() {
+            UserActivityState New() {
+                var ret = new UserActivityState {
+                    Type = (UserActivityType)RandomGenerationData.Random.Next(2),
+                    User = Users.ElementAt(RandomGenerationData.Random.Next(Users.Count)).Summarize(),
+                    CreationDate = DateTime.Now.AddHours(-RandomGenerationData.Random.Next(1000))
+                };
+                switch (ret.Type) {
+                    case UserActivityType.Commented:
+                        ret.Comment = RandomGenerationData.CommentList[RandomGenerationData.Random.Next(RandomGenerationData.CommentList.Count)];
+                        break;
+                }
+                return ret;
+            }
+
+            var t = Stopwatch.StartNew();
+            for (var i = 0; i < ActivitiesNumber; i++) {
+                Activities.AddLast(New());
+                if (t.ElapsedMilliseconds <= Program.ProgressBarRefreshDelay) continue;
+                ActivitiesPB.Tick(i);
+                t.Restart();
+            }
+            ActivitiesPB.Tick(ActivitiesNumber);
+            Program.ProgressBar.Tick();
+        }
 
         private ChildProgressBar UserPB { get; set; }
         private ChildProgressBar ArticlePB { get; set; }
+        private ChildProgressBar ActivitiesPB { get; set; }
         private ChildProgressBar UnitsPB { get; set; }
         private ChildProgressBar WritingPB { get; set; }
 
@@ -182,13 +222,13 @@ namespace DDBMSP.CLI
             if (string.IsNullOrEmpty(Output)) {
                 Output = Environment.CurrentDirectory + "/out.ddbmsp";
             }
-            Program.ProgressBar = new ProgressBar(4, "Generating data", Program.ProgressBarOption);
+            Program.ProgressBar = new ProgressBar(5, "Generating data", Program.ProgressBarOption);
 
             UserPB = Program.ProgressBar.Spawn(UserNumber, "Users", Program.ProgressBarOption);
             ArticlePB = Program.ProgressBar.Spawn(ArticlesNumber, "Articles", Program.ProgressBarOption);
+            ActivitiesPB = Program.ProgressBar.Spawn(ActivitiesNumber, "Activities", Program.ProgressBarOption);
             UnitsPB = Program.ProgressBar.Spawn(UserNumber, "Compaction", Program.ProgressBarOption);
             WritingPB = Program.ProgressBar.Spawn(UserNumber, "Writting", Program.ProgressBarOption);
-            
         }
     }
 }

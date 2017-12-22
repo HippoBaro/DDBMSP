@@ -8,6 +8,5 @@ namespace DDBMSP.Grains
     public class Article : Grain, IArticle
     {
        
-
     }
 }

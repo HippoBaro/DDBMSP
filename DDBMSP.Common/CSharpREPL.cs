@@ -22,11 +22,9 @@ namespace DDBMSP.Common
                 typeof(IEnumerable<>).Assembly, typeof(Guid).Assembly)
             .WithImports("DDBMSP.Entities.Article", "DDBMSP.Entities.User", "System.Linq", "System",
                 "System.Collections.Generic").WithEmitDebugInformation(false);
-
-        public InteractiveAssemblyLoader InteractiveAssemblyLoader { get; set; } = new InteractiveAssemblyLoader();
+        
         public ScriptState<dynamic> ScriptState { get; set; }
-
-        public Context ScriptContext = new Context();
+        public readonly Context ScriptContext = new Context();
 
         public CSharpRepl() {
             var script = CSharpScript.Create<dynamic>("true", ScriptOptions, typeof(Context));

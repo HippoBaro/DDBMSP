@@ -31,7 +31,7 @@ namespace DDBMSP.Grains.Core.DistributedHashTable
             return SerialExecutor.AddNext(Set);
         }
 
-        public Task SetRange(Immutable<List<KeyValuePair<TKey, TValue>>> keyvalues) {
+        public Task SetRange(Immutable<IEnumerable<KeyValuePair<TKey, TValue>>> keyvalues) {
             Task Set() {
                 foreach (var keyval in keyvalues.Value) {
                     Elements.Add(keyval.Key, keyval.Value);
@@ -43,7 +43,7 @@ namespace DDBMSP.Grains.Core.DistributedHashTable
         }
 
         public Task<int> Count() => Task.FromResult(Elements.Count);
-
+        
         public Task<Immutable<Dictionary<TKey, TValue>>> Enumerate() => Task.FromResult(Elements.AsImmutable());
 
         public async Task<Immutable<dynamic>> Query(Immutable<QueryDefinition> queryDefinition) {

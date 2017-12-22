@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
+using DDBMSP.Entities;
 using DDBMSP.Interfaces.Grains.Workers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Bson;
@@ -110,8 +111,7 @@ namespace DDBMSP.CLI
             
             for (var i = 0; i < units.Count(); i++) {
                 tasks.Add(GrainClient.GrainFactory.GetGrain<IArticleDispatcher>(0)
-                    .DispatchNewArticlesFromAuthor(units.ElementAt(i).User.AsImmutable(),
-                        units.ElementAt(i).Articles.AsImmutable()));
+                    .DispatchStorageUnit(units.ElementAt(i).AsImmutable()));
             }
             var t = Stopwatch.StartNew();
             Task.WhenAll(tasks).Wait();

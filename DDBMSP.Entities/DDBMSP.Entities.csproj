@@ -10,4 +10,7 @@
   <ItemGroup>
     <PackageReference Include="NETStandard.Library" Version="2.0.1" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Comment" />
+  </ItemGroup>
 </Project>

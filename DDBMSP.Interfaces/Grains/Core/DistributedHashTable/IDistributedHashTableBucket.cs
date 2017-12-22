@@ -10,7 +10,7 @@ namespace DDBMSP.Interfaces.Grains.Core.DistributedHashTable
     {
         Task<Immutable<TValue>> Get(Immutable<TKey> key);
         Task Set(Immutable<TKey> key, Immutable<TValue> value);
-        Task SetRange(Immutable<List<KeyValuePair<TKey, TValue>>> keyvalues);
+        Task SetRange(Immutable<IEnumerable<KeyValuePair<TKey, TValue>>> keyvalues);
         Task<int> Count();
 
         Task<Immutable<Dictionary<TKey, TValue>>> Enumerate();

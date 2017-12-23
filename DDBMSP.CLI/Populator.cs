@@ -70,7 +70,7 @@ namespace DDBMSP.CLI
             Program.ProgressBar.Tick();
         }
         
-        private static double Percentile(List<int> sequence, double excelPercentile) {
+        private static double Percentile(List<float> sequence, double excelPercentile) {
             sequence.Sort();
             var N = sequence.Count;
             var n = (N - 1) * excelPercentile + 1;
@@ -87,9 +87,9 @@ namespace DDBMSP.CLI
             UploadPB = Program.ProgressBar.Spawn(Units.Count, "Uploading...", Program.ProgressBarOption);
             UploadPB.Tick();
             
-            var latencies = new List<int>(Units.Count);
+            var latencies = new List<float>(Units.Count);
             int ops = 0;
-            int lat = 0;
+            float lat = 0;
             int unit = 0;
             
             var t = Stopwatch.StartNew();
@@ -111,16 +111,16 @@ namespace DDBMSP.CLI
             return Task.CompletedTask;
         }
 
-        private void PopulateUnit(IEnumerable<StorageUnit> units, ref int ops, ref int lat, ref int unit) {
+        private void PopulateUnit(IEnumerable<StorageUnit> units, ref int ops, ref float lat, ref int unit) {
             var tasks = new List<Task>(units.Count());
             
             for (var i = 0; i < units.Count() / Environment.ProcessorCount; i++) {
-                tasks.Add(GrainClient.GrainFactory.GetGrain<IArticleDispatcher>(0)
+                tasks.Add(GrainClient.GrainFactory.GetGrain<IArticleDispatcherWorker>(0)
                     .DispatchStorageUnits(units.Skip(i * Environment.ProcessorCount).Take(Environment.ProcessorCount).ToList().AsImmutable()));
             }
             var t = Stopwatch.StartNew();
             Task.WhenAll(tasks).Wait();
-            lat = (int) t.ElapsedMilliseconds;
+            lat = (float) t.ElapsedMilliseconds;
             ops += units.Sum(u => u.EntityCount);
             unit += units.Count();
         }

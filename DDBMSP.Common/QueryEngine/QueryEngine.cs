@@ -31,7 +31,7 @@ namespace DDBMSP.Common.QueryEngine
     public static class QueryEngine
     {
         private static ScriptOptions ScriptOptions = ScriptOptions.Default
-            .WithReferences(typeof(ArticleState).Assembly, typeof(System.Linq.IQueryable).Assembly,
+            .WithReferences(typeof(ArticleState).Assembly, typeof(IQueryable).Assembly,
                 typeof(IEnumerable<>).Assembly, typeof(Guid).Assembly)
             .WithImports("DDBMSP.Entities.Article", "DDBMSP.Entities.User", "DDBMSP.Entities.UserActivity", "System.Linq", "System",
                 "System.Collections.Generic").WithEmitDebugInformation(false);

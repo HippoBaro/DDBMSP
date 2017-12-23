@@ -12,6 +12,7 @@
     <ProjectReference Include="..\DDBMSP.Interfaces\DDBMSP.Interfaces.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="2.6.1" />
     <PackageReference Include="Microsoft.Orleans.Client" Version="2.0.0-beta3" />
     <PackageReference Include="Microsoft.Orleans.OrleansGoogleUtils" Version="2.0.0-beta3" />
     <PackageReference Include="Microsoft.Orleans.Serialization.Bond" Version="2.0.0-beta3" />

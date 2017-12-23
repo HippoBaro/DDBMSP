@@ -28,14 +28,14 @@ namespace DDBMSP.CLI.Interactive
                 var res = await querier.Query(Name.AsImmutable());
                 
                 IFormatter formatter = new BinaryFormatter();  
-                Stream stream = new MemoryStream(res.Value, false);  
+                Stream stream = new MemoryStream(res.Value.Item2, false);  
                 var obj = formatter.Deserialize(stream);
                 stream.Close();
 
                 if (VariableName != null)
-                    await repl.AddToState(obj, VariableName);
+                    await repl.AddToState(obj, VariableName, res.Value.Item1);
                 else
-                    await repl.Display(obj);
+                    await repl.Display(obj, res.Value.Item1);
                 return 0;
             }
             catch (Exception e) {

@@ -35,19 +35,25 @@ namespace DDBMSP.Grains.Querier
             }
         }
 
-        public async Task<Immutable<byte[]>> Query(Immutable<string> queryName) {
+        public async Task<Immutable<Tuple<QueryDefinition, byte[]>>> Query(Immutable<string> queryName) {
             var def = await GrainFactory.GetGrain<IQueryRepository>(0).GetQueryDefinition(queryName);
 
+            Immutable<byte[]> res;
+            
             switch (def.Value.TargetRessource) {
                 case "Article":
-                    return await Query<ArticleState>(def);
+                    res = await Query<ArticleState>(def);
+                    break;
                 case "User":
-                    return await Query<UserState>(def);
+                    res = await Query<UserState>(def);
+                    break;
                 case "Activity":
-                    return await Query<List<UserActivityState>>(def);
+                    res = await Query<List<UserActivityState>>(def);
+                    break;
                 default:
                     throw new Exception("Unknown ressource type");
             }
+            return new Tuple<QueryDefinition, byte[]>(def.Value, res.Value).AsImmutable();
         }
 
         public Task<Immutable<QueryDefinition>> GetQueryDefinition(Immutable<string> queryName) => GrainFactory.GetGrain<IQueryRepository>(0).GetQueryDefinition(queryName);

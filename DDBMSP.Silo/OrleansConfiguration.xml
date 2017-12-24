@@ -1,14 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <OrleansConfiguration xmlns="urn:orleans">
-    <Globals>
-        <SeedNode Address="localhost" Port="22222" />
-        <StorageProviders>
-            <Provider Type="Orleans.Storage.MemoryStorage" Name="Default" />
-            <Provider Type="Orleans.Storage.MemoryStorage" Name="PubSubStore" />
-        </StorageProviders>
-    </Globals>
-    <Defaults>
-        <Networking Address="localhost" Port="22222" />
-        <ProxyingGateway Address="localhost" Port="40000" />
-    </Defaults>
+<Globals>
+    <StorageProviders>
+        <Provider Type="Orleans.Storage.MemoryStorage" Name="Default" />
+        <Provider Type="Orleans.Storage.MemoryStorage" Name="PubSubStore" />
+    </StorageProviders>
+</Globals>
+<Defaults>
+    <Networking      Address="localhost" Port="11111"/>
+    <ProxyingGateway Address="localhost" Port="30000" />
+</Defaults>
 </OrleansConfiguration>

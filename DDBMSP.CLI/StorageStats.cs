@@ -21,7 +21,6 @@ namespace DDBMSP.CLI
     [Verb("stats", HelpText = "Get statistics on storage")]
     internal class StorageStats : ConnectedTool
     {
-
         [Option('i', "input", Required = false, HelpText = "File to populate from. Default: out.ddbmsp")]
         public string Input { get; set; }
 

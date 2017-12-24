@@ -1,0 +1,8 @@
+IN_BOOTSTRAP=""
+
+if [ "$BOOTSTRAP" = true ] ; then
+    IN_BOOTSTRAP="-bootstrap"
+fi
+
+./Consul/consul agent -server $IN_BINDADDR -data-dir "consuldata" -client=0.0.0.0 &
+dotnet DDBMSP.Silo.dll

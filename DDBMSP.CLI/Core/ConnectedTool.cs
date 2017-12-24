@@ -17,16 +17,19 @@ namespace DDBMSP.CLI.Core
 {
     public class ConnectedTool
     {
-        [Option('e', "endpoint", Required = false, HelpText = "Endpoint to connect to. (Default: localhost:30000)")]
-        public string Endpoint { get; } = "127.0.0.1:30000";
-        
-        protected IClusterClient ClusterClient { get; }
+        private IClusterClient _clusterClient;
 
-        protected ConnectedTool() => ClusterClient = ConnectClient().Result;
+        [Option('h', "host", Required = false, HelpText = "Endpoint to connect to. (Default: 127.0.0.1:30000)")]
+        public string Endpoint { get; set; } = "127.0.0.1:30000";
+
+        protected IClusterClient ClusterClient => _clusterClient ?? (_clusterClient = ConnectClient().Result);
+
+        public ConnectedTool() {}
+        protected ConnectedTool(IClusterClient client) => _clusterClient = client;
 
         protected Task<IClusterClient> ConnectClient() {
             var config = new ClientConfiguration {
-                Gateways = new List<IPEndPoint> { CreateIPEndPoint(Endpoint)},
+                Gateways = new List<IPEndPoint> { CreateIPEndPoint(Endpoint) },
             };
             config.SerializationProviders.Add(typeof(ProtobufSerializer).GetTypeInfo());
 

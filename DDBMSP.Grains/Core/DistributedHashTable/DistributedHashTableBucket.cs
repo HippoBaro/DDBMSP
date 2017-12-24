@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DDBMSP.Common.QueryEngine;
-using DDBMSP.Entities.Article;
 using DDBMSP.Entities.Query;
-using DDBMSP.Entities.User;
 using DDBMSP.Interfaces.Grains.Core.DistributedHashTable;
 using Orleans.Concurrency;
 
@@ -15,7 +12,7 @@ namespace DDBMSP.Grains.Core.DistributedHashTable
     public class DistributedHashTableBucket<TKey, TValue> : SingleWriterMultipleReadersGrain,
         IDistributedHashTableBucket<TKey, TValue>
     {
-        private Dictionary<TKey, TValue> Elements { get; } = new Dictionary<TKey, TValue>(100000);
+        private Dictionary<TKey, TValue> Elements { get; } = new Dictionary<TKey, TValue>(500000);
 
         public Task<Immutable<TValue>> Get(Immutable<TKey> key) => Task.FromResult(Elements[key.Value].AsImmutable());
 

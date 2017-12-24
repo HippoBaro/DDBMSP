@@ -75,11 +75,11 @@
             <div class="ui big comments comments-full-content">
                 @foreach (var activity in Model.Item3.Where(a => a.Type == UserActivityType.Commented)) {
                     <div class="comment">
-                        <a class="avatar">
+                        <a class="avatar" href="/author/@activity.User.Id">
                             <img src="@activity.User.Image">
                         </a>
                         <div class="content">
-                            <a class="author">@activity.User.Name</a>
+                            <a class="author" href="/author/@activity.User.Id">@activity.User.Name</a>
                             <div class="metadata">
                                 <div class="date">@activity.CreationDate.ToString("dd MMMM yyyy")</div>
                             </div>

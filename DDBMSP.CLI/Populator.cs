@@ -3,31 +3,25 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
+using DDBMSP.CLI.Core;
 using DDBMSP.Entities;
 using DDBMSP.Interfaces.Grains.Workers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Bson;
-using Orleans;
 using Orleans.Concurrency;
-using Orleans.Runtime;
-using Orleans.Runtime.Configuration;
-using Orleans.Serialization;
 using ShellProgressBar;
 
 namespace DDBMSP.CLI
 {
     [Verb("populate", HelpText = "Populate your cluster with data")]
-    internal class Populator
+    internal class Populator : ConnectedTool
     {
-
         [Option('i', "input", Required = false, HelpText = "File to populate from. Default: out.ddbmsp")]
         public string Input { get; set; }
 
-        public List<StorageUnit> Units { get; set; } = new List<StorageUnit>();
+        public List<StorageUnit> Units { get; } = new List<StorageUnit>();
 
         public int BytesPerUnit { get; set; }
 
@@ -115,7 +109,7 @@ namespace DDBMSP.CLI
             var tasks = new List<Task>(units.Count());
             
             for (var i = 0; i < units.Count() / Environment.ProcessorCount; i++) {
-                tasks.Add(GrainClient.GrainFactory.GetGrain<IArticleDispatcherWorker>(0)
+                tasks.Add(ClusterClient.GetGrain<IArticleDispatcherWorker>(0)
                     .DispatchStorageUnits(units.Skip(i * Environment.ProcessorCount).Take(Environment.ProcessorCount).ToList().AsImmutable()));
             }
             var t = Stopwatch.StartNew();
@@ -125,45 +119,10 @@ namespace DDBMSP.CLI
             unit += units.Count();
         }
         
-        private static void Connect() {
-            var config = ClientConfiguration.LocalhostSilo();
-            config.SerializationProviders.Add(typeof(ProtobufSerializer).GetTypeInfo());
-            
-            try {
-                InitializeWithRetries(config, 5);
-            }
-            catch (Exception ex) {
-                Console.WriteLine($"Orleans client initialization failed failed due to {ex}");
-                throw;
-            }
-        }
-        
-        private static void InitializeWithRetries(ClientConfiguration config, int initializeAttemptsBeforeFailing) {
-            var attempt = 0;
-            while (true) {
-                try {
-                    GrainClient.Initialize(config);
-                    Console.WriteLine("Client successfully connect to silo host");
-                    break;
-                }
-                catch (SiloUnavailableException) {
-                    attempt++;
-                    Console.WriteLine(
-                        $"Attempt {attempt} of {initializeAttemptsBeforeFailing} failed to initialize the Orleans client.");
-                    if (attempt > initializeAttemptsBeforeFailing) {
-                        throw;
-                    }
-                    Thread.Sleep(TimeSpan.FromSeconds(2));
-                }
-            }
-        }
-        
         private ChildProgressBar ReadingPB { get; set; }
         private ChildProgressBar UploadPB { get; set; }
         
         private void Init() {
-            
-            Connect();
             
             if (string.IsNullOrEmpty(Input)) {
                 Input = Environment.CurrentDirectory + "/out.ddbmsp";

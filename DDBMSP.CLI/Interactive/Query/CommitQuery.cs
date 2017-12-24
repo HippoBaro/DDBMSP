@@ -7,9 +7,9 @@ using DDBMSP.Interfaces.Grains.Querier;
 using Orleans;
 using Orleans.Concurrency;
 
-namespace DDBMSP.CLI.Interactive
+namespace DDBMSP.CLI.Interactive.Query
 {
-    [Verb("newquery", HelpText = "Create, compile and commit a new named query to the cluster")]
+    [Verb("query commit", HelpText = "Create, compile and commit a new named query to the cluster")]
     public class CommitQuery
     {
         [Option('n', "name", Required = true, HelpText = "Name of the to-be-created query")]
@@ -28,8 +28,8 @@ namespace DDBMSP.CLI.Interactive
         [Option('a', "aggregator", Required = true, HelpText = "Linq map-reduce aggregation")]
         public string Aggregator { get; set; }
 
-        public async Task<int> Run() {
-            var querier = GrainClient.GrainFactory.GetGrain<IQueryRepository>(0);
+        public async Task<int> Run(IClusterClient client) {
+            var querier = client.GetGrain<IQueryRepository>(0);
             
             var query = new QueryDefinition {
                 AggregationLambda = Aggregator,

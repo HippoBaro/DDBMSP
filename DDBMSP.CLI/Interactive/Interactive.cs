@@ -6,6 +6,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
 using CommandLine.Text;
+using DDBMSP.CLI.Core;
+using DDBMSP.CLI.Interactive.Query;
 using DDBMSP.Common;
 using Orleans;
 using Orleans.Runtime;
@@ -15,7 +17,7 @@ using Orleans.Serialization;
 namespace DDBMSP.CLI.Interactive
 {
     [Verb("interact", HelpText = "Run queries against your cluster")]
-    public class Interactive
+    public class Interactive : ConnectedTool
     {
         public CSharpRepl Repl { get; set; } = new CSharpRepl();
         
@@ -29,8 +31,6 @@ namespace DDBMSP.CLI.Interactive
         }
 
         public async Task<int> Run() {
-            Connect();
-            
             var parser = new Parser(settings => {
                 settings.IgnoreUnknownArguments = true;
                 settings.HelpWriter = null;
@@ -38,13 +38,19 @@ namespace DDBMSP.CLI.Interactive
             });
             
             while (true) {
-                bool shouldInterpret = true;
+                var shouldInterpret = true;
                 var line = ReadLine.Read("127.0.0.1> ");
                 if (string.IsNullOrWhiteSpace(line)) {
                     Console.ReadKey(true);
                     continue;
                 }
+                
                 ReadLine.AddHistory(line);
+                
+                if (line == "query commit" || line == "query commit") {
+                    line = line.Insert(0, "\"");
+                    line = line.Insert(line.Length, "\"");
+                }
                 
                 var result = parser.ParseArguments<CommitQuery, ExecuteQuery, Quit>(SplitCommandLine(line));
                 result.WithNotParsed(errors => {
@@ -58,8 +64,8 @@ namespace DDBMSP.CLI.Interactive
                 result.WithParsed(o => shouldInterpret = false);
                 
                 result.MapResult(
-                        (CommitQuery opts) => opts.Run().Result,
-                        (ExecuteQuery o) => o.Run(Repl).Result,
+                        (CommitQuery opts) => opts.Run(ClusterClient).Result,
+                        (ExecuteQuery o) => o.Run(Repl, ClusterClient).Result,
                         (Quit o) => o.Run(),
                         errs => -1);
 
@@ -77,8 +83,8 @@ namespace DDBMSP.CLI.Interactive
                 Console.ReadKey(true);
             }
         }
-        
-        public static IEnumerable<string> SplitCommandLine(string commandLine)
+
+        private static IEnumerable<string> SplitCommandLine(string commandLine)
         {
             var inQuotes = false;
             return commandLine.Split(c =>
@@ -90,40 +96,6 @@ namespace DDBMSP.CLI.Interactive
                 })
                 .Select(arg => arg.Trim().TrimMatchingQuotes('\"'))
                 .Where(arg => !string.IsNullOrEmpty(arg));
-        }
-        
-        private static void Connect() {
-            var config = ClientConfiguration.LocalhostSilo();
-            config.ResponseTimeout = TimeSpan.FromMinutes(5);
-            config.SerializationProviders.Add(typeof(ProtobufSerializer).GetTypeInfo());
-            
-            try {
-                InitializeWithRetries(config, 5);
-            }
-            catch (Exception ex) {
-                Console.WriteLine($"Orleans client initialization failed failed due to {ex}");
-                throw;
-            }
-        }
-        
-        private static void InitializeWithRetries(ClientConfiguration config, int initializeAttemptsBeforeFailing) {
-            var attempt = 0;
-            while (true) {
-                try {
-                    GrainClient.Initialize(config);
-                    Console.WriteLine("Client successfully connect to silo host");
-                    break;
-                }
-                catch (SiloUnavailableException) {
-                    attempt++;
-                    Console.WriteLine(
-                        $"Attempt {attempt} of {initializeAttemptsBeforeFailing} failed to initialize the Orleans client.");
-                    if (attempt > initializeAttemptsBeforeFailing) {
-                        throw;
-                    }
-                    Thread.Sleep(TimeSpan.FromSeconds(2));
-                }
-            }
         }
     }
 }

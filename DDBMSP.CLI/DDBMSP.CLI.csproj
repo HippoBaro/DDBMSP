@@ -21,6 +21,8 @@
     <PackageReference Include="ShellProgressBar" Version="4.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\DDBMSP.Grains\DDBMSP.Grains.csproj" />
+    <ProjectReference Include="..\DDBMSP.Common\DDBMSP.Common.csproj" />
+    <ProjectReference Include="..\DDBMSP.Entities\DDBMSP.Entities.csproj" />
+    <ProjectReference Include="..\DDBMSP.Interfaces\DDBMSP.Interfaces.csproj" />
   </ItemGroup>
 </Project>

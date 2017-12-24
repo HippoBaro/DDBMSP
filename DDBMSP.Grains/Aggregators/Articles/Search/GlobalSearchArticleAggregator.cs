@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using DDBMSP.Entities.Article.Components;
 using DDBMSP.Grains.Core;
 using DDBMSP.Interfaces.Grains.Aggregators.Articles.Search;
-using Lucene.Net.Analysis;
 using Lucene.Net.Analysis.Core;
 using Lucene.Net.Documents;
 using Lucene.Net.Index;

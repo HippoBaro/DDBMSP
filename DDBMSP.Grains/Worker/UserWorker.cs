@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using DDBMSP.Entities.Article;
 using DDBMSP.Entities.User;
 using DDBMSP.Interfaces.Grains.Core.DistributedHashTable;
 using DDBMSP.Interfaces.Grains.Workers;

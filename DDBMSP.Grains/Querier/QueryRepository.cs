@@ -1,9 +1,7 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using DDBMSP.Common.QueryEngine;
 using DDBMSP.Entities.Query;
-using DDBMSP.Entities.UserActivity;
 using DDBMSP.Grains.Core;
 using DDBMSP.Interfaces.Grains.Querier;
 using Orleans.Concurrency;

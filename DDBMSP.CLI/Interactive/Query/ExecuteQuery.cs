@@ -10,9 +10,9 @@ using DDBMSP.Interfaces.Grains.Querier;
 using Orleans;
 using Orleans.Concurrency;
 
-namespace DDBMSP.CLI.Interactive
+namespace DDBMSP.CLI.Interactive.Query
 {
-    [Verb("query", HelpText = "Create, compile and commit a new named query to the cluster")]
+    [Verb("query exec", HelpText = "Create, compile and commit a new named query to the cluster")]
     public class ExecuteQuery
     {
         [Option('n', "name", Required = true, HelpText = "Name of the to-be-executed query")]
@@ -21,10 +21,10 @@ namespace DDBMSP.CLI.Interactive
         [Option('p', "pipe", Required = false, HelpText = "Name of the variable to pipe result into")]
         public string VariableName { get; set; }
 
-        public async Task<int> Run(CSharpRepl repl) {
+        public async Task<int> Run(CSharpRepl repl, IClusterClient client) {
             try {
                 var t = Stopwatch.StartNew();
-                var querier = GrainClient.GrainFactory.GetGrain<IGenericQuerier>(0);
+                var querier = client.GetGrain<IGenericQuerier>(0);
                 var res = await querier.Query(Name.AsImmutable());
                 
                 IFormatter formatter = new BinaryFormatter();  

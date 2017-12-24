@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Reflection;
 using System.Threading.Tasks;
-using Orleans;
 using Orleans.Runtime.Configuration;
 using Orleans.Runtime.Host;
 using Orleans.Serialization;

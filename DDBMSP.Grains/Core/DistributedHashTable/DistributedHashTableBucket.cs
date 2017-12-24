@@ -41,8 +41,6 @@ namespace DDBMSP.Grains.Core.DistributedHashTable
 
         public Task<int> Count() => Task.FromResult(Elements.Count);
 
-        public Task<Immutable<Dictionary<TKey, TValue>>> Enumerate() => Task.FromResult(Elements.AsImmutable());
-
         public async Task<Immutable<dynamic>> Query(Immutable<QueryDefinition> queryDefinition) {
             var result = await QueryEngine.Execute(ScriptType.QuerySelector, queryDefinition.Value,
                 new QueryContext {

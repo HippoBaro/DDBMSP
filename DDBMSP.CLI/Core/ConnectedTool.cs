@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Net;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,15 +17,17 @@ namespace DDBMSP.CLI.Core
 {
     public class ConnectedTool
     {
-        [Option('z', "zzzz", Required = true, HelpText = "File to populate from. Default: out.ddbmsp")]
-        public string Input { get; set; }
+        [Option('e', "endpoint", Required = false, HelpText = "Endpoint to connect to. (Default: localhost:30000)")]
+        public string Endpoint { get; } = "127.0.0.1:30000";
         
         protected IClusterClient ClusterClient { get; }
 
         protected ConnectedTool() => ClusterClient = ConnectClient().Result;
 
         protected Task<IClusterClient> ConnectClient() {
-            var config = ClientConfiguration.LocalhostSilo();
+            var config = new ClientConfiguration {
+                Gateways = new List<IPEndPoint> { CreateIPEndPoint(Endpoint)},
+            };
             config.SerializationProviders.Add(typeof(ProtobufSerializer).GetTypeInfo());
 
             try {
@@ -32,6 +37,24 @@ namespace DDBMSP.CLI.Core
                 Console.WriteLine($"Orleans client initialization failed failed due to {ex}");
                 throw;
             }
+        }
+        
+        public static IPEndPoint CreateIPEndPoint(string endPoint)
+        {
+            string[] ep;
+            ep = endPoint.Split(':');
+            if(ep.Length != 2) throw new FormatException("Invalid endpoint format");
+            IPAddress ip;
+            if(!IPAddress.TryParse(ep[0], out ip))
+            {
+                throw new FormatException("Invalid ip-adress");
+            }
+            int port;
+            if(!int.TryParse(ep[1], NumberStyles.None, NumberFormatInfo.CurrentInfo, out port))
+            {
+                throw new FormatException("Invalid port");
+            }
+            return new IPEndPoint(ip, port);
         }
 
         private async Task<IClusterClient> InitializeWithRetries(ClientConfiguration config,

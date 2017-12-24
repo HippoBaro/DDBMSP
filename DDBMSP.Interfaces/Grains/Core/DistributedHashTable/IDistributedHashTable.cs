@@ -17,7 +17,5 @@ namespace DDBMSP.Interfaces.Grains.Core.DistributedHashTable
         Task<List<int>> GetBucketUsage();
 
         Task<long> Count();
-
-        Task<Immutable<List<IDistributedHashTableBucket<TKey, TValue>>>> GetBuckets();
     }
 }

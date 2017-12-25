@@ -25,7 +25,7 @@ namespace DDBMSP.Frontend.Web
     
     public static class Program
     {
-        public static async Task Main(string[] args) {
+        public static Task Main(string[] args) {
             var assembly = typeof(Orleans.ConsulUtils.LegacyConsulGatewayListProviderConfigurator).Assembly.FullName;
             var consulIps = Dns.GetHostAddressesAsync("consul").Result;
             
@@ -42,6 +42,7 @@ namespace DDBMSP.Frontend.Web
             
             InitializeWithRetries(config, 10);
             BuildWebHost(args).Run();
+            return Task.CompletedTask;
         }
 
         private static IWebHost BuildWebHost(string[] args) =>

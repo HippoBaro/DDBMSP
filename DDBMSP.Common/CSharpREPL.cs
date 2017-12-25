@@ -50,7 +50,6 @@ namespace DDBMSP.Common
         }
 
         public async Task Display(dynamic obj, QueryDefinition query) {
-            Type type = obj.GetType();
             ScriptContext.__Results.Add(obj);
             ScriptState = await ScriptState.ContinueWithAsync<dynamic>(
                 $"Console.WriteLine((({query.ReturnTypeName}) __Results[__Counter++]).ToString())", ScriptOptions);

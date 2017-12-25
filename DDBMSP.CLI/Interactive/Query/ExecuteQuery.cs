@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -23,7 +22,6 @@ namespace DDBMSP.CLI.Interactive.Query
 
         public async Task<int> Run(CSharpRepl repl, IClusterClient client) {
             try {
-                var t = Stopwatch.StartNew();
                 var querier = client.GetGrain<IGenericQuerier>(0);
                 var res = await querier.Query(Name.AsImmutable());
                 

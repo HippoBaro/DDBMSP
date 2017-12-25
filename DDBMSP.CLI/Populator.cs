@@ -114,7 +114,7 @@ namespace DDBMSP.CLI
             }
             var t = Stopwatch.StartNew();
             Task.WhenAll(tasks).Wait();
-            lat = (float) t.ElapsedMilliseconds;
+            lat = t.ElapsedMilliseconds;
             ops += units.Sum(u => u.EntityCount);
             unit += units.Count();
         }

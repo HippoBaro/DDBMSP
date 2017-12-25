@@ -25,8 +25,6 @@ namespace DDBMSP.Frontend.Web
     public static class Program
     {
         public static async Task Main(string[] args) {
-            await Task.Delay(5000);
-            
             var assembly = typeof(Orleans.ConsulUtils.LegacyConsulGatewayListProviderConfigurator).Assembly.FullName;
             var consulIps = Dns.GetHostAddressesAsync("consul").Result;
             
@@ -59,7 +57,7 @@ namespace DDBMSP.Frontend.Web
                     Console.WriteLine("Client successfully connect to silo host");
                     break;
                 }
-                catch (SiloUnavailableException)
+                catch (Exception)
                 {
                     attempt++;
                     Console.WriteLine($"Attempt {attempt} of {initializeAttemptsBeforeFailing} failed to initialize the Orleans client.");
@@ -67,7 +65,7 @@ namespace DDBMSP.Frontend.Web
                     {
                         throw;
                     }
-                    Thread.Sleep(TimeSpan.FromSeconds(2));
+                    Thread.Sleep(TimeSpan.FromSeconds(5));
                 }
             }
         }

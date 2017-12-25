@@ -35,6 +35,14 @@ services:
         published: "8080"
         protocol: tcp
         mode: ingress
+        
+  cli:
+      image: cli
+      build:
+        context: .
+        dockerfile: Dockerfile-CLI
+      networks:
+        ddmsp-internal:
 
 networks:
   ddmsp-internal:

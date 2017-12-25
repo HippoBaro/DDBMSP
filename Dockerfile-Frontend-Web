@@ -8,7 +8,6 @@ RUN dotnet restore
 
 # copy sources and build
 RUN dotnet publish -c Release -o /app/out -r linux-x64
-COPY DDBMSP.Silo/OrleansConfiguration.xml /app/out
 
 # build runtime image
 FROM microsoft/dotnet:2-runtime

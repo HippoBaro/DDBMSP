@@ -44,6 +44,7 @@ namespace DDBMSP.Frontend.Web
         private static IWebHost BuildWebHost(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
                 .UseStartup<Startup>()
+                .UseUrls("http://*:5000")
                 .Build();
         
         private static void InitializeWithRetries(ClientConfiguration config, int initializeAttemptsBeforeFailing)

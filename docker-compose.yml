@@ -31,9 +31,10 @@ services:
     networks:
       ddmsp-internal:
     ports:
-      - "5000:5000"
-    environment:
-        - ASPNETCORE_ENVIRONMENT=Development
+      - target: "5000"
+        published: "8080"
+        protocol: tcp
+        mode: ingress
 
 networks:
   ddmsp-internal:

@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+
+  consul:
+    image: consul:latest
+    command: agent -server -bootstrap -client=0.0.0.0 -bind=127.0.0.1
+    networks:
+      ddmsp-internal:
+        aliases:
+          - consul
+    container_name: consul
+    
+    
+  silo:
+    image: ddbmsp-silo
+    build:
+      context: .
+      dockerfile: Dockerfile-Silo
+    depends_on:
+      - consul
+    networks:
+      ddmsp-internal:
+        aliases:
+          - silo
+    container_name: silo
+      
+networks:
+  ddmsp-internal:

@@ -1,4 +1,4 @@
-version: '3'
+version: '3.4'
 
 services:
 
@@ -7,11 +7,9 @@ services:
     command: agent -server -bootstrap -client=0.0.0.0 -bind=127.0.0.1
     networks:
       ddmsp-internal:
-    container_name: consul
-    
     
   silo:
-    image: ddbmsp-silo
+    image: silo
     build:
       context: .
       dockerfile: Dockerfile-Silo
@@ -19,7 +17,21 @@ services:
       - consul
     networks:
       ddmsp-internal:
-    container_name: silo
-      
+    
+  frontendweb:
+    image: frontendweb
+    build:
+      context: .
+      dockerfile: Dockerfile-Frontend-Web
+    depends_on:
+      - silo
+    networks:
+      ddmsp-internal:
+    ports:
+      - target: 5000
+        published: 8080
+        protocol: tcp
+        mode: ingress
+
 networks:
   ddmsp-internal:

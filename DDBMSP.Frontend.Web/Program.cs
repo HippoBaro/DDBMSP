@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Net;
 using System.Threading;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
@@ -23,7 +25,20 @@ namespace DDBMSP.Frontend.Web
     {
         public static void Main(string[] args)
         {
-            InitializeWithRetries(ClientConfiguration.LocalhostSilo(), 10);
+            var assembly = typeof(Orleans.ConsulUtils.LegacyConsulGatewayListProviderConfigurator).Assembly.FullName;
+            var consulIps = Dns.GetHostAddressesAsync("consul").Result;
+            
+            var config = new ClientConfiguration {
+                ClientName = "Frontend",
+                GatewayProvider = ClientConfiguration.GatewayProviderType.Custom,
+                ResponseTimeout = TimeSpan.FromSeconds(5),
+                ClusterId = "DDBMSP-Cluster",
+                CustomGatewayProviderAssemblyName = assembly,
+                DataConnectionString = $"http://{consulIps.First()}:8500",
+                PropagateActivityId = true
+            };
+            
+            InitializeWithRetries(config, 10);
             BuildWebHost(args).Run();
         }
 

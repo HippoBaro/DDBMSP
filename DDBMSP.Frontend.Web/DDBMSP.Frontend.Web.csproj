@@ -12,6 +12,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Cors" Version="2.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.ViewCompilation" Version="2.0.1" />
     <PackageReference Include="Microsoft.Orleans.Client" Version="2.0.0-beta3" />
+    <PackageReference Include="Microsoft.Orleans.OrleansConsulUtils" Version="2.0.0-beta3" />
   </ItemGroup>
   <ItemGroup>
     <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.0" />

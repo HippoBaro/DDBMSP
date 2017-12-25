@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.Sockets;
 using System.Reflection;
 using System.Threading.Tasks;
-using Lucene.Net.Support;
 using Orleans.Runtime.Configuration;
 using Orleans.Runtime.Host;
 using Orleans.Serialization;
@@ -45,6 +41,8 @@ namespace DDBMSP.Silo
             
             var ips = Dns.GetHostAddressesAsync(Dns.GetHostName()).Result;
             SiloHost.Config.Defaults.HostNameOrIPAddress = ips.FirstOrDefault()?.ToString();
+            
+            SiloHost.Config.Globals.SerializationProviders.Add(typeof(ProtobufSerializer).GetTypeInfo());
 
             SiloHost.InitializeOrleansSilo();
             SiloHost.StartOrleansSilo();

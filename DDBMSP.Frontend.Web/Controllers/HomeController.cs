@@ -51,7 +51,7 @@ namespace DDBMSP.Frontend.Web.Controllers
                     new Tuple<ArticleState, List<ArticleSummary>, List<UserActivityState>>(article.Value, res.Value,
                         activities));
             }
-            catch (Exception e) {
+            catch (Exception) {
                 return NotFound();
             }
         }

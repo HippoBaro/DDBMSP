@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Orleans;
-using Orleans.Runtime;
 using Orleans.Runtime.Configuration;
+using Orleans.Serialization;
 
 namespace DDBMSP.Frontend.Web
 {
@@ -36,6 +37,8 @@ namespace DDBMSP.Frontend.Web
                 DataConnectionString = $"http://{consulIps.First()}:8500",
                 PropagateActivityId = true
             };
+            
+            config.SerializationProviders.Add(typeof(ProtobufSerializer).GetTypeInfo());
             
             InitializeWithRetries(config, 10);
             BuildWebHost(args).Run();

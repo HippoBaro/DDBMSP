@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Threading;
@@ -28,9 +28,18 @@ namespace DDBMSP.CLI.Core
         protected ConnectedTool(IClusterClient client) => _clusterClient = client;
 
         protected Task<IClusterClient> ConnectClient() {
+            var assembly = typeof(Orleans.ConsulUtils.LegacyConsulGatewayListProviderConfigurator).Assembly.FullName;
+            var consulIps = Dns.GetHostAddressesAsync("consul").Result;
+            
             var config = new ClientConfiguration {
-                Gateways = new List<IPEndPoint> { CreateIPEndPoint(Endpoint) },
+                GatewayProvider = ClientConfiguration.GatewayProviderType.Custom,
+                ResponseTimeout = TimeSpan.FromSeconds(5),
+                ClusterId = "DDBMSP-Cluster",
+                CustomGatewayProviderAssemblyName = assembly,
+                DataConnectionString = $"http://{consulIps.First()}:8500",
+                PropagateActivityId = true
             };
+
             config.SerializationProviders.Add(typeof(ProtobufSerializer).GetTypeInfo());
 
             try {

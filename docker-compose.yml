@@ -7,8 +7,6 @@ services:
     command: agent -server -bootstrap -client=0.0.0.0 -bind=127.0.0.1
     networks:
       ddmsp-internal:
-        aliases:
-          - consul
     container_name: consul
     
     
@@ -21,8 +19,6 @@ services:
       - consul
     networks:
       ddmsp-internal:
-        aliases:
-          - silo
     container_name: silo
       
 networks:

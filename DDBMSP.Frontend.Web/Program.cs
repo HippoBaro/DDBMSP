@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Net;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Orleans;
@@ -23,13 +24,13 @@ namespace DDBMSP.Frontend.Web
     
     public static class Program
     {
-        public static void Main(string[] args)
-        {
+        public static async Task Main(string[] args) {
+            await Task.Delay(5000);
+            
             var assembly = typeof(Orleans.ConsulUtils.LegacyConsulGatewayListProviderConfigurator).Assembly.FullName;
             var consulIps = Dns.GetHostAddressesAsync("consul").Result;
             
             var config = new ClientConfiguration {
-                ClientName = "Frontend",
                 GatewayProvider = ClientConfiguration.GatewayProviderType.Custom,
                 ResponseTimeout = TimeSpan.FromSeconds(5),
                 ClusterId = "DDBMSP-Cluster",

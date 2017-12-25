@@ -7,6 +7,8 @@ services:
     command: agent -server -bootstrap -client=0.0.0.0 -bind=127.0.0.1
     networks:
       ddmsp-internal:
+    ports:
+      - "8500:8500"
     
   silo:
     image: silo
@@ -25,6 +27,7 @@ services:
       dockerfile: Dockerfile-Frontend-Web
     depends_on:
       - silo
+      - consul
     networks:
       ddmsp-internal:
     ports:

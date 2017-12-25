@@ -30,7 +30,7 @@ namespace DDBMSP.Silo
         private static void StartSilo()
         {
             SiloHost = new SiloHost(Dns.GetHostName(), new FileInfo("OrleansConfiguration.xml"));
-            SiloHost.Config.AddMemoryStorageProvider();
+            SiloHost.Config.AddMemoryStorageProvider() ;
             
             SiloHost.Config.Globals.MembershipTableAssembly = typeof(Orleans.ConsulUtils.LegacyConsulGatewayListProviderConfigurator).Assembly.FullName;
             

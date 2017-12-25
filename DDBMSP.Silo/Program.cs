@@ -25,13 +25,8 @@ namespace DDBMSP.Silo
             GC.TryStartNoGCRegion(200000000);
             StartSilo(nodes.FirstOrDefault());
 
-            Console.WriteLine("Type 'quit' to exit");
-            while (!Console.ReadLine().Contains("quit")) ;
-            Console.WriteLine("Exiting");
-            
-            SiloHost.ShutdownOrleansSilo();
-            SiloHost.StopOrleansSilo();
-            
+            Console.WriteLine("Silo up");
+            await Task.Delay(-1);
         }
         
         public static IPEndPoint CreateIPEndPoint(string endPoint)

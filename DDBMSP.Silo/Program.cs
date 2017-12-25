@@ -98,7 +98,8 @@ namespace DDBMSP.Silo
             
             var assembly = typeof(Orleans.ConsulUtils.LegacyConsulGatewayListProviderConfigurator).Assembly.FullName;
             
-            SiloHost.Config.Globals.DataConnectionString = "http://localhost:8500";
+            var consulIps = Dns.GetHostAddressesAsync("consul").Result;
+            SiloHost.Config.Globals.DataConnectionString = $"http://{consulIps.First()}:8500";
             SiloHost.Config.Globals.DeploymentId = "OrleansPlayground";
             SiloHost.Config.Globals.LivenessType = GlobalConfiguration.LivenessProviderType.Custom;
             SiloHost.Config.Globals.MembershipTableAssembly = assembly; //"OrleansConsulUtils";

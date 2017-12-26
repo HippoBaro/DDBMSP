@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DDBMSP.Entities", "DDBMSP.E
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DDBMSP.Common", "DDBMSP.Common\DDBMSP.Common.csproj", "{544120F9-00C9-4D3E-A124-0ADDCF79B1BD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orleans.StorageProviders.RedisStorage", "Orleans.StorageProvider.Redis\RedisStorage\Orleans.StorageProviders.RedisStorage.csproj", "{C64DA14D-16F0-4DC9-B329-FD71F6F2C8CB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -51,8 +53,14 @@ Global
 		{544120F9-00C9-4D3E-A124-0ADDCF79B1BD}.Debug|x64.Build.0 = Debug|x64
 		{544120F9-00C9-4D3E-A124-0ADDCF79B1BD}.Release|x64.ActiveCfg = Release|x64
 		{544120F9-00C9-4D3E-A124-0ADDCF79B1BD}.Release|x64.Build.0 = Release|x64
+		{C64DA14D-16F0-4DC9-B329-FD71F6F2C8CB}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C64DA14D-16F0-4DC9-B329-FD71F6F2C8CB}.Debug|x64.Build.0 = Debug|Any CPU
+		{C64DA14D-16F0-4DC9-B329-FD71F6F2C8CB}.Release|x64.ActiveCfg = Release|Any CPU
+		{C64DA14D-16F0-4DC9-B329-FD71F6F2C8CB}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
 	EndGlobalSection
 EndGlobal

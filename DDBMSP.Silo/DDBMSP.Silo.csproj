@@ -11,6 +11,7 @@
   <ItemGroup>
     <ProjectReference Include="..\DDBMSP.Grains\DDBMSP.Grains.csproj" />
     <ProjectReference Include="..\DDBMSP.Interfaces\DDBMSP.Interfaces.csproj" />
+    <ProjectReference Include="..\Orleans.StorageProvider.Redis\RedisStorage\Orleans.StorageProviders.RedisStorage.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="2.6.1" />

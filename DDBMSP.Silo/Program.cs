@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -26,7 +27,6 @@ namespace DDBMSP.Silo
         private static void StartSilo()
         {
             SiloHost = new SiloHost(Dns.GetHostName(), new FileInfo("OrleansConfiguration.xml"));
-            SiloHost.Config.AddMemoryStorageProvider() ;
             
             SiloHost.Config.Globals.MembershipTableAssembly = typeof(Orleans.ConsulUtils.LegacyConsulGatewayListProviderConfigurator).Assembly.FullName;
             
@@ -44,8 +44,13 @@ namespace DDBMSP.Silo
             
             SiloHost.Config.Globals.SerializationProviders.Add(typeof(ProtobufSerializer).GetTypeInfo());
 
+            SiloHost.Config.Globals.RegisterStorageProvider<Orleans.StorageProviders.RedisStorage.RedisStorage>(
+                "RedisStore", new Dictionary<string, string>() {
+                    {"RedisConnectionString", "storage"}
+                });
+
             SiloHost.InitializeOrleansSilo();
-            SiloHost.StartOrleansSilo();
+            SiloHost.StartOrleansSilo(false);
         }
     }
 }

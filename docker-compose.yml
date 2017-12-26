@@ -23,9 +23,9 @@ services:
       
   storage:
     image: redis:alpine
-    command: --save 30 1 --dbfilename dump.rdb --dir /data 
+    command: --save 300 1 --dbfilename dump.rdb --dir /data 
     volumes:
-      - ./data:/data
+      - ../data:/data
     networks:
       ddmsp-internal:
     
@@ -36,7 +36,6 @@ services:
       dockerfile: Dockerfile-Frontend-Web
     depends_on:
       - silo
-      - consul
     networks:
       ddmsp-internal:
     ports:
@@ -50,10 +49,12 @@ services:
       build:
         context: .
         dockerfile: Dockerfile-CLI
+      depends_on:
+        - silo
       networks:
         ddmsp-internal:
       volumes:
-        - ./exportcli:/exportcli
+        - ../exportcli:/exportcli
 
 networks:
   ddmsp-internal:

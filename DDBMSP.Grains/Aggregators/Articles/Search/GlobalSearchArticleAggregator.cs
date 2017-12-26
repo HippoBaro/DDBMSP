@@ -34,7 +34,6 @@ namespace DDBMSP.Grains.Aggregators.Articles.Search
         }
 
         public override Task OnActivateAsync() {
-            
             Writer = new IndexWriter(State,
                 new IndexWriterConfig(LuceneVersion.LUCENE_48, new SimpleAnalyzer(LuceneVersion.LUCENE_48)) {
                     MergeScheduler = new SerialMergeScheduler()

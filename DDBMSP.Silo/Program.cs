@@ -46,7 +46,8 @@ namespace DDBMSP.Silo
 
             SiloHost.Config.Globals.RegisterStorageProvider<Orleans.StorageProviders.RedisStorage.RedisStorage>(
                 "RedisStore", new Dictionary<string, string>() {
-                    {"RedisConnectionString", "storage"}
+                    { "RedisConnectionString", "storage" },
+                    { "UseJsonFormat", "false" }
                 });
 
             SiloHost.InitializeOrleansSilo();

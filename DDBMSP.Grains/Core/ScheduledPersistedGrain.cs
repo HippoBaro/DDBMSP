@@ -14,7 +14,7 @@ namespace DDBMSP.Grains.Core
         }
         
         public override async Task OnActivateAsync() {
-            var targetTicks = TimeSpan.FromMilliseconds(RadomProvider.Instance.Next(1000, 5000));
+            var targetTicks = TimeSpan.FromMilliseconds(RadomProvider.Instance.Next(5000, 10000));
             RegisterTimer(Flush, this, targetTicks, targetTicks);
             await base.OnActivateAsync();
         }

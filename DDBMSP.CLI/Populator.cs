@@ -42,6 +42,7 @@ namespace DDBMSP.CLI
             
             using (var s = File.Open(Input, FileMode.Open))
             using (var reader = new BsonReader(s)) {
+                reader.ReadRootValueAsArray = true;
                 Units = serializer.Deserialize<List<StorageUnit>>(reader);
             }
         }

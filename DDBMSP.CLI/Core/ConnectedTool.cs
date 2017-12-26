@@ -28,7 +28,7 @@ namespace DDBMSP.CLI.Core
             
             var config = new ClientConfiguration {
                 GatewayProvider = ClientConfiguration.GatewayProviderType.Custom,
-                ResponseTimeout = TimeSpan.FromSeconds(5),
+                ResponseTimeout = TimeSpan.FromMinutes(5),
                 ClusterId = "DDBMSP-Cluster",
                 CustomGatewayProviderAssemblyName = assembly,
                 DataConnectionString = $"http://{consulIps.First()}:8500",

@@ -36,7 +36,6 @@ namespace DDBMSP.Grains.Core.DistributedHashTable
                 foreach (var keyval in keyvalues.Value) {
                     State.Add(keyval.Key, keyval.Value);
                 }
-                CommitChanges();
                 return Task.CompletedTask;
             }
 
@@ -44,6 +43,10 @@ namespace DDBMSP.Grains.Core.DistributedHashTable
         }
 
         public Task<int> Count() => Task.FromResult(State.Count);
+        public Task Commit() {
+            CommitChanges();
+            return Task.CompletedTask;
+        }
 
         public async Task<Immutable<dynamic>> Query(Immutable<QueryDefinition> queryDefinition) {
             var result = await QueryEngine.Execute(ScriptType.QuerySelector, queryDefinition.Value,

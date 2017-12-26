@@ -143,7 +143,7 @@ namespace DDBMSP.CLI.Benchmark
         
         private void ReadData() {
             if (string.IsNullOrEmpty(Input)) {
-                Input = Environment.CurrentDirectory + "/out.ddbmsp";
+                Input = "/exportcli" + "/out.ddbmsp";
             }
             
             Console.WriteLine("Reading input...");

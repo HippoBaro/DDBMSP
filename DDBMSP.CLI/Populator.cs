@@ -66,8 +66,8 @@ namespace DDBMSP.CLI
             var unit = 0;
             
             var t = Stopwatch.StartNew();
-            for (var i = 0; i < Units.Count / Environment.ProcessorCount * Environment.ProcessorCount; i++) {
-                PopulateUnit(Units.Skip(i * Environment.ProcessorCount * Environment.ProcessorCount).Take(Environment.ProcessorCount * Environment.ProcessorCount), ref ops, ref lat, ref unit);
+            for (var i = 0; i < Units.Count / Environment.ProcessorCount; i++) {
+                PopulateUnit(Units.Skip(i * Environment.ProcessorCount).Take(Environment.ProcessorCount), ref ops, ref lat, ref unit);
                 latencies.Add(lat);
                 
                 if (t.ElapsedMilliseconds <= Program.ProgressBarRefreshDelay) continue;
@@ -76,8 +76,8 @@ namespace DDBMSP.CLI
                 ops = 0;
                 unit = 0;
             }
-            if (Units.Count % Environment.ProcessorCount * Environment.ProcessorCount != 0) {
-                PopulateUnit(Units.Skip(Units.Count - Units.Count % Environment.ProcessorCount * Environment.ProcessorCount).Take(Units.Count % Environment.ProcessorCount * Environment.ProcessorCount), ref ops, ref lat, ref unit);
+            if (Units.Count % Environment.ProcessorCount != 0) {
+                PopulateUnit(Units.Skip(Units.Count - Units.Count % Environment.ProcessorCount).Take(Units.Count % Environment.ProcessorCount), ref ops, ref lat, ref unit);
             }
             Console.WriteLine($"Done. Latency: Min = {latencies.Min()}ms, Max = {latencies.Max()}ms, Average = {latencies.Average():F3}ms, 95% = {Percentile(latencies, .95):F3}ms, 99% = {Percentile(latencies, .99):F3}ms, 99.9% = {Percentile(latencies, .999):F3}ms");
             return Task.CompletedTask;

@@ -71,6 +71,14 @@ namespace DDBMSP.Grains.Core.DistributedHashTable
             return (await Task.WhenAll(tasks)).Sum();
         }
 
+        public Task Commit() {
+            var tasks = new List<Task>(BucketsNumber);
+            for (var i = 0; i < BucketsNumber; i++) {
+                tasks.Add(GrainFactory.GetGrain<IDistributedHashTableBucket<TKey, TValue>>(i).Commit());
+            }
+            return Task.WhenAll(tasks);
+        }
+
         public async Task<Immutable<dynamic>> Query(Immutable<QueryDefinition> queryDefinition) {
             var tasks = new List<Task<Immutable<dynamic>>>(BucketsNumber);
             for (var i = 0; i < BucketsNumber; i++) {

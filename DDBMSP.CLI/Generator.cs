@@ -12,7 +12,6 @@ using DDBMSP.Entities.User;
 using DDBMSP.Entities.UserActivity;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Bson;
-using ShellProgressBar;
 
 namespace DDBMSP.CLI
 {
@@ -50,40 +49,32 @@ namespace DDBMSP.CLI
             Console.WriteLine($"Starting to generate {UserNumber} users and {ArticlesNumber} articles. Total: {UserNumber + ArticlesNumber} elements");
             Console.WriteLine($"Output: {Output}");
             
+            Console.WriteLine("Generating...\r");
             GenerateUsers();
             GenerateArticles();
             GenerateComments();
+            Console.WriteLine("Generating... Done.");
 
+            Console.WriteLine("Compaction...\r");
             GenerateUnits();
+            Console.WriteLine("Compaction... Done.");
             
+            Console.WriteLine("Writing file...\r");
             DumpData();
+            Console.WriteLine("Writing file... Done.");
             
             return 0;
         }
 
         private void DumpData() {
             var serializer = new JsonSerializer();
-
-            var t = Stopwatch.StartNew();
+            
             using (var writer = new BsonWriter(new FileStream(Output, FileMode.Create))) {
-                serializer.Formatting = Formatting.Indented;
-                writer.WriteStartArray();
-                for (var i = 0; i < Units.Count; i++) {
-                    serializer.Serialize(writer, Units[i]);
-                    if (t.ElapsedMilliseconds <= Program.ProgressBarRefreshDelay) continue;
-                    WritingPB.Tick(i);
-                    t.Restart();
-                }
-                writer.WriteEndArray();
-                WritingPB.Tick(UserNumber);
-                Program.ProgressBar.Tick();
+                serializer.Serialize(writer, Units);
             }
         }
 
         private void GenerateUnits() {
-            
-            Console.WriteLine($"{Activities.Count(state => state.Type == UserActivityType.Commented)}");
-            
             StorageUnit New() {
                 var articlePerUser = ArticlesNumber / UserNumber;
                 var activitiesPerArticle = ActivitiesNumber / ArticlesNumber;
@@ -111,16 +102,10 @@ namespace DDBMSP.CLI
                 
                 return ret;
             }
-
-            var t = Stopwatch.StartNew();
+            
             for (var i = 0; i < UserNumber; i++) {
                 Units.Add(New());
-                if (t.ElapsedMilliseconds <= Program.ProgressBarRefreshDelay) continue;
-                UnitsPB.Tick(i);
-                t.Restart();
             }
-            UnitsPB.Tick(UserNumber);
-            Program.ProgressBar.Tick();
         }
 
         private void GenerateUsers() {
@@ -140,16 +125,10 @@ namespace DDBMSP.CLI
                     Articles = new List<ArticleSummary>()
                 };
             }
-
-            var t = Stopwatch.StartNew();
+            
             for (var i = 0; i < UserNumber; i++) {
                 Users.AddLast(New());
-                if (t.ElapsedMilliseconds <= Program.ProgressBarRefreshDelay) continue;
-                UserPB.Tick(i);
-                t.Restart();
             }
-            UserPB.Tick(UserNumber);
-            Program.ProgressBar.Tick();
         }
 
         private void GenerateArticles() {
@@ -178,15 +157,9 @@ namespace DDBMSP.CLI
                 };
             }
             
-            var t = Stopwatch.StartNew();
             for (var i = 0; i < ArticlesNumber; i++) {
                 Articles.AddLast(New());
-                if (t.ElapsedMilliseconds <= Program.ProgressBarRefreshDelay) continue;
-                ArticlePB.Tick(i);
-                t.Restart();
             }
-            ArticlePB.Tick(ArticlesNumber);
-            Program.ProgressBar.Tick();
         }
         
         private void GenerateComments() {
@@ -204,34 +177,15 @@ namespace DDBMSP.CLI
                 return ret;
             }
 
-            var t = Stopwatch.StartNew();
             for (var i = 0; i < ActivitiesNumber; i++) {
                 Activities.AddLast(New());
-                if (t.ElapsedMilliseconds <= Program.ProgressBarRefreshDelay) continue;
-                ActivitiesPB.Tick(i);
-                t.Restart();
             }
-            ActivitiesPB.Tick(ActivitiesNumber);
-            Program.ProgressBar.Tick();
         }
-
-        private ChildProgressBar UserPB { get; set; }
-        private ChildProgressBar ArticlePB { get; set; }
-        private ChildProgressBar ActivitiesPB { get; set; }
-        private ChildProgressBar UnitsPB { get; set; }
-        private ChildProgressBar WritingPB { get; set; }
 
         private void Init() {
             if (string.IsNullOrEmpty(Output)) {
                 Output = Environment.CurrentDirectory + "/out.ddbmsp";
             }
-            Program.ProgressBar = new ProgressBar(5, "Generating data", Program.ProgressBarOption);
-
-            UserPB = Program.ProgressBar.Spawn(UserNumber, "Users", Program.ProgressBarOption);
-            ArticlePB = Program.ProgressBar.Spawn(ArticlesNumber, "Articles", Program.ProgressBarOption);
-            ActivitiesPB = Program.ProgressBar.Spawn(ActivitiesNumber, "Activities", Program.ProgressBarOption);
-            UnitsPB = Program.ProgressBar.Spawn(UserNumber, "Compaction", Program.ProgressBarOption);
-            WritingPB = Program.ProgressBar.Spawn(UserNumber, "Writting", Program.ProgressBarOption);
         }
     }
 }

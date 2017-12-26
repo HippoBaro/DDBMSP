@@ -19,7 +19,6 @@
     <PackageReference Include="Microsoft.Orleans.OrleansGoogleUtils" Version="2.0.0-beta3" />
     <PackageReference Include="Newtonsoft.Json.Bson" Version="1.0.1" />
     <PackageReference Include="ReadLine" Version="1.2.0" />
-    <PackageReference Include="ShellProgressBar" Version="4.0.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DDBMSP.Common\DDBMSP.Common.csproj" />

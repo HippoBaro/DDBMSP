@@ -11,7 +11,6 @@ using DDBMSP.Interfaces.Grains.Workers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Bson;
 using Orleans.Concurrency;
-using ShellProgressBar;
 
 namespace DDBMSP.CLI
 {
@@ -21,14 +20,18 @@ namespace DDBMSP.CLI
         [Option('i', "input", Required = false, HelpText = "File to populate from. Default: out.ddbmsp")]
         public string Input { get; set; }
 
-        public List<StorageUnit> Units { get; } = new List<StorageUnit>();
+        public List<StorageUnit> Units { get; set; }
 
         public int BytesPerUnit { get; set; }
 
         public async Task<int> Run() {
             Init();
             
+            Console.WriteLine("Reading data...\n");
             ReadData();
+            Console.WriteLine("Reading data... Done.");
+            
+            Console.WriteLine("Uploading data...");
             await Upload();
             
             return 0;
@@ -36,32 +39,11 @@ namespace DDBMSP.CLI
 
         private void ReadData() {
             var serializer = new JsonSerializer();
-
-            var t = Stopwatch.StartNew();
             
             using (var s = File.Open(Input, FileMode.Open))
             using (var reader = new BsonReader(s)) {
-                ReadingPB = Program.ProgressBar.Spawn((int) (s.Length/100), "Reading data...", Program.ProgressBarOption);
-
-                reader.ReadRootValueAsArray = true;
-                while (reader.Read())
-                {
-                    if (reader.TokenType != JsonToken.StartObject) continue;
-                    
-                    var o = serializer.Deserialize<StorageUnit>(reader);
-                    Units.Add(o);
-                    
-                    if (t.ElapsedMilliseconds <= Program.ProgressBarRefreshDelay) continue;
-                    t.Restart();
-                    ReadingPB.Tick((int) (s.Position/10));
-                    if (ReadingPB.Percentage == 100)
-                        ReadingPB.Tick("Closing stream...");
-                }
-                BytesPerUnit = (int)(s.Length / Units.Count);
-                ReadingPB.Tick((int) (s.Length/10), "Closing stream...");
+                Units = serializer.Deserialize<List<StorageUnit>>(reader);
             }
-            ReadingPB.Tick("Done.");
-            Program.ProgressBar.Tick();
         }
         
         private static double Percentile(List<float> sequence, double excelPercentile) {
@@ -77,31 +59,26 @@ namespace DDBMSP.CLI
         }
 
         private Task Upload() {
-            
-            UploadPB = Program.ProgressBar.Spawn(Units.Count, "Uploading...", Program.ProgressBarOption);
-            UploadPB.Tick();
-            
             var latencies = new List<float>(Units.Count);
-            int ops = 0;
+            var ops = 0;
             float lat = 0;
-            int unit = 0;
+            var unit = 0;
             
             var t = Stopwatch.StartNew();
-            for (int i = 0; i < Units.Count / Environment.ProcessorCount * Environment.ProcessorCount; i++) {
+            for (var i = 0; i < Units.Count / Environment.ProcessorCount * Environment.ProcessorCount; i++) {
                 PopulateUnit(Units.Skip(i * Environment.ProcessorCount * Environment.ProcessorCount).Take(Environment.ProcessorCount * Environment.ProcessorCount), ref ops, ref lat, ref unit);
                 latencies.Add(lat);
                 
                 if (t.ElapsedMilliseconds <= Program.ProgressBarRefreshDelay) continue;
                 t.Restart();
-                UploadPB.Tick(i * Environment.ProcessorCount * Environment.ProcessorCount, $"{ops*2} ops/sec, {unit * BytesPerUnit / 1000000}MB/s — {lat}ms per batch inserts — Latency: Min = {latencies.Min()}ms, Max = {latencies.Max()}ms, Average = {latencies.Average():F3}ms, 95% = {Percentile(latencies, .95):F3}ms, 99% = {Percentile(latencies, .99):F3}ms, 99.9% = {Percentile(latencies, .999):F3}ms");
+                Console.WriteLine($"Uploading... {ops*2} ops/sec, {unit * BytesPerUnit / 1000000}MB/s — {lat}ms per batch inserts — Latency: Min = {latencies.Min()}ms, Max = {latencies.Max()}ms, Average = {latencies.Average():F3}ms, 95% = {Percentile(latencies, .95):F3}ms, 99% = {Percentile(latencies, .99):F3}ms, 99.9% = {Percentile(latencies, .999):F3}ms\r");
                 ops = 0;
                 unit = 0;
             }
             if (Units.Count % Environment.ProcessorCount * Environment.ProcessorCount != 0) {
                 PopulateUnit(Units.Skip(Units.Count - Units.Count % Environment.ProcessorCount * Environment.ProcessorCount).Take(Units.Count % Environment.ProcessorCount * Environment.ProcessorCount), ref ops, ref lat, ref unit);
             }
-            UploadPB.Tick(Units.Count, $"Done. Latency: Min = {latencies.Min()}ms, Max = {latencies.Max()}ms, Average = {latencies.Average():F3}ms, 95% = {Percentile(latencies, .95):F3}ms, 99% = {Percentile(latencies, .99):F3}ms, 99.9% = {Percentile(latencies, .999):F3}ms");
-            Program.ProgressBar.Tick(4, "Done.");
+            Console.WriteLine($"Done. Latency: Min = {latencies.Min()}ms, Max = {latencies.Max()}ms, Average = {latencies.Average():F3}ms, 95% = {Percentile(latencies, .95):F3}ms, 99% = {Percentile(latencies, .99):F3}ms, 99.9% = {Percentile(latencies, .999):F3}ms");
             return Task.CompletedTask;
         }
 
@@ -119,16 +96,11 @@ namespace DDBMSP.CLI
             unit += units.Count();
         }
         
-        private ChildProgressBar ReadingPB { get; set; }
-        private ChildProgressBar UploadPB { get; set; }
-        
         private void Init() {
             
             if (string.IsNullOrEmpty(Input)) {
                 Input = Environment.CurrentDirectory + "/out.ddbmsp";
             }
-            
-            Program.ProgressBar = new ProgressBar(2, "Populating cluster...", Program.ProgressBarOption);
         }
     }
 }

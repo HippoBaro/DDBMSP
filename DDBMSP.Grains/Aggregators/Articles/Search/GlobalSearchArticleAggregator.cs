@@ -52,7 +52,7 @@ namespace DDBMSP.Grains.Aggregators.Articles.Search
                 };
                 Writer.AddDocument(doc);
                 Writer.Commit();
-                CommitChanges();
+                //CommitChanges();
                 return Task.CompletedTask;
             }
 
@@ -72,7 +72,7 @@ namespace DDBMSP.Grains.Aggregators.Articles.Search
                     Writer.AddDocument(doc);
                 }
                 Writer.Commit();
-                CommitChanges();
+                //CommitChanges();
                 return Task.CompletedTask;
             }
 

@@ -24,7 +24,7 @@ namespace DDBMSP.Grains.Aggregators.Articles.LatestArticles
                 if (index < 0)
                     State.Insert(~index, articles.Value);
                 State.RemoveRange(100, int.MaxValue);
-                CommitChanges();
+                //CommitChanges();
                 return Task.CompletedTask;
             }
 
@@ -39,7 +39,7 @@ namespace DDBMSP.Grains.Aggregators.Articles.LatestArticles
                 if (index < 0)
                     State.InsertRange(~index, articles.Value);
                 State.RemoveRange(100, int.MaxValue);
-                CommitChanges();
+                //CommitChanges();
                 return Task.CompletedTask;
             }
 

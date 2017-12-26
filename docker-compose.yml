@@ -52,6 +52,8 @@ services:
         dockerfile: Dockerfile-CLI
       networks:
         ddmsp-internal:
+      volumes:
+        - ./exportcli:/exportcli
 
 networks:
   ddmsp-internal:

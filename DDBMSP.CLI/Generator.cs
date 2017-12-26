@@ -184,7 +184,7 @@ namespace DDBMSP.CLI
 
         private void Init() {
             if (string.IsNullOrEmpty(Output)) {
-                Output = Environment.CurrentDirectory + "/out.ddbmsp";
+                Output = "/exportcli" + "/out.ddbmsp";
             }
         }
     }

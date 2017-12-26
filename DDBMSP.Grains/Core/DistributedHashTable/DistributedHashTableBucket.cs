@@ -16,15 +16,6 @@ namespace DDBMSP.Grains.Core.DistributedHashTable
     public class DistributedHashTableBucket<TKey, TValue> : SingleWriterMultipleReadersGrain<Dictionary<TKey, TValue>>,
         IDistributedHashTableBucket<TKey, TValue>
     {
-        private bool HasChanged { get; set; }
-        
-        public override async Task OnActivateAsync() {
-            await ReadStateAsync();
-            var targetTicks = TimeSpan.FromMilliseconds(RadomProvider.Instance.Next(1000, 5000));
-            RegisterTimer(Flush, this, targetTicks, targetTicks);
-            await base.OnActivateAsync();
-        }
-        
         public Task<Immutable<TValue>> Get(Immutable<TKey> key) => Task.FromResult(State[key.Value].AsImmutable());
 
         public Task Set(Immutable<TKey> key, Immutable<TValue> value) {
@@ -33,7 +24,7 @@ namespace DDBMSP.Grains.Core.DistributedHashTable
                     State[key.Value] = value.Value;
                 else
                     State.Add(key.Value, value.Value);
-                HasChanged = true;
+                CommitChanges();
                 return Task.CompletedTask;
             }
 
@@ -45,7 +36,7 @@ namespace DDBMSP.Grains.Core.DistributedHashTable
                 foreach (var keyval in keyvalues.Value) {
                     State.Add(keyval.Key, keyval.Value);
                 }
-                HasChanged = true;
+                CommitChanges();
                 return Task.CompletedTask;
             }
 
@@ -61,13 +52,6 @@ namespace DDBMSP.Grains.Core.DistributedHashTable
                 });
 
             return result.AsImmutable();
-        }
-        
-        private Task Flush(object _) {
-            if (HasChanged)
-                return WriteStateAsync();
-            HasChanged = false;
-            return Task.CompletedTask;
         }
     }
 }

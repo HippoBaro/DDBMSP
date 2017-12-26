@@ -6,16 +6,15 @@ using DDBMSP.Entities.Article.Components;
 using DDBMSP.Grains.Core;
 using DDBMSP.Interfaces.Grains.Aggregators.Articles.LatestArticlesByTag;
 using Orleans.Concurrency;
+using Orleans.Providers;
 
 namespace DDBMSP.Grains.Aggregators.Articles.LatestArticlesByTag
 {
     [Reentrant]
-    public class GlobalLatestArticleByTagAggregator : SingleWriterMultipleReadersGrain,
+    [StorageProvider(ProviderName = "RedisStore")]
+    public class GlobalLatestArticleByTagAggregator : SingleWriterMultipleReadersGrain<Dictionary<string, List<ArticleSummary>>>,
         IGlobalLatestArticleByTagAggregator
     {
-        private Dictionary<string, List<ArticleSummary>> State { get; } =
-            new Dictionary<string, List<ArticleSummary>>();
-
         public Task Aggregate(Immutable<string> tag, Immutable<ArticleSummary> article) {
             Task Aggregate() {
                 if (!State.ContainsKey(tag.Value))
@@ -27,7 +26,7 @@ namespace DDBMSP.Grains.Aggregators.Articles.LatestArticlesByTag
                 if (index >= 0) return Task.CompletedTask;
                 State[tag.Value].Insert(~index, article.Value);
                 State[tag.Value].RemoveRange(100, int.MaxValue);
-
+                CommitChanges();
                 return Task.CompletedTask;
             }
 
@@ -48,6 +47,7 @@ namespace DDBMSP.Grains.Aggregators.Articles.LatestArticlesByTag
                     State[tag.Value].Insert(~index, article);
                     State[tag.Value].RemoveRange(100, int.MaxValue);
                 }
+                CommitChanges();
                 return Task.CompletedTask;
             }
 

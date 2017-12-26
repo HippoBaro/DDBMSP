@@ -7,7 +7,7 @@ namespace DDBMSP.Grains.Core
         protected AsyncSerialExecutor SerialExecutor { get; } = new AsyncSerialExecutor();
     }
     
-    public class SingleWriterMultipleReadersGrain<TState> : Grain<TState> where TState : new()
+    public class SingleWriterMultipleReadersGrain<TState> : ScheduledPersistedGrain<TState> where TState : new()
     {
         protected AsyncSerialExecutor SerialExecutor { get; } = new AsyncSerialExecutor();
     }

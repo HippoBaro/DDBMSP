@@ -12,23 +12,24 @@ using Lucene.Net.Search.Spans;
 using Lucene.Net.Store;
 using Lucene.Net.Util;
 using Orleans.Concurrency;
+using Orleans.Providers;
 
 namespace DDBMSP.Grains.Aggregators.Articles.Search
 {
     [Reentrant]
-    class GlobalSearchArticleAggregator : SingleWriterMultipleReadersGrain, IGlobalSearchArticleAggregator
+    [StorageProvider(ProviderName = "RedisStore")]
+    class GlobalSearchArticleAggregator : SingleWriterMultipleReadersGrain<RAMDirectory>, IGlobalSearchArticleAggregator
     {
-        private RAMDirectory LuceneDirectory { get; } = new RAMDirectory();
-
         private IndexWriter Writer { get; set; }
 
         private IndexSearcher _searcher;
 
         private IndexSearcher Searcher =>
-            _searcher ?? (_searcher = new IndexSearcher(DirectoryReader.Open(LuceneDirectory)));
+            _searcher ?? (_searcher = new IndexSearcher(DirectoryReader.Open(State)));
 
         public override Task OnActivateAsync() {
-            Writer = new IndexWriter(LuceneDirectory,
+            
+            Writer = new IndexWriter(State,
                 new IndexWriterConfig(LuceneVersion.LUCENE_48, new SimpleAnalyzer(LuceneVersion.LUCENE_48)) {
                     MergeScheduler = new SerialMergeScheduler()
                 });
@@ -46,6 +47,7 @@ namespace DDBMSP.Grains.Aggregators.Articles.Search
                 };
                 Writer.AddDocument(doc);
                 Writer.Commit();
+                CommitChanges();
                 return Task.CompletedTask;
             }
 
@@ -65,6 +67,7 @@ namespace DDBMSP.Grains.Aggregators.Articles.Search
                     Writer.AddDocument(doc);
                 }
                 Writer.Commit();
+                CommitChanges();
                 return Task.CompletedTask;
             }
 

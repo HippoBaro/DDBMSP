@@ -24,8 +24,14 @@ namespace DDBMSP.Grains.Aggregators.Articles.Search
 
         private IndexSearcher _searcher;
 
-        private IndexSearcher Searcher =>
-            _searcher ?? (_searcher = new IndexSearcher(DirectoryReader.Open(State)));
+        private IndexSearcher Searcher
+        {
+            get {
+                if (State == null)
+                    State = new RAMDirectory();
+                return _searcher ?? (_searcher = new IndexSearcher(DirectoryReader.Open(State)));
+            }
+        }
 
         public override Task OnActivateAsync() {
             

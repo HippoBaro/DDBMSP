@@ -41,6 +41,11 @@ namespace DDBMSP.Frontend.Web
             config.SerializationProviders.Add(typeof(ProtobufSerializer).GetTypeInfo());
             
             InitializeWithRetries(config, 10);
+
+            GrainClient.ClusterConnectionLost += (sender, eventArgs) => {
+                InitializeWithRetries(config, -1);
+            };
+            
             BuildWebHost(args).Run();
             return Task.CompletedTask;
         }
@@ -66,7 +71,7 @@ namespace DDBMSP.Frontend.Web
                 {
                     attempt++;
                     Console.WriteLine($"Attempt {attempt} of {initializeAttemptsBeforeFailing} failed to initialize the Orleans client.");
-                    if (attempt > initializeAttemptsBeforeFailing)
+                    if (attempt > initializeAttemptsBeforeFailing && initializeAttemptsBeforeFailing != -1)
                     {
                         throw;
                     }

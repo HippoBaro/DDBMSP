@@ -39,7 +39,7 @@ namespace DDBMSP.Grains.Worker
                 dictActivities.SetRange(dictActivitiesRange.AsImmutable()),
                 GrainFactory.GetGrain<IArticleAggregatorHubGrain>(0).AggregateRange(author.Articles.AsImmutable()),
                 GrainFactory.GetGrain<IDistributedHashTable<Guid, UserState>>(0).Set(author.Id.AsImmutable(), author.AsImmutable())
-                ).ContinueWith(task => Task.WhenAll(dictArticles.Commit(), dictActivities.Commit()));
+                );
         }
         
         public Task DispatchStorageUnits(Immutable<List<StorageUnit>> units) {

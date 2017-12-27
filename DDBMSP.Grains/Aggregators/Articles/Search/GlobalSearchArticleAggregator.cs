@@ -18,7 +18,7 @@ namespace DDBMSP.Grains.Aggregators.Articles.Search
 {
     [Reentrant]
     [StorageProvider(ProviderName = "RedisStore")]
-    class GlobalSearchArticleAggregator : SingleWriterMultipleReadersGrain<RAMDirectory>, IGlobalSearchArticleAggregator
+    class GlobalSearchArticleAggregator : ScheduledPersistedGrain<RAMDirectory>, IGlobalSearchArticleAggregator
     {
         private IndexWriter Writer { get; set; }
 
@@ -52,10 +52,10 @@ namespace DDBMSP.Grains.Aggregators.Articles.Search
                 };
                 Writer.AddDocument(doc);
                 Writer.Commit();
-                //CommitChanges();
                 return Task.CompletedTask;
             }
 
+            CommitChanges();
             return SerialExecutor.AddNext(Aggregate);
         }
 
@@ -72,10 +72,10 @@ namespace DDBMSP.Grains.Aggregators.Articles.Search
                     Writer.AddDocument(doc);
                 }
                 Writer.Commit();
-                //CommitChanges();
                 return Task.CompletedTask;
             }
 
+            CommitChanges();
             return SerialExecutor.AddNext(AggregateRange);
         }
 

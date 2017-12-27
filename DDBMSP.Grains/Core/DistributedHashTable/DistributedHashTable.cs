@@ -14,7 +14,7 @@ namespace DDBMSP.Grains.Core.DistributedHashTable
     [Reentrant]
     public class DistributedHashTable<TKey, TValue> : Grain, IDistributedHashTable<TKey, TValue>
     {
-        private const int BucketsNumber = 4;
+        private const int BucketsNumber = 24;
 
         public Task<Immutable<TValue>> Get(Immutable<TKey> key) {
             // Calculate the hash code of the key, eliminate negative values.
@@ -69,14 +69,6 @@ namespace DDBMSP.Grains.Core.DistributedHashTable
                 tasks.Add(GrainFactory.GetGrain<IDistributedHashTableBucket<TKey, TValue>>(i).Count());
             }
             return (await Task.WhenAll(tasks)).Sum();
-        }
-
-        public Task Commit() {
-            var tasks = new List<Task>(BucketsNumber);
-            for (var i = 0; i < BucketsNumber; i++) {
-                tasks.Add(GrainFactory.GetGrain<IDistributedHashTableBucket<TKey, TValue>>(i).Commit());
-            }
-            return Task.WhenAll(tasks);
         }
 
         public async Task<Immutable<dynamic>> Query(Immutable<QueryDefinition> queryDefinition) {

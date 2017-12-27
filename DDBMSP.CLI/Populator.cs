@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
 using DDBMSP.CLI.Core;
@@ -27,13 +29,16 @@ namespace DDBMSP.CLI
         public async Task<int> Run() {
             Init();
             
-            Console.WriteLine("Reading data...\n");
+            Console.WriteLine("Reading data...\r");
             ReadData();
             Console.WriteLine("Reading data... Done.");
             
-            Console.WriteLine("Uploading data...");
+            var t = Stopwatch.StartNew();
+            Console.WriteLine("Uploading data...\r");
             await Upload();
+            Console.WriteLine($"Uploading data... Done. ({t.Elapsed:g})");
             
+            Environment.Exit(0);
             return 0;
         }
 
@@ -48,96 +53,98 @@ namespace DDBMSP.CLI
             }
         }
         
-        private static double Percentile(List<double> sequence, double excelPercentile) {
-            sequence.Sort();
-            var N = sequence.Count;
+        private static double Percentile(IEnumerable<double> sequence, double excelPercentile) {
+            sequence.OrderBy(d1 => d1);
+            var N = sequence.Count();
             var n = (N - 1) * excelPercentile + 1;
-            if (n == 1d) return sequence[0];
-            if (n == N) return sequence[N - 1];
+            if (n == 1d) return sequence.ElementAt(0);
+            if (n == N) return sequence.ElementAt(N - 1);
 
             var k = (int) n;
             var d = n - k;
-            return sequence[k - 1] + d * (sequence[k] - sequence[k - 1]);
+            return sequence.ElementAt(k - 1) + d * (sequence.ElementAt(k) - sequence.ElementAt(k - 1));
         }
 
-        private static IEnumerable<List<T>> splitList<T>(List<T> locations, int nSize) {
+        private static IEnumerable<List<T>> SplitList<T>(List<T> locations, int nSize) {
             for (var i = 0; i < locations.Count; i += nSize) {
                 yield return locations.GetRange(i, Math.Min(nSize, locations.Count - i));
             }
         }
 
-        private Task Upload() {
-            var sublists = splitList(Units, Units.Count / Environment.ProcessorCount).ToList();
+        private async Task Upload() {
+            var sublists = SplitList(Units, Units.Count / Environment.ProcessorCount).ToList();
             var tasks = new List<Task>(sublists.Count);
+
+            _lat999 = new double[sublists.Count];
+            _lat99 = new double[sublists.Count];
+            _lat95 = new double[sublists.Count];
+            _latmax = new double[sublists.Count];
+            _latmin = new double[sublists.Count];
+            _latav = new double[sublists.Count];
             
-            lat999 = new List<double>(sublists.Count);
-            lat99 = new List<double>(sublists.Count);
-            lat95 = new List<double>(sublists.Count);
-            latmax = new List<double>(sublists.Count);
-            latmin = new List<double>(sublists.Count);
-            latav = new List<double>(sublists.Count);
+            var timer1 = new Timer(state => {
+                Console.WriteLine("test");
+                //Console.WriteLine($"Uploading... {_ops} ops/sec, {_unit * BytesPerUnit / 1000000}MB/s — Latency: Min = {_latmin.Min()}ms, Max = {_latmax.Max()}ms, Average = {_latav.Average():F3}ms, 95% = {Percentile(_lat95, .95):F3}ms, 99% = {Percentile(_lat99, .99):F3}ms, 99.9% = {Percentile(_lat999, .999):F3}ms");
+                _ops = 0;
+                _unit = 0;
+            }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
             
             for (var i = 0; i < sublists.Count; i++) {
-                lat999.Add(0);
-                lat99.Add(0);
-                lat95.Add(0);
-                latmax.Add(0);
-                latmin.Add(0);
-                latav.Add(0);
                 tasks.Add(Upload(sublists[i], i));
             }
 
-            var output = new Task(async () => {
-                while (true) {
-                    await Task.Delay(1000);
-                    Console.WriteLine($"Uploading... {_ops} ops/sec, {_unit * BytesPerUnit / 1000000}MB/s — Latency: Min = {latmin.Min()}ms, Max = {latmax.Max()}ms, Average = {latav.Average():F3}ms, 95% = {Percentile(lat95, .95):F3}ms, 99% = {Percentile(lat99, .99):F3}ms, 99.9% = {Percentile(lat999, .999):F3}ms\n");
-                    _ops = 0;
-                    _unit = 0;
-                }
-            });
-            output.Start();
-            return Task.WhenAny(Task.WhenAll(tasks), output).ContinueWith(task => {
-                Console.WriteLine($"Done. Latency: Min = {latmin.Min()}ms, Max = {latmax.Max()}ms, Average = {latav.Average():F3}ms, 95% = {Percentile(lat95, .95):F3}ms, 99% = {Percentile(lat99, .99):F3}ms, 99.9% = {Percentile(lat999, .999):F3}ms");
-            });
+            while (!tasks.All(task => task.IsCompleted)) {
+                Console.WriteLine("test loop");
+                //Console.WriteLine($"Uploading... {_ops} ops/sec, {_unit * BytesPerUnit / 1000000}MB/s — Latency: Min = {_latmin.Min()}ms, Max = {_latmax.Max()}ms, Average = {_latav.Average():F3}ms, 95% = {Percentile(_lat95, .95):F3}ms, 99% = {Percentile(_lat99, .99):F3}ms, 99.9% = {Percentile(_lat999, .999):F3}ms");
+                //_ops = 0;
+                //_unit = 0;
+            }
         }
-        
-        int _ops;
-        int _unit;
 
-        private List<double> lat999;
-        private List<double> lat99;
-        private List<double> lat95;
-        private List<double> latmax;
-        private List<double> latmin;
-        private List<double> latav;
+        private int _ops;
+        private int _unit;
 
-        private Task Upload(List<StorageUnit> unitsSubset, int id) {
+        private double[] _lat999;
+        private double[] _lat99;
+        private double[] _lat95;
+        private double[] _latmax;
+        private double[] _latmin;
+        private double[] _latav;
+
+        private Task Upload(IReadOnlyCollection<StorageUnit> unitsSubset, int id) {
             var latenciesLocal = new List<double>(unitsSubset.Count);
             var totalunit = 0;
             double lat = 0;
             
             for (var i = 0; i < unitsSubset.Count / Environment.ProcessorCount; i++) {
-                PopulateUnit(unitsSubset.Skip(i * Environment.ProcessorCount).Take(Environment.ProcessorCount), ref _ops, ref lat, ref _unit, ref totalunit);
+                PopulateUnit(unitsSubset.Skip(i * Environment.ProcessorCount).Take(Environment.ProcessorCount), ref lat, ref totalunit);
                 latenciesLocal.Add(lat);
-                lat999[id] = Percentile(latenciesLocal, .999);
-                lat99[id] = Percentile(latenciesLocal, .99);
-                lat95[id] = Percentile(latenciesLocal, .95);
-                latmax[id] = latenciesLocal.Max();
-                latmin[id] = latenciesLocal.Min();
-                latav[id] = latenciesLocal.Average();
+                _lat999[id] = Percentile(latenciesLocal, .999);
+                _lat99[id] = Percentile(latenciesLocal, .99);
+                _lat95[id] = Percentile(latenciesLocal, .95);
+                _latmax[id] = latenciesLocal.Max();
+                _latmin[id] = latenciesLocal.Min();
+                _latav[id] = latenciesLocal.Average();
             }
             if (totalunit < unitsSubset.Count) {
-                PopulateUnit(unitsSubset.Skip(totalunit).Take(unitsSubset.Count - totalunit), ref _ops, ref lat, ref _unit, ref totalunit);
+                PopulateUnit(unitsSubset.Skip(totalunit).Take(unitsSubset.Count - totalunit), ref lat, ref totalunit);
+                latenciesLocal.Add(lat);
+                _lat999[id] = Percentile(latenciesLocal, .999);
+                _lat99[id] = Percentile(latenciesLocal, .99);
+                _lat95[id] = Percentile(latenciesLocal, .95);
+                _latmax[id] = latenciesLocal.Max();
+                _latmin[id] = latenciesLocal.Min();
+                _latav[id] = latenciesLocal.Average();
             }
             return Task.CompletedTask;
         }
 
-        private void PopulateUnit(IEnumerable<StorageUnit> units, ref int ops, ref double lat, ref int unit, ref int tunit) {
+        private void PopulateUnit(IEnumerable<StorageUnit> units, ref double lat, ref int tunit) {
             var t = Stopwatch.StartNew();
             ClusterClient.GetGrain<IArticleDispatcherWorker>(0).DispatchStorageUnits(units.ToList().AsImmutable()).Wait();
             lat = t.ElapsedMilliseconds / units.Sum(u => u.EntityCount);;
-            ops += units.Sum(u => u.EntityCount);
-            unit += units.Count();
+            _ops += units.Sum(u => u.EntityCount);
+            _unit += units.Count();
             tunit += units.Count();
         }
         

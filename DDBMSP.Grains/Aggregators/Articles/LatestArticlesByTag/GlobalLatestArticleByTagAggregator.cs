@@ -12,7 +12,7 @@ namespace DDBMSP.Grains.Aggregators.Articles.LatestArticlesByTag
 {
     [Reentrant]
     [StorageProvider(ProviderName = "RedisStore")]
-    public class GlobalLatestArticleByTagAggregator : SingleWriterMultipleReadersGrain<Dictionary<string, List<ArticleSummary>>>,
+    public class GlobalLatestArticleByTagAggregator : ScheduledPersistedGrain<Dictionary<string, List<ArticleSummary>>>,
         IGlobalLatestArticleByTagAggregator
     {
         public Task Aggregate(Immutable<string> tag, Immutable<ArticleSummary> article) {
@@ -26,10 +26,10 @@ namespace DDBMSP.Grains.Aggregators.Articles.LatestArticlesByTag
                 if (index >= 0) return Task.CompletedTask;
                 State[tag.Value].Insert(~index, article.Value);
                 State[tag.Value].RemoveRange(100, int.MaxValue);
-                //CommitChanges();
                 return Task.CompletedTask;
             }
 
+            CommitChanges();
             return SerialExecutor.AddNext(Aggregate);
         }
 
@@ -47,10 +47,10 @@ namespace DDBMSP.Grains.Aggregators.Articles.LatestArticlesByTag
                     State[tag.Value].Insert(~index, article);
                     State[tag.Value].RemoveRange(100, int.MaxValue);
                 }
-                //CommitChanges();
                 return Task.CompletedTask;
             }
 
+            CommitChanges();
             return SerialExecutor.AddNext(AggregateRange);
         }
 

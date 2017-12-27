@@ -23,7 +23,7 @@ services:
       
   storage:
     image: redis:alpine
-    command: --save 300 1 --dbfilename dump.rdb --dir /data 
+    command: --dbfilename dump.rdb --dir /data 
     volumes:
       - ../data:/data
     networks:

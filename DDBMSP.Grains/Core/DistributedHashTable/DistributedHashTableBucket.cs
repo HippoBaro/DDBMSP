@@ -13,7 +13,7 @@ namespace DDBMSP.Grains.Core.DistributedHashTable
 {
     [Reentrant]
     [StorageProvider(ProviderName = "RedisStore")]
-    public class DistributedHashTableBucket<TKey, TValue> : SingleWriterMultipleReadersGrain<Dictionary<TKey, TValue>>,
+    public class DistributedHashTableBucket<TKey, TValue> : ScheduledPersistedGrain<Dictionary<TKey, TValue>>,
         IDistributedHashTableBucket<TKey, TValue>
     {
         public Task<Immutable<TValue>> Get(Immutable<TKey> key) => Task.FromResult(State[key.Value].AsImmutable());
@@ -24,10 +24,10 @@ namespace DDBMSP.Grains.Core.DistributedHashTable
                     State[key.Value] = value.Value;
                 else
                     State.Add(key.Value, value.Value);
-                CommitChanges();
                 return Task.CompletedTask;
             }
 
+            CommitChanges();
             return SerialExecutor.AddNext(Set);
         }
 
@@ -39,14 +39,11 @@ namespace DDBMSP.Grains.Core.DistributedHashTable
                 return Task.CompletedTask;
             }
 
+            CommitChanges();
             return SerialExecutor.AddNext(Set);
         }
 
         public Task<int> Count() => Task.FromResult(State.Count);
-        public Task Commit() {
-            CommitChanges();
-            return Task.CompletedTask;
-        }
 
         public async Task<Immutable<dynamic>> Query(Immutable<QueryDefinition> queryDefinition) {
             var result = await QueryEngine.Execute(ScriptType.QuerySelector, queryDefinition.Value,

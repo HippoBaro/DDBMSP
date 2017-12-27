@@ -12,7 +12,5 @@ namespace DDBMSP.Interfaces.Grains.Core.DistributedHashTable
         Task Set(Immutable<TKey> key, Immutable<TValue> value);
         Task SetRange(Immutable<IEnumerable<KeyValuePair<TKey, TValue>>> keyvalues);
         Task<int> Count();
-
-        Task Commit();
     }
 }

@@ -34,7 +34,7 @@
                     @if (Model.Item1.Tags != null && Model.Item1.Tags.Any()) {
                         foreach (var tag in Model.Item1.Tags) {
                             <span class="date-divider">/</span>
-                            <a href="http://localhost:5000/tag/@tag">@tag</a>
+                            <a href="/tag/@tag">@tag</a>
                         }
                     }
                 </section>

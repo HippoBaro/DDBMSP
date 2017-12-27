@@ -12,7 +12,7 @@ namespace DDBMSP.Grains.Aggregators.Articles.LatestArticles
 {
     [Reentrant]
     [StorageProvider(ProviderName = "RedisStore")]
-    class GlobalLatestArticlesAggregator : SingleWriterMultipleReadersGrain<List<ArticleSummary>>, IGlobalLatestArticlesAggregator
+    class GlobalLatestArticlesAggregator : ScheduledPersistedGrain<List<ArticleSummary>>, IGlobalLatestArticlesAggregator
     {
         private bool HasChanged { get; set; }
         
@@ -24,10 +24,10 @@ namespace DDBMSP.Grains.Aggregators.Articles.LatestArticles
                 if (index < 0)
                     State.Insert(~index, articles.Value);
                 State.RemoveRange(100, int.MaxValue);
-                //CommitChanges();
                 return Task.CompletedTask;
             }
 
+            CommitChanges();
             return SerialExecutor.AddNext(Aggregate);
         }
 
@@ -39,10 +39,10 @@ namespace DDBMSP.Grains.Aggregators.Articles.LatestArticles
                 if (index < 0)
                     State.InsertRange(~index, articles.Value);
                 State.RemoveRange(100, int.MaxValue);
-                //CommitChanges();
                 return Task.CompletedTask;
             }
 
+            CommitChanges();
             return SerialExecutor.AddNext(AggregateRange);
         }
 

@@ -21,32 +21,39 @@ namespace DDBMSP.Grains.Worker
     {
         public override Task OnActivateAsync() {
             State = new List<StorageUnit>(1000);
-            var targetTicks = TimeSpan.FromMilliseconds(RadomProvider.Instance.Next(10000, 20000));
+            var targetTicks = TimeSpan.FromMilliseconds(RadomProvider.Instance.Next(50000, 70000));
             RegisterTimer(Flush, this, targetTicks, targetTicks);
             return base.OnActivateAsync();
         }
 
-        private Task DispatchStorageUnit(StorageUnit unit) {
-            var articles = unit.Articles;
-            var author = unit.User;
-            var activities = unit.Activities;
+        private Task DispatchStorageUnit(IReadOnlyCollection<StorageUnit> units) {
+            var articles = units.SelectMany(unit => unit.Articles).ToList();
+            var author = units.Select(unit => unit.User).ToList();
+            var activities = units.SelectMany(unit => unit.Activities).ToList();
             
             var dictArticles = GrainFactory.GetGrain<IDistributedHashTable<Guid, ArticleState>>(0);
             var dictArticlesRange = new Dictionary<Guid, ArticleState>(articles.Count);
             
             var dictActivities = GrainFactory.GetGrain<IDistributedHashTable<Guid, List<UserActivityState>>>(0);
             var dictActivitiesRange = new Dictionary<Guid, List<UserActivityState>>(activities.Count);
+            
+            var dictUsers = GrainFactory.GetGrain<IDistributedHashTable<Guid, UserState>>(0);
+            var dictUsersRange = new Dictionary<Guid, UserState>(author.Count);
 
-            for (int i = 0; i < articles.Count; i++) {
+            for (var i = 0; i < articles.Count; i++) {
                 dictArticlesRange.Add(articles[i].Id, articles[i]);
                 dictActivitiesRange.Add(articles[i].Id, activities[i]);
+            }
+
+            foreach (var user in author) {
+                dictUsersRange.Add(user.Id, user);
             }
             
             return Task.WhenAll(
                 dictArticles.SetRange(dictArticlesRange.AsImmutable()),
                 dictActivities.SetRange(dictActivitiesRange.AsImmutable()),
-                GrainFactory.GetGrain<IArticleAggregatorHubGrain>(0).AggregateRange(author.Articles.AsImmutable()),
-                GrainFactory.GetGrain<IDistributedHashTable<Guid, UserState>>(0).Set(author.Id.AsImmutable(), author.AsImmutable())
+                dictUsers.SetRange(dictUsersRange.AsImmutable()),
+                GrainFactory.GetGrain<IArticleAggregatorHubGrain>(0).AggregateRange(articles)
                 );
         }
         
@@ -55,6 +62,6 @@ namespace DDBMSP.Grains.Worker
             return Task.CompletedTask;
         }
         
-        private Task Flush(object _) => Task.WhenAll(State.Select(DispatchStorageUnit));
+        private Task Flush(object _) => DispatchStorageUnit(State);
     }
 }

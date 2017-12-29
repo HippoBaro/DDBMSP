@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DDBMSP.Common;
+using DDBMSP.Entities.Article;
 using DDBMSP.Entities.Article.Components;
 using DDBMSP.Interfaces.Grains.Aggregators.Articles.Search;
 using Lucene.Net.Support;
@@ -12,26 +13,26 @@ using Orleans.Concurrency;
 namespace DDBMSP.Grains.Aggregators.Articles.Search
 {
     [StatelessWorker]
-    public class LocalSearchArticleAggregator : Grain, ILocalSearchArticleAggregator
+    public class LocalSearchArticleAggregator : Grain<LinkedList<ArticleState>>, ILocalSearchArticleAggregator
     {
-        private LinkedList<ArticleSummary> State { get; } = new LinkedList<ArticleSummary>();
         private int _newSinceLastReport;
 
         public override Task OnActivateAsync() {
+            State = new LinkedList<ArticleState>();
             var targetTicks = TimeSpan.FromMilliseconds(RadomProvider.Instance.Next(15000, 35000));
             RegisterTimer(Report, this, targetTicks, targetTicks);
             return base.OnActivateAsync();
         }
 
-        public Task Aggregate(Immutable<ArticleSummary> article) {
-            State.AddFirst(article.Value);
+        public Task Aggregate(ArticleState article) {
+            State.AddFirst(article);
             ++_newSinceLastReport;
             return Task.CompletedTask;
         }
 
-        public Task AggregateRange(Immutable<List<ArticleSummary>> articles) {
-            State.AddAll(articles.Value);
-            _newSinceLastReport += articles.Value.Count;
+        public Task AggregateRange(List<ArticleState> articles) {
+            State.AddAll(articles);
+            _newSinceLastReport += articles.Count;
             return Task.CompletedTask;
         }
 
@@ -39,7 +40,11 @@ namespace DDBMSP.Grains.Aggregators.Articles.Search
             if (_newSinceLastReport == 0) return;
 
             var aggregator = GrainFactory.GetGrain<IGlobalSearchArticleAggregator>(0);
-            await aggregator.AggregateRange(State.Take(_newSinceLastReport).ToList().AsImmutable());
+            await aggregator.AggregateRange(
+                State.Take(_newSinceLastReport)
+                    .Select(state => state.Summarize())
+                    .ToList()
+                    .AsImmutable());
             _newSinceLastReport = 0;
 
             State.Clear();

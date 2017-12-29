@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DDBMSP.Entities.Article;
 using DDBMSP.Entities.Article.Components;
 using DDBMSP.Interfaces.Grains.Aggregators.Articles;
 using DDBMSP.Interfaces.Grains.Aggregators.Articles.LatestArticles;
@@ -16,7 +17,7 @@ namespace DDBMSP.Grains.Aggregators.Articles
     [Reentrant]
     public class ArticleAggregatorHubGrain : Grain, IArticleAggregatorHubGrain
     {
-        private Task Broadcast<TTargetGrain>(Immutable<ArticleSummary> article) where TTargetGrain : IGrain {
+        private Task Broadcast<TTargetGrain>(ArticleState article) where TTargetGrain : IGrain {
             if (typeof(TTargetGrain) == typeof(ILocalLatestArticleAggregator)) {
                 return GrainFactory.GetGrain<ILocalLatestArticleAggregator>(0).Aggregate(article);
             }
@@ -26,7 +27,7 @@ namespace DDBMSP.Grains.Aggregators.Articles
             }
 
             if (typeof(TTargetGrain) == typeof(ILocalLatestArticleByTagAggregator)) {
-                return Task.WhenAll(article.Value.Tags.Select(tag =>
+                return Task.WhenAll(article.Tags.Select(tag =>
                     GrainFactory.GetGrain<ILocalLatestArticleByTagAggregator>(tag).Aggregate(article)));
             }
 
@@ -34,7 +35,7 @@ namespace DDBMSP.Grains.Aggregators.Articles
             return Task.CompletedTask;
         }
 
-        private Task Broadcast<TTargetGrain>(Immutable<List<ArticleSummary>> articles) where TTargetGrain : IGrain {
+        private Task Broadcast<TTargetGrain>(List<ArticleState> articles) where TTargetGrain : IGrain {
             if (typeof(TTargetGrain) == typeof(ILocalLatestArticleAggregator)) {
                 return GrainFactory.GetGrain<ILocalLatestArticleAggregator>(0).AggregateRange(articles);
             }
@@ -44,20 +45,21 @@ namespace DDBMSP.Grains.Aggregators.Articles
             }
 
             if (typeof(TTargetGrain) == typeof(ILocalLatestArticleByTagAggregator)) {
-                var dict = new Dictionary<string, List<ArticleSummary>>(articles.Value.Count);
+                var dict = new Dictionary<string, List<ArticleState>>(articles.Count);
 
                 //That sucks big time
-                foreach (var summary in articles.Value) {
+                foreach (var summary in articles) {
                     foreach (var tag in summary.Tags) {
                         if (!dict.ContainsKey(tag))
-                            dict.Add(tag, new List<ArticleSummary>());
+                            dict.Add(tag, new List<ArticleState>());
                         dict[tag].Add(summary);
                     }
                 }
 
                 var tasks = new List<Task>(dict.Count);
-                tasks.AddRange(dict.Select(tag => GrainFactory.GetGrain<ILocalLatestArticleByTagAggregator>(tag.Key)
-                    .AggregateRange(tag.Value.AsImmutable())));
+                tasks.AddRange(dict
+                    .Select(tag => GrainFactory.GetGrain<ILocalLatestArticleByTagAggregator>(tag.Key)
+                    .AggregateRange(tag.Value)));
                 return Task.WhenAll(tasks);
             }
 
@@ -65,12 +67,12 @@ namespace DDBMSP.Grains.Aggregators.Articles
             return Task.CompletedTask;
         }
 
-        public Task Aggregate(Immutable<ArticleSummary> article) => Task.WhenAll(
+        public Task Aggregate(ArticleState article) => Task.WhenAll(
             Broadcast<ILocalLatestArticleAggregator>(article),
             Broadcast<ILocalLatestArticleByTagAggregator>(article),
             Broadcast<ILocalSearchArticleAggregator>(article));
 
-        public Task AggregateRange(Immutable<List<ArticleSummary>> articles) => Task.WhenAll(
+        public Task AggregateRange(List<ArticleState> articles) => Task.WhenAll(
             Broadcast<ILocalLatestArticleAggregator>(articles),
             Broadcast<ILocalLatestArticleByTagAggregator>(articles),
             Broadcast<ILocalSearchArticleAggregator>(articles));

@@ -7,10 +7,14 @@ namespace DDBMSP.Grains.Core
 {
     public class ScheduledPersistedGrain<T> : SingleWriterMultipleReadersGrain<T> where T : new()
     {
+        private bool Dirty { get; set; }
         private DateTime LastCommit { get; set; } = DateTime.MinValue;
+        private bool IsSynchingSchedulded { get; set; }
 
         protected void CommitChanges() {
+            Console.WriteLine($"CommitChanges from {this.GetType().Name} #{this.GetPrimaryKeyLong()}");
             LastCommit = DateTime.Now;
+            Dirty = true;
         }
         
         public override Task OnActivateAsync() {
@@ -21,11 +25,16 @@ namespace DDBMSP.Grains.Core
         
         private Task Flush(object _) {
             var elapsed = DateTime.Now.Subtract(LastCommit).TotalSeconds;
-            if (!(elapsed > 10)) return Task.CompletedTask;
+            if (!Dirty || !(elapsed > 10) || IsSynchingSchedulded) return Task.CompletedTask;
             
-            Console.WriteLine($"Synching #{this.GetPrimaryKeyLong()}. Delta {elapsed}s");
+            Console.WriteLine($"Synching #{this.GetPrimaryKeyLong()}. Delta {elapsed}s. Dirty: {Dirty}. Is IsSynchingSchedulded: {IsSynchingSchedulded}.");
             LastCommit = DateTime.UtcNow;
-            return SerialExecutor.AddNext(WriteStateAsync);
+            Dirty = false;
+            IsSynchingSchedulded = true;
+            return SerialExecutor.AddNext(async () => {
+                await WriteStateAsync();
+                IsSynchingSchedulded = false;
+            });
         }
     }
 }

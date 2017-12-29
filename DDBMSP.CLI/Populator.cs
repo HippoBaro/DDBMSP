@@ -35,7 +35,7 @@ namespace DDBMSP.CLI
             Console.WriteLine("Reading data... Done.");
             
             var t = Stopwatch.StartNew();
-            Console.WriteLine("Uploading data...\r");
+            
             await Upload();
             Console.WriteLine($"Uploading data... Done. ({t.Elapsed:g})");
             
@@ -82,19 +82,22 @@ namespace DDBMSP.CLI
             _latmax = new double[sublists.Count];
             _latmin = new double[sublists.Count];
             _latav = new double[sublists.Count];
+            _lat = new double[sublists.Count];
+            _tunit = new int[sublists.Count];
 
             var report = new Thread(() => {
                 while (true) {
                     Thread.Sleep(1000);
-                    Console.WriteLine($"Uploading... {_ops} op/s, {_unit * BytesPerUnit / 1000000} MB/s — Latency: Min = {_latmin.Min()}ms, Max = {_latmax.Max()}ms, Average = {_latav.Average():F3}ms, 95% = {Percentile(_lat95, .95):F3}ms, 99% = {Percentile(_lat99, .99):F3}ms, 99.9% = {Percentile(_lat999, .999):F3}ms");
+                    foreach (var d in _lat999) {
+                        Console.Write($"{d} ");
+                    }
+                    Console.WriteLine($"Uploading... {_ops} op/s, {_unit * BytesPerUnit / 1000000} MB/s — Latency: Min = {_latmin.Min()}ms, Max = {_latmax.Max()}ms, Average = {_latav.Average():F3}ms, 95% = {Percentile(_lat95, .95):F3}ms, 99% = {Percentile(_lat99, .99):F3}ms, 99.9% = {Percentile(_lat999, .999):F3}ms\r");
                     _ops = 0;
                     _unit = 0;
                 }
             }) {
                 Priority = ThreadPriority.Highest
             };
-
-            report.Start();
 
             var clients = new List<IClusterClient>();
             Console.WriteLine("Connecting Clients...\r");
@@ -103,12 +106,11 @@ namespace DDBMSP.CLI
             }
             Console.WriteLine("Connecting Clients... Done.");
             
-            for (var i = 0; i < sublists.Count; i++) {
-                tasks.Add(Upload(sublists[i], i, clients[i]));
-            }
+            Console.WriteLine("Uploading data...\r");
+            report.Start();
+            tasks.AddRange(sublists.Select((t, i) => Upload(t, i, clients[i])));
 
             await Task.WhenAll(tasks);
-            report.Abort();
         }
 
         private int _ops;
@@ -121,14 +123,12 @@ namespace DDBMSP.CLI
         private double[] _latmin;
         private double[] _latav;
 
-        private Task Upload(IReadOnlyCollection<StorageUnit> unitsSubset, int id, IClusterClient client) {
+        private async Task Upload(IReadOnlyCollection<StorageUnit> unitsSubset, int id, IGrainFactory client) {
             var latenciesLocal = new List<double>(unitsSubset.Count);
-            var totalunit = 0;
-            double lat = 0;
             
             for (var i = 0; i < unitsSubset.Count / Environment.ProcessorCount; i++) {
-                PopulateUnit(unitsSubset.Skip(i * Environment.ProcessorCount).Take(Environment.ProcessorCount), ref lat, ref totalunit, client);
-                latenciesLocal.Add(lat);
+                await PopulateUnit(unitsSubset.Skip(i * Environment.ProcessorCount).Take(Environment.ProcessorCount), id, client);
+                latenciesLocal.Add(_lat[id]);
                 _lat999[id] = Percentile(latenciesLocal, .999);
                 _lat99[id] = Percentile(latenciesLocal, .99);
                 _lat95[id] = Percentile(latenciesLocal, .95);
@@ -136,26 +136,29 @@ namespace DDBMSP.CLI
                 _latmin[id] = latenciesLocal.Min();
                 _latav[id] = latenciesLocal.Average();
             }
-            if (totalunit < unitsSubset.Count) {
-                PopulateUnit(unitsSubset.Skip(totalunit).Take(unitsSubset.Count - totalunit), ref lat, ref totalunit, client);
-                latenciesLocal.Add(lat);
-                _lat999[id] = Percentile(latenciesLocal, .999);
-                _lat99[id] = Percentile(latenciesLocal, .99);
-                _lat95[id] = Percentile(latenciesLocal, .95);
-                _latmax[id] = latenciesLocal.Max();
-                _latmin[id] = latenciesLocal.Min();
-                _latav[id] = latenciesLocal.Average();
-            }
-            return Task.CompletedTask;
-        }
 
-        private void PopulateUnit(IEnumerable<StorageUnit> units, ref double lat, ref int tunit, IClusterClient client) {
+            if (_tunit[id] >= unitsSubset.Count) return;
+            
+            await PopulateUnit(unitsSubset.Skip(_tunit[id]).Take(unitsSubset.Count - _tunit[id]), id, client);
+            latenciesLocal.Add(_lat[id]);
+            _lat999[id] = Percentile(latenciesLocal, .999);
+            _lat99[id] = Percentile(latenciesLocal, .99);
+            _lat95[id] = Percentile(latenciesLocal, .95);
+            _latmax[id] = latenciesLocal.Max();
+            _latmin[id] = latenciesLocal.Min();
+            _latav[id] = latenciesLocal.Average();
+        }
+        
+        private double[] _lat;
+        private int[] _tunit;
+
+        private async Task PopulateUnit(IEnumerable<StorageUnit> units, int id, IGrainFactory client) {
             var t = Stopwatch.StartNew();
-            client.GetGrain<IArticleDispatcherWorker>(0).DispatchStorageUnits(units.ToList().AsImmutable()).Wait();
-            lat = t.ElapsedMilliseconds / units.Sum(u => u.EntityCount);;
+            await client.GetGrain<IArticleDispatcherWorker>(0).DispatchStorageUnits(units.ToList().AsImmutable());
+            _lat[id] = t.ElapsedMilliseconds / units.Sum(u => u.EntityCount);;
             _ops += units.Sum(u => u.EntityCount);
             _unit += units.Count();
-            tunit += units.Count();
+            _tunit[id] += units.Count();
         }
         
         private void Init() {

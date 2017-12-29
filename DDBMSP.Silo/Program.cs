@@ -17,7 +17,6 @@ namespace DDBMSP.Silo
         
         public static async Task Main()
         {
-            GC.TryStartNoGCRegion(200000000);
             StartSilo();
 
             Console.WriteLine("Silo up");
@@ -51,7 +50,7 @@ namespace DDBMSP.Silo
                 });
 
             SiloHost.InitializeOrleansSilo();
-            SiloHost.StartOrleansSilo(false);
+            SiloHost.StartOrleansSilo();
         }
     }
 }

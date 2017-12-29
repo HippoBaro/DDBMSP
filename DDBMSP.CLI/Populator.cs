@@ -12,6 +12,7 @@ using DDBMSP.Entities;
 using DDBMSP.Interfaces.Grains.Workers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Bson;
+using Orleans;
 using Orleans.Concurrency;
 
 namespace DDBMSP.CLI
@@ -82,23 +83,25 @@ namespace DDBMSP.CLI
             _latmin = new double[sublists.Count];
             _latav = new double[sublists.Count];
             
-            var timer1 = new Timer(state => {
-                Console.WriteLine("test");
-                //Console.WriteLine($"Uploading... {_ops} ops/sec, {_unit * BytesPerUnit / 1000000}MB/s — Latency: Min = {_latmin.Min()}ms, Max = {_latmax.Max()}ms, Average = {_latav.Average():F3}ms, 95% = {Percentile(_lat95, .95):F3}ms, 99% = {Percentile(_lat99, .99):F3}ms, 99.9% = {Percentile(_lat999, .999):F3}ms");
+            var report = new Task(async () => {
+                await Task.Delay(1000);
+                Console.WriteLine($"Uploading... {_ops} ops/sec, {_unit * BytesPerUnit / 1000000}MB/s — Latency: Min = {_latmin.Min()}ms, Max = {_latmax.Max()}ms, Average = {_latav.Average():F3}ms, 95% = {Percentile(_lat95, .95):F3}ms, 99% = {Percentile(_lat99, .99):F3}ms, 99.9% = {Percentile(_lat999, .999):F3}ms");
                 _ops = 0;
                 _unit = 0;
-            }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+            }, TaskCreationOptions.AttachedToParent | TaskCreationOptions.LongRunning);
+
+            var clients = new List<IClusterClient>();
+            Console.WriteLine("Connecting Clients...\r");
+            for (var i = 0; i < sublists.Count; i++) {
+                clients.Add(await ConnectClient());
+            }
+            Console.WriteLine("Connecting Clients... Done.");
             
             for (var i = 0; i < sublists.Count; i++) {
-                tasks.Add(Upload(sublists[i], i));
+                tasks.Add(Upload(sublists[i], i, clients[i]));
             }
 
-            while (!tasks.All(task => task.IsCompleted)) {
-                Console.WriteLine("test loop");
-                //Console.WriteLine($"Uploading... {_ops} ops/sec, {_unit * BytesPerUnit / 1000000}MB/s — Latency: Min = {_latmin.Min()}ms, Max = {_latmax.Max()}ms, Average = {_latav.Average():F3}ms, 95% = {Percentile(_lat95, .95):F3}ms, 99% = {Percentile(_lat99, .99):F3}ms, 99.9% = {Percentile(_lat999, .999):F3}ms");
-                //_ops = 0;
-                //_unit = 0;
-            }
+            await Task.WhenAny(Task.WhenAll(tasks), report);
         }
 
         private int _ops;
@@ -111,13 +114,13 @@ namespace DDBMSP.CLI
         private double[] _latmin;
         private double[] _latav;
 
-        private Task Upload(IReadOnlyCollection<StorageUnit> unitsSubset, int id) {
+        private Task Upload(IReadOnlyCollection<StorageUnit> unitsSubset, int id, IClusterClient client) {
             var latenciesLocal = new List<double>(unitsSubset.Count);
             var totalunit = 0;
             double lat = 0;
             
             for (var i = 0; i < unitsSubset.Count / Environment.ProcessorCount; i++) {
-                PopulateUnit(unitsSubset.Skip(i * Environment.ProcessorCount).Take(Environment.ProcessorCount), ref lat, ref totalunit);
+                PopulateUnit(unitsSubset.Skip(i * Environment.ProcessorCount).Take(Environment.ProcessorCount), ref lat, ref totalunit, client);
                 latenciesLocal.Add(lat);
                 _lat999[id] = Percentile(latenciesLocal, .999);
                 _lat99[id] = Percentile(latenciesLocal, .99);
@@ -127,7 +130,7 @@ namespace DDBMSP.CLI
                 _latav[id] = latenciesLocal.Average();
             }
             if (totalunit < unitsSubset.Count) {
-                PopulateUnit(unitsSubset.Skip(totalunit).Take(unitsSubset.Count - totalunit), ref lat, ref totalunit);
+                PopulateUnit(unitsSubset.Skip(totalunit).Take(unitsSubset.Count - totalunit), ref lat, ref totalunit, client);
                 latenciesLocal.Add(lat);
                 _lat999[id] = Percentile(latenciesLocal, .999);
                 _lat99[id] = Percentile(latenciesLocal, .99);
@@ -139,9 +142,9 @@ namespace DDBMSP.CLI
             return Task.CompletedTask;
         }
 
-        private void PopulateUnit(IEnumerable<StorageUnit> units, ref double lat, ref int tunit) {
+        private void PopulateUnit(IEnumerable<StorageUnit> units, ref double lat, ref int tunit, IClusterClient client) {
             var t = Stopwatch.StartNew();
-            ClusterClient.GetGrain<IArticleDispatcherWorker>(0).DispatchStorageUnits(units.ToList().AsImmutable()).Wait();
+            client.GetGrain<IArticleDispatcherWorker>(0).DispatchStorageUnits(units.ToList().AsImmutable()).Wait();
             lat = t.ElapsedMilliseconds / units.Sum(u => u.EntityCount);;
             _ops += units.Sum(u => u.EntityCount);
             _unit += units.Count();

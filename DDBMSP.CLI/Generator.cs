@@ -134,8 +134,10 @@ namespace DDBMSP.CLI
         private void GenerateArticles() {
             ArticleState New() {
                 List<Tuple<string, string>> GetTopics() {
-                    var ret = new List<Tuple<string, string>>();
-                    ret.Add(RandomGenerationData.TopicList[RandomGenerationData.Random.Next(RandomGenerationData.TopicList.Count)]);
+                    var ret = new List<Tuple<string, string>> {
+                        RandomGenerationData.TopicList[
+                            RandomGenerationData.Random.Next(RandomGenerationData.TopicList.Count)]
+                    };
                     return ret;
                 }
 
@@ -143,16 +145,23 @@ namespace DDBMSP.CLI
                 var res = new ArticleState {
                     Id = Guid.NewGuid(),
                     CreationDate = DateTime.Now.AddHours(-RandomGenerationData.Random.Next(1000)),
-                    Abstract = RandomGenerationData.ExcerptsList[RandomGenerationData.Random.Next(RandomGenerationData.ExcerptsList.Count)],
-                    Content = RandomGenerationData.Contents[RandomGenerationData.Random.Next(RandomGenerationData.Contents.Count)],
-                    Image = new Uri(RandomGenerationData.ImagesList[RandomGenerationData.Random.Next(RandomGenerationData.ImagesList.Count)]),
+                    Abstract = RandomGenerationData.ExcerptsList[
+                        RandomGenerationData.Random.Next(RandomGenerationData.ExcerptsList.Count)],
+                    Content = RandomGenerationData.Contents[
+                        RandomGenerationData.Random.Next(RandomGenerationData.Contents.Count)],
+                    Image = new Uri(
+                        RandomGenerationData.ImagesList[
+                            RandomGenerationData.Random.Next(RandomGenerationData.ImagesList.Count)]),
                     Language = RandomGenerationData.Random.Next(2) > 0 ? Language.English : Language.Mandarin,
                     Tags = topic.Select(tuple => tuple.Item2).ToList(),
-                    Catergory = RandomGenerationData.Random.Next(2) > 0 ? ArticleCategory.Science : ArticleCategory.Technology,
+                    Catergory = RandomGenerationData.Random.Next(2) > 0
+                        ? ArticleCategory.Science
+                        : ArticleCategory.Technology,
+                    Title = String.Format(
+                        RandomGenerationData.TitleList[
+                            RandomGenerationData.Random.Next(RandomGenerationData.TitleList.Count)],
+                        topic.First().Item1),
                 };
-                res.Title = String.Format(
-                    RandomGenerationData.TitleList[
-                        RandomGenerationData.Random.Next(RandomGenerationData.TitleList.Count)], topic.First().Item1);
                 return res;
             }
             

@@ -118,7 +118,6 @@ namespace DDBMSP.CLI
             "http://z75.d.sdska.ru/2-z75-f1124905-76fa-4a9d-9c09-6b1d1192834c.jpg",
             "http://thesmartdigest.com/wp-content/uploads/2017/05/Philips-Pasta-Maker.jpg",
             "https://s.smart-money.co/2016/04/1-8.jpg",
-            "http://www.koplas.com/upload2/imgUp/20160126144332.jpg",
             "https://cdn.shopify.com/s/files/1/1122/8390/files/Screen_Shot_2016-11-22_at_9.02.02_PM_1024x1024.png?v=1479808945",
             "https://icdn7.digitaltrends.com/image/oculus-go-lifestyle-4.jpg",
             "https://skift.com/wp-content/uploads/2017/10/hotel-e1508249372985.jpg",

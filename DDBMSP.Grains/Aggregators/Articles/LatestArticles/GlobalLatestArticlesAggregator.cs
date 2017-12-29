@@ -14,13 +14,13 @@ namespace DDBMSP.Grains.Aggregators.Articles.LatestArticles
     [StorageProvider(ProviderName = "RedisStore")]
     class GlobalLatestArticlesAggregator : ScheduledPersistedGrain<List<ArticleSummary>>, IGlobalLatestArticlesAggregator
     {
-        public Task Aggregate(Immutable<ArticleSummary> articles) {
+        public Task Aggregate(ArticleSummary articles) {
             Task Aggregate() {
-                var index = State.BinarySearch(articles.Value,
+                var index = State.BinarySearch(articles,
                     Comparer<ArticleSummary>.Create((summary, articleSummary) =>
                         DateTime.Compare(articleSummary.CreationDate, summary.CreationDate)));
                 if (index < 0)
-                    State.Insert(~index, articles.Value);
+                    State.Insert(~index, articles);
                 State.RemoveRange(100, int.MaxValue);
                 return Task.CompletedTask;
             }
@@ -29,13 +29,13 @@ namespace DDBMSP.Grains.Aggregators.Articles.LatestArticles
             return SerialExecutor.AddNext(Aggregate);
         }
 
-        public Task AggregateRange(Immutable<List<ArticleSummary>> articles) {
+        public Task AggregateRange(List<ArticleSummary> articles) {
             Task AggregateRange() {
-                var index = State.BinarySearch(articles.Value.First(),
+                var index = State.BinarySearch(articles.First(),
                     Comparer<ArticleSummary>.Create((summary, articleSummary) =>
                         DateTime.Compare(articleSummary.CreationDate, summary.CreationDate)));
                 if (index < 0)
-                    State.InsertRange(~index, articles.Value);
+                    State.InsertRange(~index, articles);
                 State.RemoveRange(100, int.MaxValue);
                 return Task.CompletedTask;
             }

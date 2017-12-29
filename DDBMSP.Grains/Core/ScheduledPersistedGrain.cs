@@ -12,13 +12,12 @@ namespace DDBMSP.Grains.Core
         private bool IsSynchingSchedulded { get; set; }
 
         protected void CommitChanges() {
-            Console.WriteLine($"CommitChanges from {this.GetType().Name} #{this.GetPrimaryKeyLong()}");
             LastCommit = DateTime.Now;
             Dirty = true;
         }
         
         public override Task OnActivateAsync() {
-            var targetTicks = TimeSpan.FromMilliseconds(RadomProvider.Instance.Next(25000, 35000));
+            var targetTicks = TimeSpan.FromMilliseconds(RadomProvider.Instance.Next(1000, 5000));
             RegisterTimer(Flush, this, targetTicks, targetTicks);
             return base.OnActivateAsync();
         }
@@ -27,7 +26,6 @@ namespace DDBMSP.Grains.Core
             var elapsed = DateTime.Now.Subtract(LastCommit).TotalSeconds;
             if (!Dirty || !(elapsed > 10) || IsSynchingSchedulded) return Task.CompletedTask;
             
-            Console.WriteLine($"Synching #{this.GetPrimaryKeyLong()}. Delta {elapsed}s. Dirty: {Dirty}. Is IsSynchingSchedulded: {IsSynchingSchedulded}.");
             LastCommit = DateTime.UtcNow;
             Dirty = false;
             IsSynchingSchedulded = true;

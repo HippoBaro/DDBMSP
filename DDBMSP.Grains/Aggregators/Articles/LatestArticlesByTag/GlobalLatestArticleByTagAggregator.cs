@@ -15,17 +15,17 @@ namespace DDBMSP.Grains.Aggregators.Articles.LatestArticlesByTag
     public class GlobalLatestArticleByTagAggregator : ScheduledPersistedGrain<Dictionary<string, List<ArticleSummary>>>,
         IGlobalLatestArticleByTagAggregator
     {
-        public Task Aggregate(Immutable<string> tag, Immutable<ArticleSummary> article) {
+        public Task Aggregate(string tag, ArticleSummary article) {
             Task Aggregate() {
-                if (!State.ContainsKey(tag.Value))
-                    State.Add(tag.Value, new List<ArticleSummary>());
+                if (!State.ContainsKey(tag))
+                    State.Add(tag, new List<ArticleSummary>());
 
-                var index = State[tag.Value].BinarySearch(article.Value,
+                var index = State[tag].BinarySearch(article,
                     Comparer<ArticleSummary>.Create((summary, articleSummary) =>
                         DateTime.Compare(articleSummary.CreationDate, summary.CreationDate)));
                 if (index >= 0) return Task.CompletedTask;
-                State[tag.Value].Insert(~index, article.Value);
-                State[tag.Value].RemoveRange(100, int.MaxValue);
+                State[tag].Insert(~index, article);
+                State[tag].RemoveRange(100, int.MaxValue);
                 return Task.CompletedTask;
             }
 
@@ -33,20 +33,20 @@ namespace DDBMSP.Grains.Aggregators.Articles.LatestArticlesByTag
             return SerialExecutor.AddNext(Aggregate);
         }
 
-        public Task AggregateRange(Immutable<string> tag, Immutable<List<ArticleSummary>> articles) {
-
+        public Task AggregateRange(string tag, List<ArticleSummary> articles) {
             Task AggregateRange() {
-                if (!State.ContainsKey(tag.Value))
-                    State.Add(tag.Value, new List<ArticleSummary>());
+                if (!State.ContainsKey(tag))
+                    State.Add(tag, new List<ArticleSummary>());
 
-                foreach (var article in articles.Value) {
-                    var index = State[tag.Value].BinarySearch(article,
+                foreach (var article in articles) {
+                    var index = State[tag].BinarySearch(article,
                         Comparer<ArticleSummary>.Create((summary, articleSummary) =>
                             DateTime.Compare(articleSummary.CreationDate, summary.CreationDate)));
                     if (index >= 0) continue;
-                    State[tag.Value].Insert(~index, article);
-                    State[tag.Value].RemoveRange(100, int.MaxValue);
+                    State[tag].Insert(~index, article);
+                    State[tag].RemoveRange(100, int.MaxValue);
                 }
+                Console.WriteLine($"Finished merging for tag {tag} : {State[tag].Count} items");
                 return Task.CompletedTask;
             }
 

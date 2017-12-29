@@ -45,13 +45,13 @@ namespace DDBMSP.Grains.Aggregators.Articles
             }
 
             if (typeof(TTargetGrain) == typeof(ILocalLatestArticleByTagAggregator)) {
-                var dict = new Dictionary<string, List<ArticleState>>(articles.Count);
+                var dict = new Dictionary<string, List<ArticleState>>();
 
                 //That sucks big time
                 foreach (var summary in articles) {
                     foreach (var tag in summary.Tags) {
                         if (!dict.ContainsKey(tag))
-                            dict.Add(tag, new List<ArticleState>());
+                            dict.Add(tag, new List<ArticleState>(articles.Count));
                         dict[tag].Add(summary);
                     }
                 }

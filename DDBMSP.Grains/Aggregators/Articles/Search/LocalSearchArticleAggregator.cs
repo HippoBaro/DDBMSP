@@ -19,7 +19,7 @@ namespace DDBMSP.Grains.Aggregators.Articles.Search
 
         public override Task OnActivateAsync() {
             State = new LinkedList<ArticleState>();
-            var targetTicks = TimeSpan.FromMilliseconds(RadomProvider.Instance.Next(15000, 35000));
+            var targetTicks = TimeSpan.FromMilliseconds(RadomProvider.Instance.Next(5000, 8000));
             RegisterTimer(Report, this, targetTicks, targetTicks);
             return base.OnActivateAsync();
         }
@@ -36,18 +36,17 @@ namespace DDBMSP.Grains.Aggregators.Articles.Search
             return Task.CompletedTask;
         }
 
-        private async Task Report(object _) {
-            if (_newSinceLastReport == 0) return;
+        private Task Report(object _) {
+            if (!(State.Count > 0)) return Task.CompletedTask;
 
             var aggregator = GrainFactory.GetGrain<IGlobalSearchArticleAggregator>(0);
-            await aggregator.AggregateRange(
+            var task = aggregator.AggregateRange(
                 State.Take(_newSinceLastReport)
                     .Select(state => state.Summarize())
-                    .ToList()
-                    .AsImmutable());
+                    .ToList());
             _newSinceLastReport = 0;
-
             State.Clear();
+            return task;
         }
     }
 }

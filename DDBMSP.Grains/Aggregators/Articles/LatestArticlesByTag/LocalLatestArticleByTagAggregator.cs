@@ -12,13 +12,11 @@ using Orleans.Concurrency;
 namespace DDBMSP.Grains.Aggregators.Articles.LatestArticlesByTag
 {
     [StatelessWorker]
-    public class LocalLatestArticleByTagAggregator : Grain<CircularFifoStack<ArticleState>>, ILocalLatestArticleByTagAggregator
-    {
-        private int _newSinceLastReport;
-        
+    public class LocalLatestArticleByTagAggregator : Grain<List<ArticleState>>, ILocalLatestArticleByTagAggregator
+    {   
         public override Task OnActivateAsync()
         {
-            State = new CircularFifoStack<ArticleState>();
+            State = new List<ArticleState>();
             var targetTicks = TimeSpan.FromMilliseconds(RadomProvider.Instance.Next(1000, 5000));
             RegisterTimer(Report, this, targetTicks, targetTicks);
             return base.OnActivateAsync();
@@ -26,27 +24,36 @@ namespace DDBMSP.Grains.Aggregators.Articles.LatestArticlesByTag
         
         public Task Aggregate(ArticleState article)
         {
-            State.Push(article);
-            ++_newSinceLastReport;
+            var index = State.BinarySearch(article,
+                Comparer<ArticleState>.Create((summary, articleSummary) =>
+                    DateTime.Compare(articleSummary.CreationDate, summary.CreationDate)));
+            if (index >= 0) return Task.CompletedTask;
+            State.Insert(~index, article);
+            State.RemoveRange(100, int.MaxValue);
             return Task.CompletedTask;
         }
 
         public Task AggregateRange(List<ArticleState> articles) {
-            State.Push(articles);
-            _newSinceLastReport += articles.Count;
+            foreach (var article in articles) {
+                var index = State.BinarySearch(article,
+                    Comparer<ArticleState>.Create((summary, articleSummary) =>
+                        DateTime.Compare(articleSummary.CreationDate, summary.CreationDate)));
+                if (index >= 0) continue;
+                State.Insert(~index, article);
+                State.RemoveRange(100, int.MaxValue);
+            }
             return Task.CompletedTask;
         }
 
-        private async Task Report(object _)
+        private Task Report(object _)
         {
-            if (_newSinceLastReport == 0) return;
+            if (!(State.Count > 0)) return Task.CompletedTask;
+            
             var aggregator = GrainFactory.GetGrain<IGlobalLatestArticleByTagAggregator>(0);
-            await aggregator.AggregateRange(this.GetPrimaryKeyString().AsImmutable(),
-                State.Take(_newSinceLastReport)
-                    .Select(state => state.Summarize())
-                    .ToList()
-                    .AsImmutable());
-            _newSinceLastReport = 0;
+            var task = aggregator.AggregateRange(this.GetPrimaryKeyString(),
+                State.Take(100).Select(state => state.Summarize()).ToList());
+            State.Clear();
+            return task;
         }
     }
 }

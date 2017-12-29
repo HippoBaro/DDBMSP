@@ -34,15 +34,16 @@ namespace DDBMSP.Grains.Aggregators.Articles.LatestArticles
             return Task.CompletedTask;
         }
 
-        private async Task Report(object _) {
-            if (_newSinceLastReport == 0) return;
+        private Task Report(object _) {
+            if (!(State.Count > 0)) return Task.CompletedTask;
             var aggregator = GrainFactory.GetGrain<IGlobalLatestArticlesAggregator>(0);
-            await aggregator.AggregateRange(
+            var task = aggregator.AggregateRange(
                 State.Take(_newSinceLastReport)
                     .Select(state => state.Summarize())
-                    .ToList()
-                    .AsImmutable());
+                    .ToList());
             _newSinceLastReport = 0;
+            State.Clear();
+            return task;
         }
     }
 }

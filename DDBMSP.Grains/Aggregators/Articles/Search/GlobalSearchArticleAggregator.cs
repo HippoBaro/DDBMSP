@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DDBMSP.Entities.Article.Components;
@@ -41,14 +42,14 @@ namespace DDBMSP.Grains.Aggregators.Articles.Search
             return base.OnActivateAsync();
         }
 
-        public Task Aggregate(Immutable<ArticleSummary> article) {
+        public Task Aggregate(ArticleSummary article) {
             Task Aggregate() {
                 var doc = new Document {
-                    new TextField("abstract", article.Value.Abstract, Field.Store.YES),
-                    new TextField("title", article.Value.Title, Field.Store.YES),
-                    new StringField("tag", article.Value.Tags.First(), Field.Store.YES),
-                    new TextField("author", article.Value.Author.Name, Field.Store.YES),
-                    new TextField("id", article.Value.Id.ToString(), Field.Store.YES)
+                    new TextField("abstract", article.Abstract, Field.Store.YES),
+                    new TextField("title", article.Title, Field.Store.YES),
+                    new StringField("tag", article.Tags.First(), Field.Store.YES),
+                    new TextField("author", article.Author.Name, Field.Store.YES),
+                    new TextField("id", article.Id.ToString(), Field.Store.YES)
                 };
                 Writer.AddDocument(doc);
                 Writer.Commit();
@@ -59,9 +60,9 @@ namespace DDBMSP.Grains.Aggregators.Articles.Search
             return SerialExecutor.AddNext(Aggregate);
         }
 
-        public Task AggregateRange(Immutable<List<ArticleSummary>> articles) {
+        public Task AggregateRange(List<ArticleSummary> articles) {
             Task AggregateRange() {
-                foreach (var article in articles.Value) {
+                foreach (var article in articles) {
                     var doc = new Document {
                         new TextField("abstract", article.Abstract, Field.Store.YES),
                         new TextField("title", article.Title, Field.Store.YES),

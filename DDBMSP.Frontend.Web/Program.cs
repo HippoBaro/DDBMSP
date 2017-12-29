@@ -14,7 +14,7 @@ namespace DDBMSP.Frontend.Web
 {
     public static class Constants
     {
-        public const string BlogUrl = "http://localhost:5000";
+        public const string BlogUrl = "";
         public const string BlogTitle = "DDBMSP — Project";
         public const string BlogDescription = "description";
         public const string BlogCoverImage = "https://demo.ghost.io/content/images/2017/07/blog-cover.jpg";

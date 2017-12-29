@@ -4,10 +4,10 @@
     <div class="site-nav-left">
         @if (Constants.CurrentPage != "Index") {
             if (Constants.BlogLogo != null) {
-                <a class="site-nav-logo" href="@Constants.BlogUrl"><img src="@Constants.BlogLogo" alt="@Constants.BlogTitle"/></a>
+                <a class="site-nav-logo" href="/"><img src="@Constants.BlogLogo" alt="@Constants.BlogTitle"/></a>
             }
             else {
-                <a class="site-nav-logo" href="@Constants.BlogUrl">@Constants.BlogTitle</a>
+                <a class="site-nav-logo" href="/">@Constants.BlogTitle</a>
             }
         }
         @if (ViewData["BlogNavigation"] != null) {

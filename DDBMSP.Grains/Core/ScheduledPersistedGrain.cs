@@ -7,13 +7,10 @@ namespace DDBMSP.Grains.Core
 {
     public class ScheduledPersistedGrain<T> : SingleWriterMultipleReadersGrain<T> where T : new()
     {
-        private bool HasChanged { get; set; }
-        private DateTime LastSynched { get; set; } = DateTime.UtcNow;
         private DateTime LastCommit { get; set; } = DateTime.MinValue;
 
         protected void CommitChanges() {
-            HasChanged = true;
-            LastCommit = DateTime.UtcNow;
+            LastCommit = DateTime.Now;
         }
         
         public override Task OnActivateAsync() {
@@ -23,16 +20,12 @@ namespace DDBMSP.Grains.Core
         }
         
         private Task Flush(object _) {
-            if (!HasChanged) return Task.CompletedTask;
-            if ((LastCommit - LastSynched).TotalSeconds > 10) {
-                Console.WriteLine($"Synching #{this.GetPrimaryKeyLong()}. Last was {LastCommit:T} - {LastSynched:T}. Delta {(LastCommit - LastSynched).TotalSeconds}");
-                LastSynched = LastCommit = DateTime.UtcNow;
-                return SerialExecutor.AddNext(async () => {
-                    await WriteStateAsync();
-                    HasChanged = false;
-                });
-            }
-            return Task.CompletedTask;
+            var elapsed = DateTime.Now.Subtract(LastCommit).TotalSeconds;
+            if (!(elapsed > 10)) return Task.CompletedTask;
+            
+            Console.WriteLine($"Synching #{this.GetPrimaryKeyLong()}. Delta {elapsed}s");
+            LastCommit = DateTime.UtcNow;
+            return SerialExecutor.AddNext(WriteStateAsync);
         }
     }
 }

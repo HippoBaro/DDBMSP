@@ -14,8 +14,6 @@ namespace DDBMSP.Grains.Aggregators.Articles.LatestArticles
     [StorageProvider(ProviderName = "RedisStore")]
     class GlobalLatestArticlesAggregator : ScheduledPersistedGrain<List<ArticleSummary>>, IGlobalLatestArticlesAggregator
     {
-        private bool HasChanged { get; set; }
-        
         public Task Aggregate(Immutable<ArticleSummary> articles) {
             Task Aggregate() {
                 var index = State.BinarySearch(articles.Value,

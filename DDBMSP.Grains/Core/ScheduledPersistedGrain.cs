@@ -16,10 +16,10 @@ namespace DDBMSP.Grains.Core
             LastCommit = DateTime.UtcNow;
         }
         
-        public override async Task OnActivateAsync() {
+        public override Task OnActivateAsync() {
             var targetTicks = TimeSpan.FromMilliseconds(RadomProvider.Instance.Next(25000, 35000));
             RegisterTimer(Flush, this, targetTicks, targetTicks);
-            await base.OnActivateAsync();
+            return base.OnActivateAsync();
         }
         
         private Task Flush(object _) {

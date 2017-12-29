@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using DDBMSP.Entities;
+ using DDBMSP.Common;
+ using DDBMSP.Entities;
 using DDBMSP.Entities.Article;
 using DDBMSP.Entities.User;
 using DDBMSP.Entities.UserActivity;
@@ -16,12 +17,19 @@ namespace DDBMSP.Grains.Worker
 {
     [StatelessWorker]
     [Reentrant]
-    public class ArticleDispatcher : Grain, IArticleDispatcherWorker
+    public class ArticleDispatcher : Grain<List<StorageUnit>>, IArticleDispatcherWorker
     {
-        public Task DispatchStorageUnit(Immutable<StorageUnit> unit) {
-            var articles = unit.Value.Articles;
-            var author = unit.Value.User;
-            var activities = unit.Value.Activities;
+        public override Task OnActivateAsync() {
+            State = new List<StorageUnit>(1000);
+            var targetTicks = TimeSpan.FromMilliseconds(RadomProvider.Instance.Next(10000, 20000));
+            RegisterTimer(Flush, this, targetTicks, targetTicks);
+            return base.OnActivateAsync();
+        }
+
+        private Task DispatchStorageUnit(StorageUnit unit) {
+            var articles = unit.Articles;
+            var author = unit.User;
+            var activities = unit.Activities;
             
             var dictArticles = GrainFactory.GetGrain<IDistributedHashTable<Guid, ArticleState>>(0);
             var dictArticlesRange = new Dictionary<Guid, ArticleState>(articles.Count);
@@ -43,9 +51,10 @@ namespace DDBMSP.Grains.Worker
         }
         
         public Task DispatchStorageUnits(Immutable<List<StorageUnit>> units) {
-            var tasks = new List<Task>(units.Value.Count);
-            tasks.AddRange(units.Value.Select(unit => DispatchStorageUnit(unit.AsImmutable())));
-            return Task.WhenAll(tasks);
+            State.AddRange(units.Value);
+            return Task.CompletedTask;
         }
+        
+        private Task Flush(object _) => Task.WhenAll(State.Select(DispatchStorageUnit));
     }
 }

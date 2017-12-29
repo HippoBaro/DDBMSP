@@ -85,7 +85,7 @@ namespace DDBMSP.CLI
             
             var report = new Task(async () => {
                 await Task.Delay(1000);
-                Console.WriteLine($"Uploading... {_ops} ops/sec, {_unit * BytesPerUnit / 1000000}MB/s — Latency: Min = {_latmin.Min()}ms, Max = {_latmax.Max()}ms, Average = {_latav.Average():F3}ms, 95% = {Percentile(_lat95, .95):F3}ms, 99% = {Percentile(_lat99, .99):F3}ms, 99.9% = {Percentile(_lat999, .999):F3}ms");
+                Console.WriteLine($"Uploading... {_ops} op/s, {_unit * BytesPerUnit / 1000000} MB/s — Latency: Min = {_latmin.Min()}ms, Max = {_latmax.Max()}ms, Average = {_latav.Average():F3}ms, 95% = {Percentile(_lat95, .95):F3}ms, 99% = {Percentile(_lat99, .99):F3}ms, 99.9% = {Percentile(_lat999, .999):F3}ms");
                 _ops = 0;
                 _unit = 0;
             }, TaskCreationOptions.AttachedToParent | TaskCreationOptions.LongRunning);
@@ -101,7 +101,7 @@ namespace DDBMSP.CLI
                 tasks.Add(Upload(sublists[i], i, clients[i]));
             }
 
-            await Task.WhenAny(Task.WhenAll(tasks), report);
+            await Task.WhenAny(report, Task.WhenAll(tasks));
         }
 
         private int _ops;

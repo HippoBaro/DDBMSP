@@ -83,8 +83,8 @@ namespace DDBMSP.CLI
             _lat = new double[sublists.Count];
             _tunit = new int[sublists.Count];
 
-            var ops = new List<int>();
-            var tp = new List<int>();
+            var ops = new List<int>(Units.Count);
+            var tp = new List<int>(Units.Count);
             var report = new Thread(() => {
                 var t = Stopwatch.StartNew();
                 while (true) {
@@ -92,7 +92,7 @@ namespace DDBMSP.CLI
                     ops.Add(_ops);
                     tp.Add(_unit * BytesPerUnit / 1000000);
                     
-                    Console.Write($"Uploading... [{t.Elapsed.Seconds:00}s] {(int)ops.Average()} op/s, {(int)tp.Average()} MB/s — Latency: Min = {_latmin.Min()}ms, Max = {_latmax.Max()}ms, Average = {_latav.Average():F3}ms, 95% = {Percentile(_lat95, .95):F3}ms, 99% = {Percentile(_lat99, .99):F3}ms, 99.9% = {Percentile(_lat999, .999):F3}ms      \r");
+                    Console.Write($"Uploading... [{t.Elapsed.TotalSeconds:0000}s] {(int)ops.Average()} op/s, {(int)tp.Average()} MB/s — Latency: Min = {_latmin.Min()}ms, Max = {_latmax.Max()}ms, Average = {_latav.Average():F3}ms, 95% = {Percentile(_lat95, .95):F3}ms, 99% = {Percentile(_lat99, .99):F3}ms, 99.9% = {Percentile(_lat999, .999):F3}ms      \r");
                     _ops = 0;
                     _unit = 0;
                 }

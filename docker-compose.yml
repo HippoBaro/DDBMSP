@@ -1,10 +1,12 @@
-version: '2.2'
+version: '3.4'
 
 services:
 
   consul:
     image: consul:latest
     command: agent -server -bootstrap -client=0.0.0.0 -bind=127.0.0.1
+    networks:
+      ddmsp-internal:
     ports:
       - "8500:8500"
     
@@ -16,18 +18,18 @@ services:
     depends_on:
       - consul
       - storage
+    networks:
+      ddmsp-internal:
     ports:
       - "8080"
-    links:
-      - consul
-    cpu_count: 2
-      
       
   storage:
     image: redis:alpine
     command: --dbfilename dump.rdb --dir /data 
     volumes:
       - ../data:/data
+    networks:
+      ddmsp-internal:
     
   frontendweb:
     image: frontendweb
@@ -36,11 +38,13 @@ services:
       dockerfile: Dockerfile-Frontend-Web
     depends_on:
       - silo
+    networks:
+      ddmsp-internal:
     ports:
-      - "5000:80"
-    links:
-      - silo
-      - consul
+      - target: "5000"
+        published: "80"
+        protocol: tcp
+        mode: ingress
         
   cli:
       image: cli
@@ -49,9 +53,10 @@ services:
         dockerfile: Dockerfile-CLI
       depends_on:
         - silo
+      networks:
+        ddmsp-internal:
       volumes:
         - ../exportcli:/exportcli
-      links:
-        - silo
-        - consul
-      cpu_count: 2
+
+networks:
+  ddmsp-internal:

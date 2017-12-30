@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Orleans.Runtime.Configuration;
 using Orleans.Runtime.Host;
 using Orleans.Serialization;
+using OrleansDashboard;
 
 namespace DDBMSP.Silo
 {
@@ -26,31 +27,34 @@ namespace DDBMSP.Silo
         private static void StartSilo()
         {
             SiloHost = new SiloHost(Dns.GetHostName(), new FileInfo("OrleansConfiguration.xml"));
+
+            if (Environment.GetEnvironmentVariable("LAUCHING_ENV") == "LOCALHOST") {
+                SiloHost.Config = ClusterConfiguration.LocalhostPrimarySilo();
+                SiloHost.Config.AddMemoryStorageProvider("RedisStore");
+            }
+            else {
+                SiloHost.Config.Globals.MembershipTableAssembly = typeof(Orleans.ConsulUtils.LegacyConsulGatewayListProviderConfigurator).Assembly.FullName;
+                var consulIps = Dns.GetHostAddressesAsync("consul").Result;
+                SiloHost.Config.Globals.DataConnectionString = $"http://{consulIps.First()}:8500";
+                SiloHost.Config.Globals.LivenessType = GlobalConfiguration.LivenessProviderType.Custom;
+                
+                var ips = Dns.GetHostAddressesAsync(Dns.GetHostName()).Result;
+                SiloHost.Config.Defaults.HostNameOrIPAddress = ips.FirstOrDefault()?.ToString();
+                
+                SiloHost.Config.Globals.RegisterStorageProvider<Orleans.StorageProviders.RedisStorage.RedisStorage>(
+                    "RedisStore", new Dictionary<string, string>() {
+                        { "RedisConnectionString", "storage" },
+                        { "UseJsonFormat", "false" }
+                    });
+                SiloHost.Config.Globals.RegisterDashboard();
+            }
             
-            SiloHost.Config.Globals.MembershipTableAssembly = typeof(Orleans.ConsulUtils.LegacyConsulGatewayListProviderConfigurator).Assembly.FullName;
             
-            var assembly = typeof(Orleans.ConsulUtils.LegacyConsulGatewayListProviderConfigurator).Assembly.FullName;
-            var consulIps = Dns.GetHostAddressesAsync("consul").Result;
-            
-            SiloHost.Config.Globals.DataConnectionString = $"http://{consulIps.First()}:8500";
             SiloHost.Config.Globals.ClusterId = "DDBMSP-Cluster";
-            SiloHost.Config.Globals.LivenessType = GlobalConfiguration.LivenessProviderType.Custom;
-            SiloHost.Config.Globals.MembershipTableAssembly = assembly;
             SiloHost.Config.Globals.ReminderServiceType = GlobalConfiguration.ReminderServiceProviderType.Disabled;
-            
-            var ips = Dns.GetHostAddressesAsync(Dns.GetHostName()).Result;
-            SiloHost.Config.Defaults.HostNameOrIPAddress = ips.FirstOrDefault()?.ToString();
-            
             SiloHost.Config.Globals.SerializationProviders.Add(typeof(ProtobufSerializer).GetTypeInfo());
-
-            SiloHost.Config.Globals.RegisterStorageProvider<Orleans.StorageProviders.RedisStorage.RedisStorage>(
-                "RedisStore", new Dictionary<string, string>() {
-                    { "RedisConnectionString", "storage" },
-                    { "UseJsonFormat", "false" }
-                });
-
             SiloHost.InitializeOrleansSilo();
-            SiloHost.StartOrleansSilo();
+            SiloHost.StartOrleansSilo(false);
         }
     }
 }

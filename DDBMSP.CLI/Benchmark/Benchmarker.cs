@@ -38,7 +38,6 @@ namespace DDBMSP.CLI.Benchmark
             var latencies = new List<long>(100000);
             
             var t = Stopwatch.StartNew();
-
             while (t.Elapsed < TimeToLive) {
                 var unit = Units[RandomGenerationData.Random.Next(Units.Count)];
                 var lat = Stopwatch.StartNew();
@@ -46,19 +45,43 @@ namespace DDBMSP.CLI.Benchmark
                     case 0:
                     {
                         var guid = unit.Articles[RandomGenerationData.Random.Next(unit.Articles.Count)].Id;
-                        await articles.Get(guid.AsImmutable());
+                        try {
+                            
+                            await articles.Get(guid.AsImmutable());
+                        }
+                        catch (Exception e) {
+                            Console.WriteLine($"Error upon access to ressource {guid} (ArticleState)");
+                            Console.WriteLine(e);
+                            throw;
+                        }
+                        
                         break;
                     }
                     case 1:
                     {
                         var guid = unit.User.Id;
-                        await user.Get(guid.AsImmutable());
+                        try {
+                            await user.Get(guid.AsImmutable());
+                        }
+                        catch (Exception e) {
+                            Console.WriteLine($"Error upon access to ressource {guid} (UserState)");
+                            Console.WriteLine(e);
+                            throw;
+                        }
+                        
                         break;
                     }
                     case 2:
                     {
                         var guid = unit.Articles[RandomGenerationData.Random.Next(unit.Articles.Count)].Id;
-                        await activities.Get(guid.AsImmutable());
+                        try {
+                            await activities.Get(guid.AsImmutable());
+                        }
+                        catch (Exception e) {
+                            Console.WriteLine($"Error upon access to ressource {guid} (Activities)");
+                            Console.WriteLine(e);
+                            throw;
+                        }
                         break;
                     }
                     default:

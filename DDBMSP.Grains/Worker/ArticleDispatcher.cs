@@ -21,7 +21,7 @@ namespace DDBMSP.Grains.Worker
     {
         public override Task OnActivateAsync() {
             State = new List<StorageUnit>(1000);
-            var targetTicks = TimeSpan.FromMilliseconds(RadomProvider.Instance.Next(5000, 10000));
+            var targetTicks = TimeSpan.FromMilliseconds(RadomProvider.Instance.Next(30000, 45000));
             RegisterTimer(Flush, this, targetTicks, targetTicks);
             return base.OnActivateAsync();
         }
@@ -59,13 +59,16 @@ namespace DDBMSP.Grains.Worker
         
         public Task DispatchStorageUnits(Immutable<List<StorageUnit>> units) {
             State.AddRange(units.Value);
+            //Console.WriteLine($"{this.GetGrainIdentity().IdentityString}: Caching {units.Value.Count} items");
             return Task.CompletedTask;
         }
         
-        private async Task Flush(object _) {
-            if (State.Count == 0) return;
-            await DispatchStorageUnit(State);
+        private Task Flush(object _) {
+            if (State.Count == 0) return Task.CompletedTask;
+            //Console.WriteLine($"{this.GetGrainIdentity().IdentityString}: Flushing {State.Count} items");
+            var ret = DispatchStorageUnit(State);
             State.Clear();
+            return ret;
         }
     }
 }

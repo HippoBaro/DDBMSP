@@ -23,18 +23,22 @@ namespace DDBMSP.CLI.Core
         protected ConnectedTool(IClusterClient client) => _clusterClient = client;
 
         protected Task<IClusterClient> ConnectClient() {
-            var assembly = typeof(Orleans.ConsulUtils.LegacyConsulGatewayListProviderConfigurator).Assembly.FullName;
-            var consulIps = Dns.GetHostAddressesAsync("consul").Result;
-            
-            var config = new ClientConfiguration {
-                GatewayProvider = ClientConfiguration.GatewayProviderType.Custom,
-                ResponseTimeout = TimeSpan.FromMinutes(5),
-                ClusterId = "DDBMSP-Cluster",
-                CustomGatewayProviderAssemblyName = assembly,
-                DataConnectionString = $"http://{consulIps.First()}:8500",
-                PropagateActivityId = true
-            };
 
+            var config = new ClientConfiguration();
+            if (Environment.GetEnvironmentVariable("LAUCHING_ENV") == "LOCALHOST") {
+                config = ClientConfiguration.LocalhostSilo();
+                config.ResponseTimeout = TimeSpan.FromMinutes(5);
+            }
+            else {
+                var assembly = typeof(Orleans.ConsulUtils.LegacyConsulGatewayListProviderConfigurator).Assembly.FullName;
+                var consulIps = Dns.GetHostAddressesAsync("consul").Result;
+                config.GatewayProvider = ClientConfiguration.GatewayProviderType.Custom;
+                config.ResponseTimeout = TimeSpan.FromMinutes(5);
+                config.ClusterId = "DDBMSP-Cluster";
+                config.CustomGatewayProviderAssemblyName = assembly;
+                config.DataConnectionString = $"http://{consulIps.First()}:8500";
+                config.PropagateActivityId = true;
+            }
             config.SerializationProviders.Add(typeof(ProtobufSerializer).GetTypeInfo());
 
             try {

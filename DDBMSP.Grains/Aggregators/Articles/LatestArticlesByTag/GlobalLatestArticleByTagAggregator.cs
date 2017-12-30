@@ -46,7 +46,6 @@ namespace DDBMSP.Grains.Aggregators.Articles.LatestArticlesByTag
                     State[tag].Insert(~index, article);
                     State[tag].RemoveRange(100, int.MaxValue);
                 }
-                Console.WriteLine($"Finished merging for tag {tag} : {State[tag].Count} items");
                 return Task.CompletedTask;
             }
 

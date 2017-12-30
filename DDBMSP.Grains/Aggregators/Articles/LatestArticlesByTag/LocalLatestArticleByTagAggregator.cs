@@ -17,7 +17,7 @@ namespace DDBMSP.Grains.Aggregators.Articles.LatestArticlesByTag
         public override Task OnActivateAsync()
         {
             State = new List<ArticleState>();
-            var targetTicks = TimeSpan.FromMilliseconds(RadomProvider.Instance.Next(1000, 5000));
+            var targetTicks = TimeSpan.FromMilliseconds(RadomProvider.Instance.Next(10000, 10000));
             RegisterTimer(Report, this, targetTicks, targetTicks);
             return base.OnActivateAsync();
         }

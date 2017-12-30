@@ -20,6 +20,8 @@ services:
       - storage
     networks:
       ddmsp-internal:
+    ports:
+      - "8080"
       
   storage:
     image: redis:alpine
@@ -40,7 +42,7 @@ services:
       ddmsp-internal:
     ports:
       - target: "5000"
-        published: "8080"
+        published: "80"
         protocol: tcp
         mode: ingress
         

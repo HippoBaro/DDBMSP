@@ -21,7 +21,7 @@ namespace DDBMSP.Grains.Worker
     {
         public override Task OnActivateAsync() {
             State = new List<StorageUnit>(1000);
-            var targetTicks = TimeSpan.FromMilliseconds(RadomProvider.Instance.Next(30000, 45000));
+            var targetTicks = TimeSpan.FromMilliseconds(RadomProvider.Instance.Next(5000, 10000));
             RegisterTimer(Flush, this, targetTicks, targetTicks);
             return base.OnActivateAsync();
         }

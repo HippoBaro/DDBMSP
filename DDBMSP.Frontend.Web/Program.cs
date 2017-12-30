@@ -25,7 +25,9 @@ namespace DDBMSP.Frontend.Web
     
     public static class Program
     {
-        public static Task Main(string[] args) {
+        public static async Task Main(string[] args) {
+            await Task.Delay(15000);
+            
             
             var config = new ClientConfiguration();
             if (Environment.GetEnvironmentVariable("LAUCHING_ENV") == "LOCALHOST") {
@@ -36,7 +38,7 @@ namespace DDBMSP.Frontend.Web
                 var assembly = typeof(Orleans.ConsulUtils.LegacyConsulGatewayListProviderConfigurator).Assembly.FullName;
                 var consulIps = Dns.GetHostAddressesAsync("consul").Result;
                 config.GatewayProvider = ClientConfiguration.GatewayProviderType.Custom;
-                config.ResponseTimeout = TimeSpan.FromSeconds(5);
+                config.ResponseTimeout = TimeSpan.FromSeconds(20);
                 config.ClusterId = "DDBMSP-Cluster";
                 config.CustomGatewayProviderAssemblyName = assembly;
                 config.DataConnectionString = $"http://{consulIps.First()}:8500";
@@ -51,7 +53,6 @@ namespace DDBMSP.Frontend.Web
             };
             
             BuildWebHost(args).Run();
-            return Task.CompletedTask;
         }
 
         private static IWebHost BuildWebHost(string[] args) =>

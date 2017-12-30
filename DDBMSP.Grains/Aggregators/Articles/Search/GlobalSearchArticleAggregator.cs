@@ -21,6 +21,8 @@ namespace DDBMSP.Grains.Aggregators.Articles.Search
     [StorageProvider(ProviderName = "RedisStore")]
     class GlobalSearchArticleAggregator : ScheduledPersistedGrain<RAMDirectory>, IGlobalSearchArticleAggregator
     {
+        public bool Indexing { get; set; }
+        
         private IndexWriter Writer { get; set; }
 
         private IndexSearcher _searcher;
@@ -44,6 +46,7 @@ namespace DDBMSP.Grains.Aggregators.Articles.Search
 
         public Task Aggregate(ArticleSummary article) {
             Task Aggregate() {
+                Indexing = true;
                 var doc = new Document {
                     new TextField("abstract", article.Abstract, Field.Store.YES),
                     new TextField("title", article.Title, Field.Store.YES),
@@ -53,6 +56,7 @@ namespace DDBMSP.Grains.Aggregators.Articles.Search
                 };
                 Writer.AddDocument(doc);
                 Writer.Commit();
+                Indexing = false;
                 return Task.CompletedTask;
             }
 
@@ -62,6 +66,7 @@ namespace DDBMSP.Grains.Aggregators.Articles.Search
 
         public Task AggregateRange(List<ArticleSummary> articles) {
             Task AggregateRange() {
+                Indexing = true;
                 foreach (var article in articles) {
                     var doc = new Document {
                         new TextField("abstract", article.Abstract, Field.Store.YES),
@@ -73,6 +78,7 @@ namespace DDBMSP.Grains.Aggregators.Articles.Search
                     Writer.AddDocument(doc);
                 }
                 Writer.Commit();
+                Indexing = false;
                 return Task.CompletedTask;
             }
 
@@ -81,6 +87,9 @@ namespace DDBMSP.Grains.Aggregators.Articles.Search
         }
 
         public Task<Immutable<List<Dictionary<string, string>>>> GetSearchResult(Immutable<string> keywords) {
+            if (Indexing) {
+                return Task.FromResult(new List<Dictionary<string, string>>().AsImmutable());
+            }
             var srch = keywords.Value.ToLower();
             var queryAnd = new BooleanQuery {
                 {

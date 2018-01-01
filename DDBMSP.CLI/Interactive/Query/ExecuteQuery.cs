@@ -11,7 +11,7 @@ using Orleans.Concurrency;
 
 namespace DDBMSP.CLI.Interactive.Query
 {
-    [Verb("query exec", HelpText = "Create, compile and commit a new named query to the cluster")]
+    [Verb("query exec", HelpText = "Run an existing named query against the cluster and pull back the result")]
     public class ExecuteQuery
     {
         [Option('n', "name", Required = true, HelpText = "Name of the to-be-executed query")]

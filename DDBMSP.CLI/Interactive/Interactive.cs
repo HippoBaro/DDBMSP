@@ -33,15 +33,14 @@ namespace DDBMSP.CLI.Interactive
             
             while (true) {
                 var shouldInterpret = true;
-                var line = ReadLine.Read($"{ClusterClient.Configuration.DNSHostName}> ");
+                Console.Write($"{ClusterClient.Configuration.DNSHostName}> ");
+                var line = Console.ReadLine();
                 if (string.IsNullOrWhiteSpace(line)) {
                     Console.ReadKey(true);
                     continue;
                 }
                 
-                ReadLine.AddHistory(line);
-                
-                if (line == "query commit" || line == "query commit") {
+                if (line == "query commit" || line == "query exec") {
                     line = line.Insert(0, "\"");
                     line = line.Insert(line.Length, "\"");
                 }

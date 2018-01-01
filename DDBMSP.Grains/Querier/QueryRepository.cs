@@ -42,6 +42,8 @@ namespace DDBMSP.Grains.Querier
             
             newquery -n testActivities -r Article -t "IEnumerable<UserActivityState>" -s "Elements.Select(list => list.Where(state => state.User.Name.Contains("Iachin")))" -a "Selected.SelectMany(d => d).ToList()"
             
+            query commit -n ActivitiesCount -r Activity -t int -s "Elements.Sum(e => e.Count())" -a "Selected.Sum()"
+            
             */
 
             return SerialExecutor.AddNext(() => {

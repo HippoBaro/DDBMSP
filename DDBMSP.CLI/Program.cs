@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using CommandLine;
 using DDBMSP.CLI.Benchmark;
 
@@ -9,6 +10,8 @@ namespace DDBMSP.CLI
         public static int ProgressBarRefreshDelay { get; set; } = 1000;
         
         private static int Main(string[] args) {
+            if (!args.Any())
+                return 0;
             return Parser.Default.ParseArguments<Generator, Populator, Interactive.Interactive, StorageStats, Benchmarker>(args)
                 .MapResult(
                     (Generator opts) => opts.Run(),

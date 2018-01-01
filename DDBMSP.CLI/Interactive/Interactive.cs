@@ -33,7 +33,7 @@ namespace DDBMSP.CLI.Interactive
             
             while (true) {
                 var shouldInterpret = true;
-                var line = ReadLine.Read("127.0.0.1> ");
+                var line = ReadLine.Read($"{ClusterClient.Configuration.DNSHostName}> ");
                 if (string.IsNullOrWhiteSpace(line)) {
                     Console.ReadKey(true);
                     continue;

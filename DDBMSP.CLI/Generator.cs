@@ -46,20 +46,20 @@ namespace DDBMSP.CLI
         public int Run() {
             Init();
             
-            Console.WriteLine($"Starting to generate {UserNumber} users and {ArticlesNumber} articles. Total: {UserNumber + ArticlesNumber} elements");
+            Console.WriteLine($"Starting to generate {UserNumber} users, {ArticlesNumber} articles and {ActivitiesNumber} activities. Total: {UserNumber + ArticlesNumber + ActivitiesNumber} elements");
             Console.WriteLine($"Output: {Output}");
             
-            Console.WriteLine("Generating...\r");
+            Console.Write("Generating...\r");
             GenerateUsers();
             GenerateArticles();
             GenerateComments();
             Console.WriteLine("Generating... Done.");
 
-            Console.WriteLine("Compaction...\r");
+            Console.Write("Compaction...\r");
             GenerateUnits();
             Console.WriteLine("Compaction... Done.");
             
-            Console.WriteLine("Writing file...\r");
+            Console.Write("Writing file...\r");
             DumpData();
             Console.WriteLine("Writing file... Done.");
             
@@ -144,7 +144,7 @@ namespace DDBMSP.CLI
                 var topic = GetTopics();
                 var res = new ArticleState {
                     Id = Guid.NewGuid(),
-                    CreationDate = DateTime.Now.AddHours(-RandomGenerationData.Random.Next(1000)),
+                    CreationDate = DateTime.Now.AddHours(-RandomGenerationData.Random.Next(10000)),
                     Abstract = RandomGenerationData.ExcerptsList[
                         RandomGenerationData.Random.Next(RandomGenerationData.ExcerptsList.Count)],
                     Content = RandomGenerationData.Contents[

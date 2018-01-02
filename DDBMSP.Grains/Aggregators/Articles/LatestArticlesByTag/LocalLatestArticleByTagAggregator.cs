@@ -18,7 +18,7 @@ namespace DDBMSP.Grains.Aggregators.Articles.LatestArticlesByTag
         public override Task OnActivateAsync()
         {
             State = new OrderedList<ArticleState>();
-            var targetTicks = TimeSpan.FromMilliseconds(RadomProvider.Instance.Next(10000, 10000));
+            var targetTicks = TimeSpan.FromMilliseconds(RadomProvider.Instance.Next(3000, 10000));
             RegisterTimer(Report, this, targetTicks, targetTicks);
             return base.OnActivateAsync();
         }
@@ -38,7 +38,7 @@ namespace DDBMSP.Grains.Aggregators.Articles.LatestArticlesByTag
         {
             if (!(State.Count > 0)) return Task.CompletedTask;
             
-            State.Sort((summary, articleSummary) => DateTime.Compare(summary.CreationDate, articleSummary.CreationDate));
+            State.Sort((summary, articleSummary) => DateTime.Compare(articleSummary.CreationDate, summary.CreationDate));
             var aggregator = GrainFactory.GetGrain<IGlobalLatestArticleByTagAggregator>(0);
             var task = aggregator.AggregateRange(this.GetPrimaryKeyString(),
                 State.Take(100).Select(state => state.Summarize()).ToList());

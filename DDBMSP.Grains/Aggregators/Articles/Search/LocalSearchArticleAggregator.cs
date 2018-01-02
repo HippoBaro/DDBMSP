@@ -19,7 +19,7 @@ namespace DDBMSP.Grains.Aggregators.Articles.Search
 
         public override Task OnActivateAsync() {
             State = new LinkedList<ArticleState>();
-            var targetTicks = TimeSpan.FromMilliseconds(RadomProvider.Instance.Next(5000, 8000));
+            var targetTicks = TimeSpan.FromMilliseconds(RadomProvider.Instance.Next(5000, 10000));
             RegisterTimer(Report, this, targetTicks, targetTicks);
             return base.OnActivateAsync();
         }

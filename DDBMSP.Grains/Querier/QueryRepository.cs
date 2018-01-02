@@ -1,14 +1,17 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using DDBMSP.Common.QueryEngine;
 using DDBMSP.Entities.Query;
 using DDBMSP.Grains.Core;
 using DDBMSP.Interfaces.Grains.Querier;
 using Orleans.Concurrency;
+using Orleans.Providers;
 
 namespace DDBMSP.Grains.Querier
 {
     [Reentrant]
+    [StorageProvider(ProviderName = "RedisStore")]
     public class QueryRepository : SingleWriterMultipleReadersGrain<Dictionary<string, QueryDefinition>>,
         IQueryRepository
     {
@@ -22,18 +25,7 @@ namespace DDBMSP.Grains.Querier
 
         public Task CommitQuery(Immutable<QueryDefinition> queryDefinition) {
             /*
-            var query = new QueryDefinition {
-                AggregationLambda = "Selected.Sum()",
-                SelectorLambda = "Articles.Count(pair => !string.IsNullOrEmpty(pair.Value.Title))",
-                ReturnTypeName = "int"
-            };
-            
-            var query2 = new QueryDefinition {
-                AggregationLambda = "Selected.SelectMany(dict => dict).ToDictionary(pair => pair.Key, pair => pair.Value)",
-                SelectorLambda = "Articles.Where(pair => pair.Value.Author.Name.Contains(\"Mira\"))",
-                ReturnTypeName = "KeyValuePair<Guid, ArticleState>"
-            };
-            
+             
             newquery -n test -t "KeyValuePair<Guid, ArticleState>" -s "Articles.Where(pair => pair.Value.Title != null)" -a "Selected.SelectMany(dict => dict).ToDictionary(pair => pair.Key, pair => pair.Value).ToList()"
             newquery -n test1k -t "KeyValuePair<Guid, ArticleState>" -s "Articles.Where(pair => pair.Value.Title != null)" -a "Selected.SelectMany(dict => dict).ToDictionary(pair => pair.Key, pair => pair.Value).Take(1000).ToList()"
             
@@ -43,13 +35,28 @@ namespace DDBMSP.Grains.Querier
             newquery -n testActivities -r Article -t "IEnumerable<UserActivityState>" -s "Elements.Select(list => list.Where(state => state.User.Name.Contains("Iachin")))" -a "Selected.SelectMany(d => d).ToList()"
             
             query commit -n ActivitiesCount -r Activity -t int -s "Elements.Sum(e => e.Count())" -a "Selected.Sum()"
+            query commit -n CommentCount -r Activity -t int -s "Elements.Sum(e => e.Count(a => a.Type == UserActivityType.Commented))" -a "Selected.Sum()"
             
             */
+            
+            switch (queryDefinition.Value.TargetRessource) {
+                case "Article":
+                    queryDefinition.Value.TargetRessource = "ArticleState";
+                    break;
+                case "User":
+                    queryDefinition.Value.TargetRessource = "UserState";
+                    break;
+                case "Activity":
+                    queryDefinition.Value.TargetRessource = "List<UserActivityState>";
+                    break;
+                default:
+                    throw new Exception("Unknown ressource type");
+            }
 
             return SerialExecutor.AddNext(() => {
                 QueryEngine.CompileAndRegister(queryDefinition.Value);
                 State.Add(queryDefinition.Value.Name, queryDefinition.Value);
-                return Task.CompletedTask;
+                return WriteStateAsync();
             });
         }
     }

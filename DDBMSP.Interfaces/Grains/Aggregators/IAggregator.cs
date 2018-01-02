@@ -18,7 +18,7 @@ namespace DDBMSP.Interfaces.Grains.Aggregators
     
     public interface IGlobalAggregator<TAggregated>
     {
-        Task Aggregate(TAggregated grain);
+        Task Aggregate(TAggregated article);
         Task AggregateRange(List<TAggregated> articles);
     }
     

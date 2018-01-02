@@ -19,9 +19,9 @@ namespace DDBMSP.Common
 
         private static ScriptOptions ScriptOptions { get; } = ScriptOptions.Default
             .WithReferences(typeof(ArticleState).Assembly, typeof(IQueryable).Assembly,
-                typeof(IEnumerable<>).Assembly, typeof(Guid).Assembly, typeof(Microsoft.CSharp.RuntimeBinder.Binder).Assembly)
+                typeof(IEnumerable<>).Assembly, typeof(Guid).Assembly, typeof(Microsoft.CSharp.RuntimeBinder.Binder).Assembly, typeof(Enum).Assembly)
             .WithImports("DDBMSP.Entities.Article", "DDBMSP.Entities.User", "DDBMSP.Entities.UserActivity", "System.Linq", "System",
-                "System.Collections.Generic", "Microsoft.CSharp").WithEmitDebugInformation(false);
+                "System.Collections.Generic", "Microsoft.CSharp" , "DDBMSP.Entities.Enums").WithEmitDebugInformation(false);
         
         public ScriptState<dynamic> ScriptState { get; set; }
         public readonly Context ScriptContext = new Context();

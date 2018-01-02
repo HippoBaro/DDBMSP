@@ -31,9 +31,9 @@ namespace DDBMSP.Common.QueryEngine
     {
         private static ScriptOptions ScriptOptions = ScriptOptions.Default
             .WithReferences(typeof(ArticleState).Assembly, typeof(IQueryable).Assembly,
-                typeof(IEnumerable<>).Assembly, typeof(Guid).Assembly)
+                typeof(IEnumerable<>).Assembly, typeof(Guid).Assembly, typeof(Enum).Assembly)
             .WithImports("DDBMSP.Entities.Article", "DDBMSP.Entities.User", "DDBMSP.Entities.UserActivity", "System.Linq", "System",
-                "System.Collections.Generic").WithEmitDebugInformation(false);
+                "System.Collections.Generic", "DDBMSP.Entities.Enums").WithEmitDebugInformation(false);
 
         private static Dictionary<string, QueryScript> Queries = new Dictionary<string, QueryScript>();
 
@@ -42,7 +42,7 @@ namespace DDBMSP.Common.QueryEngine
                 if (Queries.ContainsKey(queryDefinition.Name))
                     throw new Exception($"Query \"{queryDefinition.Name}\" already exists.");
                 
-                var selector = CSharpScript.Create($"var Elements = (IEnumerable<{queryDefinition.TargetRessource}State>)__Elements;",
+                var selector = CSharpScript.Create($"var Elements = (IEnumerable<{queryDefinition.TargetRessource}>)__Elements;",
                         ScriptOptions, typeof(QueryContext))
                     .ContinueWith<object>(queryDefinition.SelectorLambda, ScriptOptions);
                 selector.Compile();
@@ -52,13 +52,11 @@ namespace DDBMSP.Common.QueryEngine
                         ScriptOptions, typeof(QueryContext))
                     .ContinueWith<object>(queryDefinition.AggregationLambda, ScriptOptions);
                 aggregator.Compile();
-                
-                var query = new QueryScript();
-                Console.WriteLine("compiling selection script");
-                query.Aggregator = aggregator.CreateDelegate();
-                Console.WriteLine("compiling aggregation script");
-                query.Selector = selector.CreateDelegate();
-                Console.WriteLine("compiling done");
+
+                var query = new QueryScript {
+                    Aggregator = aggregator.CreateDelegate(),
+                    Selector = selector.CreateDelegate()
+                };
 
                 Queries.Add(queryDefinition.Name, query);
             }

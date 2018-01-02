@@ -39,10 +39,14 @@ namespace DDBMSP.CLI.Interactive
                     Console.ReadKey(true);
                     continue;
                 }
-                
-                if (line == "query commit" || line == "query exec") {
+
+                if (line.StartsWith("query commit")) {
                     line = line.Insert(0, "\"");
-                    line = line.Insert(line.Length, "\"");
+                    line = line.Insert(13, "\"");
+                }
+                else if (line.StartsWith("query exec")) {
+                    line = line.Insert(0, "\"");
+                    line = line.Insert(11, "\"");
                 }
                 
                 var result = parser.ParseArguments<CommitQuery, ExecuteQuery, Quit>(SplitCommandLine(line));

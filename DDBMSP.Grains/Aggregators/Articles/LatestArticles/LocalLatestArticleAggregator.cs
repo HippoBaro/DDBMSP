@@ -12,7 +12,7 @@ using Orleans.Concurrency;
 namespace DDBMSP.Grains.Aggregators.Articles.LatestArticles
 {
     [StatelessWorker]
-    public class LocalLatestArticleAggregator : Grain<CircularFifoStack<ArticleState>>, ILocalLatestArticleAggregator
+    public class LocalLatestArticleAggregator : Grain<OrderedList<ArticleState>>, ILocalLatestArticleAggregator
     {
         private int _newSinceLastReport;
 
@@ -23,22 +23,21 @@ namespace DDBMSP.Grains.Aggregators.Articles.LatestArticles
         }
 
         public Task Aggregate(ArticleState article) {
-            State.Push(article);
+            State.Add(article);
             ++_newSinceLastReport;
             return Task.CompletedTask;
         }
 
         public Task AggregateRange(List<ArticleState> articles) {
-            State.Push(articles);
+            State.AddRange(articles);
             _newSinceLastReport += articles.Count;
-            //Console.WriteLine($"{this.GetGrainIdentity().IdentityString}: New data: {State.Count}");
             return Task.CompletedTask;
         }
 
         private Task Report(object _) {
-            //Console.WriteLine($"{this.GetGrainIdentity().IdentityString}: Report");
             if (!(State.Count > 0)) return Task.CompletedTask;
-            //Console.WriteLine($"{this.GetGrainIdentity().IdentityString}: State.Count = {State.Count}");
+            
+            State.Sort((summary, articleSummary) => DateTime.Compare(summary.CreationDate, articleSummary.CreationDate));
             var aggregator = GrainFactory.GetGrain<IGlobalLatestArticlesAggregator>(0);
             var task = aggregator.AggregateRange(
                 State.Take(_newSinceLastReport)
@@ -46,7 +45,6 @@ namespace DDBMSP.Grains.Aggregators.Articles.LatestArticles
                     .ToList());
             _newSinceLastReport = 0;
             State.Clear();
-            //Console.WriteLine($"{this.GetGrainIdentity().IdentityString}: State.Count cleared");
             return task;
         }
     }

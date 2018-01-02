@@ -44,8 +44,8 @@ namespace DDBMSP.Grains.Aggregators.Articles.LatestArticlesByTag
                             DateTime.Compare(articleSummary.CreationDate, summary.CreationDate)));
                     if (index >= 0) continue;
                     State[tag].Insert(~index, article);
-                    State[tag].RemoveRange(100, int.MaxValue);
                 }
+                State[tag].RemoveRange(100, int.MaxValue);
                 return Task.CompletedTask;
             }
 

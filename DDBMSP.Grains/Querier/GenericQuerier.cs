@@ -41,13 +41,13 @@ namespace DDBMSP.Grains.Querier
             Immutable<byte[]> res;
             
             switch (def.Value.TargetRessource) {
-                case "Article":
+                case "ArticleState":
                     res = await Query<ArticleState>(def);
                     break;
-                case "User":
+                case "UserState":
                     res = await Query<UserState>(def);
                     break;
-                case "Activity":
+                case "List<UserActivityState>":
                     res = await Query<List<UserActivityState>>(def);
                     break;
                 default:

@@ -16,6 +16,13 @@ namespace DDBMSP.Grains.Core.DistributedHashTable
     public class DistributedHashTableBucket<TKey, TValue> : ScheduledPersistedGrain<Dictionary<TKey, TValue>>,
         IDistributedHashTableBucket<TKey, TValue>
     {
+        public override Task OnActivateAsync() {
+            if (State == null || !State.Any()) {
+                State = new Dictionary<TKey, TValue>(100000);
+            }
+            return base.OnActivateAsync();
+        }
+
         public Task<Immutable<TValue>> Get(Immutable<TKey> key) => Task.FromResult(State[key.Value].AsImmutable());
 
         public Task Set(Immutable<TKey> key, Immutable<TValue> value) {

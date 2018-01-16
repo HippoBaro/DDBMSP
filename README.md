@@ -1,7 +1,7 @@
 
 # DDBMSP 
 
-**DDBMSP is a fast, fault-tolerant, queryable, actor-based, distributed hash table** 
+**DDBMSP is a fast, fault-tolerant, queryable, actor-based distributed hash table** 
 
 DDBMSP is a student project implementing a Distributed Hash Table with stream aggregation built-in. Unfortunately it is not yet a fully-features, generic database. The data types are hard-coded to the project's specifications.
 
@@ -77,7 +77,9 @@ We tried to keep the dev-ops related work to a minimum when interacting with the
 
 ### Silo  
 
-The Silos do not require any user input to function
+The Silos do not require any user input to function.
+
+> The silo **must** be launched after the consul agent. If not, the silo will be unable to register itself to the membership table and will fail.
 
 #### Monitoring Silos through the administrator dashboard
 
@@ -88,6 +90,12 @@ Every Silo expose a web-based dashboard on port `8080` by default.
 > If running through `docker-compose`, note that the exposed port will be, by default, randomized by the Docker engine. To get the host-exposed port, run `docker ps` and check the exposed port of the silo container.
 
 See [Orleans Dashboard](https://github.com/OrleansContrib/OrleansDashboard) for more information on what is provided by the dashboard.
+
+### Frontend
+
+The frontend is a demontration of a use-case for the database. The web interface is available on port 5000 by default.
+
+![enter image description here](https://i.imgur.com/VvwTY8C.jpg)
 
 ### CLI  
 

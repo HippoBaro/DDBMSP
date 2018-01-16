@@ -1,5 +1,7 @@
 
-# DDBMSP  DDBMSP is a fast, fault-tolerant, queryable, actor-based, distributed hash table 
+# DDBMSP 
+
+**DDBMSP is a fast, fault-tolerant, queryable, actor-based, distributed hash table** 
 
 DDBMSP is a student project implementing a Distributed Hash Table with stream aggregation built-in. Unfortunately it is not yet a fully-features, generic database. The data types are hard-coded to the project's specifications.
 

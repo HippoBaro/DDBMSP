@@ -1,7 +1,7 @@
 
 # DDBMSP 
 
-**DDBMSP is a fast, fault-tolerant, queryable, actor-based distributed hash table** 
+**DDBMSP is a fast, fault-tolerant, queryable, actor-based distributed hash table implemented on top of the [Microsoft Orleans Framework](https://dotnet.github.io/orleans/)** 
 
 DDBMSP is a student project implementing a Distributed Hash Table with stream aggregation built-in. Unfortunately it is not yet a fully-features, generic database. The data types are hard-coded to the project's specifications.
 
